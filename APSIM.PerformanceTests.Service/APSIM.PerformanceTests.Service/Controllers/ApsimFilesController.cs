@@ -242,6 +242,30 @@ namespace APSIM.PerformanceTests.Service.Controllers
                             // Execute the command.
                             command.ExecuteNonQuery();
                             WriteToLogFile(string.Format("       PredictedObserved Data for {0} imported successfully!", valueName));
+
+
+                            //Need to run the testing procecedure here, and then save the test data
+                            if (poDetail.PredictedObservedData.Rows.Count > 0)
+                            {
+                                DataTable dtTests = Tests.DoValidationTest(poDetail.DatabaseTableName, poDetail.PredictedObservedData);
+
+                                if (dtTests.Rows.Count > 0)
+                                {
+                                    //Now update the database with the test results
+                                    // Configure the command and parameter.
+                                    command = new SqlCommand("usp_PredictedObservedTestsInsert", con);
+                                    command.CommandType = CommandType.StoredProcedure;
+                                    command.Parameters.AddWithValue("@PredictedObservedID", PredictedObservedID);
+
+                                    SqlParameter tvpParam = command.Parameters.AddWithValue("@Tests", dtTests);
+                                    tvpParam.SqlDbType = SqlDbType.Structured;
+                                    tvpParam.TypeName = "dbo.PredictedObservedTestsTableType";
+
+                                    command.ExecuteNonQuery();
+                                    WriteToLogFile(string.Format("    Filename {0} Tests Data imported successfully!", apsimfile.FileName));
+                                }
+                            }
+
                         }   //ObservedColumName.StartsWith("Observed")
                     }   // for (int i = 0; i < poDetail.PredictedObservedData.Columns.Count; i++)
 
@@ -272,7 +296,6 @@ namespace APSIM.PerformanceTests.Service.Controllers
             try
             {
                 connectionString = File.ReadAllText(file) + ";Database=\"APSIM.PerformanceTests\"";
-                //connectionString = "Data Source=www.apsim.info\\APSIM,50000;Database=APSIM.PerformanceTests;Trusted_Connection=no;User ID=sa;password=CsiroDMZ!";
                 return connectionString;
 
             }
