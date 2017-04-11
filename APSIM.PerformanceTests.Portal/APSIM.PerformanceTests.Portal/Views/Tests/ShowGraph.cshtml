@@ -1,0 +1,23 @@
+﻿
+@model APSIM.PerformanceTests.Portal.ModelViews.TestsIndex
+
+<h2>Tests Graph</h2>
+<h3>Tests for @Model.PO_Id</h3>
+
+@if (Model.POTests != null && Model.POTests.Count() > 0)
+{
+    <div>
+        @Model.Chart.Write(format: "png")
+
+        @*@{
+            var myChart = new Chart(width: 600, height: 400)
+                .AddTitle("Predicted Observed Tests Comparisons")
+                .AddSeries(
+                    name: "Default", chartType: "Point",
+                    xValue: Model.POTests, xField: "Accepted",
+                    yValues: Model.POTests, yFields: "Current")
+                .Write("png");
+        }*@
+    </div>
+
+}

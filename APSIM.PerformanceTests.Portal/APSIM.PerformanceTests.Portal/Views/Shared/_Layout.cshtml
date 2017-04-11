@@ -4,12 +4,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - APSIM.PerformancesTests.Portal</title>
-    @*<link href="@Url.Content("~/Content/StyleSheet1.css")" rel="stylesheet" />*@
+    <link href="@Url.Content("~/Content/site.css")" rel="stylesheet" type="text/css" />
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
     @RenderSection("css", false)
+
 </head>
 <body>
+    <div class="pageHeader">
+        <div class="pageheaderleft">
+            <img src="~/Content/Images/ApsimNextGeneration.png" />
+        </div>
+        <div class="pageheaderright">
+            <img src="~/Content/Images/hd_bg.png" />
+        </div>
+    </div>
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -18,24 +27,24 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                @Html.ActionLink("Apsim X Performance Testing", "Index", "Apsim", new { area = "" }, new { @class = "navbar-brand" })
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("About", "About", "Home")</li>
+                    <li>@Html.ActionLink("Home", "Index", "Apsim")</li>
+                    <li>@Html.ActionLink("Apsim", "Index", "Apsim")</li>
                 </ul>
             </div>
         </div>
     </div>
-    <div class="container body-content">
+
+    <div class="body-content container">
         @RenderBody()
         <hr />
         <footer>
             <p>&copy; @DateTime.Now.Year - APSIM.PerformancesTests.Portal</p>
         </footer>
     </div>
-
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)

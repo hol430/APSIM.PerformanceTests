@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Data.Entity;
-using APSIM.PerformanceTests.Portal.Models;
+using System.Linq;
 using System.IO;
+using System.Web;
+using APSIM.PerformanceTests.Portal.Models;
+
 
 namespace APSIM.PerformanceTests.Portal.DataAccessLayer
 {
@@ -15,17 +16,21 @@ namespace APSIM.PerformanceTests.Portal.DataAccessLayer
         {
         }
 
-        public DbSet<ApsimFile> ApsimFiles { get; set; }
-        public DbSet<Simulation> Simulations { get; set; }
-        public DbSet<PredictedObservedDetail> PredictedObservedDetails { get; set; }
-        public DbSet<PredictedObservedValue> PredictedObservedValues { get; set; }
+        //these are in the database
+        public virtual DbSet<ApsimFile> ApsimFiles { get; set; }
+        public virtual DbSet<PredictedObservedDetail> PredictedObservedDetails { get; set; }
+        public virtual DbSet<PredictedObservedTest> PredictedObservedTests { get; set; }
+        public virtual DbSet<PredictedObservedValue> PredictedObservedValues { get; set; }
+        public virtual DbSet<Simulation> Simulations { get; set; }
 
 
-    /// <summary>
-    /// GEts the connection string for the database
-    /// </summary>
-    /// <returns></returns>
-    public static string GetConnectionString()
+
+
+        /// <summary>
+        /// GEts the connection string for the database
+        /// </summary>
+        /// <returns></returns>
+        public static string GetConnectionString()
     {
         string file = @"D:\Websites\dbConnect.txt";
         string connectionString = string.Empty;

@@ -94,9 +94,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
             int ApsimID = 0;
             try
             {
-
                 SqlConnection con = new SqlConnection();
                 con.ConnectionString = GetConnectionString();
+
+                WriteToLogFile("-----------------------------------");     
                 WriteToLogFile(string.Format("Processing PullRequestId {0}, Apsim Filename {1}, dated {2}, imported successfully!", apsimfile.PullRequestId, apsimfile.FileName, apsimfile.RunDate));
 
                 //--------------------------------------------------------------------------------------
@@ -113,6 +114,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 //how many rows were inserted
                 con.Open();
                 //this should return the IDENTITY value for this record (which is required for the next update)
+                //NEED TO UNDO THIS
+                //ApsimID = 232323;
                 ApsimID = (int)command.ExecuteScalar();
                 WriteToLogFile( string.Format("    Filename {0} imported successfully!", apsimfile.FileName));
 
@@ -131,6 +134,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     tvpParam.SqlDbType = SqlDbType.Structured;
                     tvpParam.TypeName = "dbo.SimulationDataTableType";
 
+                    //NEED TO UNDO THIS
                     command.ExecuteNonQuery();
                     WriteToLogFile(string.Format("    Filename {0} Simulation Data imported successfully!", apsimfile.FileName));
                 }
@@ -143,11 +147,14 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 //now look at each individual set of data
                 foreach (PredictedObservedDetails poDetail in apsimfile.PredictedObserved)
                 {
+
                     strSQL = "INSERT INTO PredictedObservedDetails (" 
-                        + " ApsimFilesID, TableName, PredictedTableName, ObservedTableName, FieldNameUsedForMatch, FieldName2UsedForMatch, FieldName3UsedForMatch "
+                        + " ApsimFilesID, TableName, PredictedTableName, ObservedTableName, FieldNameUsedForMatch, FieldName2UsedForMatch, FieldName3UsedForMatch, HasTests "
                         + " ) OUTPUT INSERTED.ID Values (" 
-                        + " @ApsimFilesID, @TableName, @PredictedTableName, @ObservedTableName, @FieldNameUsedForMatch, @FieldName2UsedForMatch, @FieldName3UsedForMatch"
+                        + " @ApsimFilesID, @TableName, @PredictedTableName, @ObservedTableName, @FieldNameUsedForMatch, @FieldName2UsedForMatch, @FieldName3UsedForMatch, 0 "
                         + " )";
+
+
 
                     command = new SqlCommand(strSQL, con);
                     command.Parameters.AddWithValue("@ApsimFilesID", ApsimID);
@@ -160,9 +167,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     command.Parameters.AddWithValue("@FieldName3UsedForMatch", poDetail.FieldName3UsedForMatch);
 
                     //this should return the IDENTITY value for this record (which is required for the next update)
+                    //NEED TO UNDO THIS
+                    //int PredictedObservedID = 232323;
                     int PredictedObservedID = (int)command.ExecuteScalar();
                     WriteToLogFile(string.Format("    Filename {0} PredictedObserved Table Details {1} imported successfully!", apsimfile.FileName, poDetail.DatabaseTableName));
-
 
 
                     //--------------------------------------------------------------------------------------
@@ -240,34 +248,35 @@ namespace APSIM.PerformanceTests.Service.Controllers
                                 tvtpPara.TypeName = "dbo.PredictedObservedDataTableType";
                             }
                             // Execute the command.
+                            //NEED TO UNDO THIS
                             command.ExecuteNonQuery();
                             WriteToLogFile(string.Format("       PredictedObserved Data for {0} imported successfully!", valueName));
 
-
-                            //Need to run the testing procecedure here, and then save the test data
-                            if (poDetail.PredictedObservedData.Rows.Count > 0)
-                            {
-                                DataTable dtTests = Tests.DoValidationTest(poDetail.DatabaseTableName, poDetail.PredictedObservedData);
-
-                                if (dtTests.Rows.Count > 0)
-                                {
-                                    //Now update the database with the test results
-                                    // Configure the command and parameter.
-                                    command = new SqlCommand("usp_PredictedObservedTestsInsert", con);
-                                    command.CommandType = CommandType.StoredProcedure;
-                                    command.Parameters.AddWithValue("@PredictedObservedID", PredictedObservedID);
-
-                                    SqlParameter tvpParam = command.Parameters.AddWithValue("@Tests", dtTests);
-                                    tvpParam.SqlDbType = SqlDbType.Structured;
-                                    tvpParam.TypeName = "dbo.PredictedObservedTestsTableType";
-
-                                    command.ExecuteNonQuery();
-                                    WriteToLogFile(string.Format("    Filename {0} Tests Data imported successfully!", apsimfile.FileName));
-                                }
-                            }
-
                         }   //ObservedColumName.StartsWith("Observed")
                     }   // for (int i = 0; i < poDetail.PredictedObservedData.Columns.Count; i++)
+
+
+                    //Need to run the testing procecedure here, and then save the test data
+                    if (poDetail.PredictedObservedData.Rows.Count > 0)
+                    {
+                        DataTable dtTests = Tests.DoValidationTest(poDetail.DatabaseTableName, poDetail.PredictedObservedData);
+
+                        if (dtTests.Rows.Count > 0)
+                        {
+                            //Now update the database with the test results
+                            // Configure the command and parameter.
+                            command = new SqlCommand("usp_PredictedObservedTestsInsert", con);
+                            command.CommandType = CommandType.StoredProcedure;
+                            command.Parameters.AddWithValue("@PredictedObservedID", PredictedObservedID);
+
+                            SqlParameter tvpParam = command.Parameters.AddWithValue("@Tests", dtTests);
+                            tvpParam.SqlDbType = SqlDbType.Structured;
+                            tvpParam.TypeName = "dbo.PredictedObservedTestsTableType";
+
+                            command.ExecuteNonQuery();
+                            WriteToLogFile(string.Format("    Filename {0} Tests Data for {1} imported successfully!", apsimfile.FileName, poDetail.DatabaseTableName));
+                        }
+                    }
 
                 }   //foreach (PredictedObservedDetails poDetail in apsimfile.PredictedObserved)
 

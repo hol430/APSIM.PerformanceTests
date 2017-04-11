@@ -51,7 +51,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
             List<string> statNames = (new MathUtilities.RegrStats()).GetType().GetFields().Select(f => f.Name).ToList(); // use reflection, get names of stats available
             //DataTable POtable = DS.GetData("*", PO.Name);
             List<string> columnNames;
-            string sigIdent = "X";
+            string sigIdent = "0";   //false   (1 = true)
 
             if (POtable == null)
             {
@@ -192,7 +192,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 if (row["Accepted"] != DBNull.Value && row["Current"] != DBNull.Value)
                 {
                     row["Difference"] = Convert.ToDouble(row["Current"]) - Convert.ToDouble(row["Accepted"]);
-                    row["PassedTest"] = Math.Abs(Convert.ToDouble(row["Difference"])) > Math.Abs(Convert.ToDouble(row["Accepted"])) * 0.01 ? sigIdent : " ";
+                    row["PassedTest"] = Math.Abs(Convert.ToDouble(row["Difference"])) > Math.Abs(Convert.ToDouble(row["Accepted"])) * 0.01 ? sigIdent : "1";
                 }
                 else
                 {

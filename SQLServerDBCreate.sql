@@ -19,6 +19,10 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[usp_S
 	DROP PROCEDURE [dbo].[usp_SimulationsInsert]
 GO
 
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[usp_PredictedObservedTestsInsert]') AND type in (N'P', N'PC'))
+	DROP PROCEDURE [dbo].[usp_PredictedObservedTestsInsert]
+GO
+
 PRINT 'STORED PROCEDURES DROPPED'
 GO
 
@@ -40,6 +44,11 @@ GO
 IF  EXISTS (SELECT * FROM sys.types st JOIN sys.schemas ss ON st.schema_id = ss.schema_id WHERE st.name = N'SimulationDataTableType' AND ss.name = N'dbo')
 	DROP TYPE [dbo].[SimulationDataTableType]
 GO
+
+IF  EXISTS (SELECT * FROM sys.types st JOIN sys.schemas ss ON st.schema_id = ss.schema_id WHERE st.name = N'PredictedObservedTestsTableType' AND ss.name = N'dbo')
+	DROP TYPE [dbo].[PredictedObservedTestsTableType]
+GO
+
 	
 PRINT 'USER-DEFINED TABLE TYPES DROPPED'
 GO
@@ -61,6 +70,13 @@ IF EXISTS (SELECT name FROM sys.indexes
 			WHERE name = N'IX_Simulations_ApsimFilesID_ID')  
 	DROP INDEX [IX_Simulations_ApsimFilesID_ID] ON [dbo].[Simulations];
 GO
+
+IF EXISTS (SELECT name FROM sys.indexes 
+			WHERE name = N'IX_PredictedObservedTests_PredictedObservedDetailsID_ID')  
+	DROP INDEX [IX_PredictedObservedTests_PredictedObservedDetailsID_ID] ON [dbo].[PredictedObservedTests];
+GO
+
+
 	
 PRINT 'INDEXES DROPPED'
 GO
@@ -86,12 +102,21 @@ IF EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'dbo.FK_S
 	ALTER TABLE [dbo].[Simulations] DROP CONSTRAINT [FK_Simulations_ApsimFiles];
 GO
 
+IF EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'dbo.FK_PredictedObservedTests_PredictedObservedDetails') 
+			AND parent_object_id = OBJECT_ID(N'dbo.PredictedObservedTests'))
+	ALTER TABLE [dbo].[PredictedObservedTests] DROP CONSTRAINT [FK_PredictedObservedTests_PredictedObservedDetails];
+GO
+
 PRINT 'FOREIGN KEY RELATIONSHIPS DROPPED'
 GO
 
 ---------------------------------------------------------------------------
 --  DROP TABLES  
 ---------------------------------------------------------------------------
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[PredictedObservedTests]') AND TYPE IN (N'U'))
+	DROP TABLE [dbo].[PredictedObservedTests];
+GO
+
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[PredictedObservedValues]') AND TYPE IN (N'U'))
 	DROP TABLE [dbo].[PredictedObservedValues];
 GO
@@ -256,6 +281,37 @@ GO
 PRINT '[PredictedObservedValues] TABLES CREATED'
 GO
 
+
+
+CREATE TABLE [dbo].[PredictedObservedTests](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[PredictedObservedDetailsID] [int] NOT NULL,
+	[Variable] [nvarchar](100) NOT NULL,
+	[Test] [nvarchar](100) NULL,
+	[Accepted] [float] NULL,
+	[Current] [float] NULL,
+	[Difference] [float] NULL,
+	[PassedTest] [bit] NULL,
+ CONSTRAINT [PK_PredictedObservedTests] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+ALTER TABLE [dbo].[PredictedObservedTests]  WITH NOCHECK ADD  CONSTRAINT [FK_PredictedObservedTests_PredictedObservedDetails] FOREIGN KEY([PredictedObservedDetailsID])
+REFERENCES [dbo].[PredictedObservedDetails] ([ID])
+GO
+
+ALTER TABLE [dbo].[PredictedObservedTests] CHECK CONSTRAINT [FK_PredictedObservedTests_PredictedObservedDetails]
+GO
+
+PRINT '[PredictedObservedTests] TABLES CREATED'
+GO
+
+
+
 PRINT '--------------------------------------------------------------------------'
 GO
 CREATE TYPE [dbo].[SimulationDataTableType] AS TABLE(
@@ -297,7 +353,22 @@ CREATE TYPE [dbo].[PredictedObservedDataThreeTableType] AS TABLE(
 )
 GO
 
-PRINT '[PredictedObservedDataTableType] TABLE VALUE TYPES CREATED'
+
+CREATE TYPE [dbo].[PredictedObservedTestsTableType] AS TABLE(
+	[Name] [nvarchar](100) NOT NULL,
+	[Variable] [nvarchar](100) NOT NULL,
+	[Test] [nvarchar](100) NOT NULL,
+	[Accepted] [float] NULL,
+	[Current] [float] NULL,
+	[Difference] [float] NULL,
+	[PassedTest] [bit] NULL
+)
+GO
+
+
+
+
+PRINT '[PredictedObserved.....TableType] TABLE VALUE TYPES CREATED'
 GO
 PRINT '--------------------------------------------------------------------------'
 GO
@@ -367,6 +438,7 @@ BEGIN
 	
 END
 GO		
+
 CREATE PROCEDURE [dbo].[usp_PredictedObservedDataThreeInsert]
 (
 	@PredictedObservedID as [int],
@@ -392,9 +464,33 @@ BEGIN
 	   and p.[ObservedValue] IS NOT NULL; 
 	
 END
-GO		
+GO	
+	
 PRINT '[usp_PredictedObservedDataInsert] STORED PROCEDURES CREATED'
 GO
+
+
+---------------------------------------------------------------------------
+CREATE PROCEDURE [dbo].[usp_PredictedObservedTestsInsert]
+(
+	@PredictedObservedID as [int],
+	@Tests As [dbo].[PredictedObservedTestsTableType] Readonly
+)
+AS
+BEGIN
+
+	--need to get back the simulation data so that we can match it with this data to get new Simulation ID
+	INSERT INTO [dbo].[PredictedObservedTests] (
+	    [PredictedObservedDetailsID], [Variable], [Test], [Accepted], [Current], [Difference], [PassedTest])
+	SELECT @PredictedObservedID, [Variable], [Test], [Accepted], [Current], [Difference], [PassedTest]
+	  FROM @Tests 
+	 
+END
+
+GO
+PRINT '[usp_PredictedObservedTestsInsert] STORED PROCEDURES CREATED'
+GO
+
 
 PRINT '--------------------------------------------------------------------------'
 
@@ -410,6 +506,8 @@ GO
 GRANT EXECUTE ON TYPE::[dbo].[PredictedObservedDataTwoTableType] TO [sv-login-external]
 GO
 GRANT EXECUTE ON TYPE::[dbo].[PredictedObservedDataThreeTableType] TO [sv-login-external]
+GO
+GRANT EXECUTE ON TYPE::[dbo].[PredictedObservedDataTestsTableType] TO [sv-login-external]
 GO
 
 PRINT 'PERMISSIONS GRANTED TO USER sv-login-external FOR TABLE TYPES'
@@ -427,6 +525,9 @@ GRANT EXECUTE ON [dbo].[usp_PredictedObservedDataTwoInsert] TO [sv-login-externa
 GO
 GRANT EXECUTE ON [dbo].[usp_PredictedObservedDataThreeInsert] TO [sv-login-external]
 GO
+GRANT EXECUTE ON [dbo].[usp_PredictedObservedTestsInsert] TO [sv-login-external]
+GO
+
 
 PRINT 'PERMISSIONS GRANTED TO USER sv-login-external FOR STORED PROCEDURES'
 PRINT '--------------------------------------------------------------------------'

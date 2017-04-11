@@ -22,9 +22,10 @@ namespace APSIM.PerformanceTests.Collector
 
         static int Main(string[] args)
         {
-
             httpclient.BaseAddress = new Uri("http://www.apsim.info/APSIM.PerformanceTests.Service/");
-            //httpclient.BaseAddress = new Uri("http://localhost:53187/");
+//#if DEBUG
+//            httpclient.BaseAddress = new Uri("http://localhost:53187/");
+//#endif
             httpclient.DefaultRequestHeaders.Accept.Clear();
             httpclient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -59,7 +60,7 @@ namespace APSIM.PerformanceTests.Collector
                     pullId = Int32.Parse(args[1]);
                     runDate = DateTime.ParseExact(args[2], "yyyy.MM.dd-HH:mm", CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal);
 
-                    WriteToLogFile("-------------------------------------------------------------------------------");
+                    WriteToLogFile("--------------------------------");
                     WriteToLogFile(string.Format("Pull Request ID {0}, date {1}, command type: {2} ", pullId.ToString(), runDate.ToString("dd-MM-yyyy HH:mm"), pullCmd));
 
 
@@ -184,12 +185,19 @@ namespace APSIM.PerformanceTests.Collector
         /// <param name="pullId"></param>
         private static void RetrieveData(int pullId, DateTime runDate)
         {
-            //filePath = "C:/Users/cla473/Dropbox/APSIMInitiative/ApsimX/Tests/";
-            //filePath = "\\scoop.apsim.info\c$\Jenkins\workspace/1. GitHub pull request/ApsimX/Tests/";
-            //List<ApsimFile> apsimFiles = new List<ApsimFile>();
-
             //need to allow for "Tests" and "ProtoTypes" directory
-            string[] filePaths = ConfigurationManager.AppSettings["searchDirectory"].ToString().Split(';');
+            //searchDir = @"C:/ApsimWork/Tests/;C:/ApsimWork/Prototypes/";
+            //searchDir = \\scoop.apsim.info\c$\Jenkins\workspace/1. GitHub pull request/ApsimX/Tests/";
+            //searchDir = @"C:/Users/cla473/Dropbox/APSIMInitiative/ApsimX/Tests/;C:/Users/cla473/Dropbox/APSIMInitiative/ApsimX/Prototypes/;";
+
+
+            string searchDir = ConfigurationManager.AppSettings["searchDirectory"].ToString();
+
+//#if DEGUG
+//            searchDir = @"C:/ApsimWork/Prototypes/";
+//#endif
+
+            string[] filePaths = searchDir.Split(';');
 
             foreach (string filePath in filePaths)
             {
@@ -201,9 +209,12 @@ namespace APSIM.PerformanceTests.Collector
                 {
                     try
                     {
-                        WriteToLogFile(string.Format("Apsimx file {0} found, Pull Request Id {1}, dated {2}", fi.FullName, pullId, runDate));
+                        //We don't need to save the full pathing here
+                        string strFileName = GetModifiedFileName(fi.FullName);
+                        WriteToLogFile(string.Format("Apsimx file {0} found, Pull Request Id {1}, dated {2}", strFileName, pullId, runDate));
+
                         ApsimFile apsimFile = new ApsimFile();
-                        apsimFile.FullFileName = fi.FullName;
+                        apsimFile.FullFileName = strFileName;
                         apsimFile.FileName = Path.GetFileNameWithoutExtension(fi.FullName);
 
                         apsimFile.PredictedObserved = GetPredictedObservedDetails(fi.FullName);
@@ -234,6 +245,21 @@ namespace APSIM.PerformanceTests.Collector
                 }
             }
             //return apsimFiles;
+        }
+
+        private static string GetModifiedFileName(string fileName)
+        {
+            string returnStr;
+            int posn = fileName.IndexOf(@"ApsimX\Tests");
+            if (posn < 0)
+            { 
+                posn = fileName.IndexOf(@"ApsimX\Prototypes");
+            }
+            if (posn > 0) { posn += 7; }
+            if (posn < 0) { posn = 0; }
+            returnStr = fileName.Substring(posn);
+
+            return returnStr;
         }
 
         /// <summary>
@@ -500,8 +526,11 @@ namespace APSIM.PerformanceTests.Collector
 
             //To get the location the assembly normally resides on disk or the install directory
             string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-
             returnStr = Path.GetDirectoryName(path) + "\\" + fileName;
+
+//#if DEBUG
+//            returnStr = "C:\\ApsimWork\\" + fileName; 
+//#endif
             return returnStr;
         }
     }
