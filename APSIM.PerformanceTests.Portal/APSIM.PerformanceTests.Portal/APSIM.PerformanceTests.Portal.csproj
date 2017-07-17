@@ -9,12 +9,12 @@
     <ProductVersion>
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}</ProjectGuid>
+    <ProjectGuid>{AE6E791B-6946-4273-9B4A-F012845AFF76}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>APSIM.PerformanceTests.Service</RootNamespace>
-    <AssemblyName>APSIM.PerformanceTests.Service</AssemblyName>
+    <RootNamespace>APSIM.PerformanceTests.Portal</RootNamespace>
+    <AssemblyName>APSIM.PerformanceTests.Portal</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
@@ -43,12 +43,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.2\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.2\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.DataVisualization" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -67,41 +75,9 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.Formatting">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http.WebHost">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Global.asax" />
-    <Content Include="Web.config">
-      <SubType>Designer</SubType>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\ApsimFilesController.cs" />
-    <Compile Include="Controllers\PassedTestsController.cs" />
-    <Compile Include="Controllers\ReleaseController.cs" />
-    <Compile Include="Utilities\Tests.cs" />
-    <Compile Include="Global.asax.cs">
-      <DependentUpon>Global.asax</DependentUpon>
-    </Compile>
-    <Compile Include="Models\ApsimFile.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utilities\Utilities.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="packages.config" />
-    <None Include="Properties\PublishProfiles\ApsimInfo_PerformanceTest_Service.pubxml" />
+    <Content Include="Site.Master" />
+    <None Include="Properties\PublishProfiles\ApsimInfoPerformanceTests_Portal.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -110,13 +86,59 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Data\" />
+    <Content Include="Default.aspx" />
+    <Content Include="Details.aspx" />
+    <Content Include="Global.asax" />
+    <Content Include="Images\ApsimNextGeneration2.png" />
+    <Content Include="Images\content_bg.png" />
+    <Content Include="Images\gridheader.jpg" />
+    <Content Include="Images\hd_bg.png" />
+    <Content Include="Javascript\ScrollingGrids.js" />
+    <Content Include="Site.css" />
+    <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Apsim.Shared\APSIM.Shared.csproj">
-      <Project>{e243ae8d-35e3-4397-b180-ef1e8a91ae8c}</Project>
-      <Name>APSIM.Shared</Name>
-    </ProjectReference>
+    <Compile Include="App_Code\ApsimFilesDS.cs" />
+    <Compile Include="App_Code\PredictedObservedDS.cs" />
+    <Compile Include="Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Details.aspx.cs">
+      <DependentUpon>Details.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Details.aspx.designer.cs">
+      <DependentUpon>Details.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ApsimDBContext.cs" />
+    <Compile Include="Models\ApsimFile.cs" />
+    <Compile Include="Models\PredictedObservedDetail.cs" />
+    <Compile Include="Models\PredictedObservedTest.cs" />
+    <Compile Include="Models\PredictedObservedValue.cs" />
+    <Compile Include="Models\Simulation.cs" />
+    <Compile Include="Models\vCurrentAndAccepted.cs" />
+    <Compile Include="Models\vSimulationPredictedObserved.cs" />
+    <Compile Include="Models\vApsimFile.cs" />
+    <Compile Include="Models\vSimFile.cs" />
+    <Compile Include="Models\vVariable.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Site.Master.cs">
+      <DependentUpon>Site.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Site.Master.designer.cs">
+      <DependentUpon>Site.Master</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -131,9 +153,9 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>53187</DevelopmentServerPort>
+          <DevelopmentServerPort>57019</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:53187/</IISUrl>
+          <IISUrl>http://localhost:57019/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

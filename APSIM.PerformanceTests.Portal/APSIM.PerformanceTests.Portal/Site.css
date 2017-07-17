@@ -1,0 +1,84 @@
+﻿
+/*Div Style Definitions*/
+#GridDataDiv {
+    overflow: auto; 
+    /*border: 1px solid black;*/ 
+    width: 900px; 
+    height: 500px;
+}
+#GridDataDiv_POValues {
+    overflow: auto; 
+    /*border: 1px solid black;*/ 
+    width: 950px; 
+    height: 500px;
+}
+
+#footer {
+    position: fixed;
+    bottom: 0px;
+}
+
+
+/*Class Style Definitions*/
+.GridViewStyle {    
+    font-family:  Verdana;
+    font-size: 13px;
+    background-color: White; 
+}
+        
+.GridViewHeaderStyle {
+    font-family:  Verdana;
+    font-size: 14px;
+	color: White;
+	background: #004844 url(Image/gridheader.jpg) repeat-x;
+}
+
+
+.PageHeaderTable {
+    width:100%; 
+}
+.PageHeaderLeft {
+    width:auto; 
+    text-align: left;
+}
+.PageHeaderRight {
+    width:400px; 
+    text-align: right;
+    padding-top: 15px;
+}
+.PageHeaderBar {
+    height: 12px;
+    margin-left: 5px;
+    margin-right: 5px;
+    background-color: #004844;
+    width: 100%;
+}
+.Footer {
+    font-family:  Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 9px;
+    color: #004844;
+}
+
+.SectionTitles {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.ScreenLabel {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+}
+.ScreenText {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.PassedTests {
+    color: green;
+}
+.FailedTests {
+    color: orangered;
+}

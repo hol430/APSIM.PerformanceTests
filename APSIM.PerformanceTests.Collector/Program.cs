@@ -22,9 +22,10 @@ namespace APSIM.PerformanceTests.Collector
 
         static int Main(string[] args)
         {
-
             httpclient.BaseAddress = new Uri("http://www.apsim.info/APSIM.PerformanceTests.Service/");
-            //httpclient.BaseAddress = new Uri("http://localhost:53187/");
+#if DEBUG
+            httpclient.BaseAddress = new Uri("http://localhost:53187/");
+#endif
             httpclient.DefaultRequestHeaders.Accept.Clear();
             httpclient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -59,9 +60,9 @@ namespace APSIM.PerformanceTests.Collector
                     pullId = Int32.Parse(args[1]);
                     runDate = DateTime.ParseExact(args[2], "yyyy.MM.dd-HH:mm", CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal);
 
-                    WriteToLogFile("-------------------------------------------------------------------------------");
+                    WriteToLogFile("  ");
+                    WriteToLogFile("==========================================================");
                     WriteToLogFile(string.Format("Pull Request ID {0}, date {1}, command type: {2} ", pullId.ToString(), runDate.ToString("dd-MM-yyyy HH:mm"), pullCmd));
-
 
                     //(GET) Get all records back
                     //GetAllApsimFiles(httpclient).Wait();
@@ -71,8 +72,6 @@ namespace APSIM.PerformanceTests.Collector
 
                     //(PUT) Update a single record
                     //UpdateApsimFileRequestName(httpclient, 2, "New").Wait();
-
-
 
                     if (pullCmd == "AddToDatabase")
                     {
@@ -84,7 +83,7 @@ namespace APSIM.PerformanceTests.Collector
             catch (Exception ex)
             {
                 retValue = 0;  // unhandled exception - set this to false
-                WriteToLogFile(" ERROR: " + ex.Message.ToString());
+                WriteToLogFile("ERROR: " + ex.Message.ToString());
             }
             return retValue;
         }
@@ -184,12 +183,16 @@ namespace APSIM.PerformanceTests.Collector
         /// <param name="pullId"></param>
         private static void RetrieveData(int pullId, DateTime runDate)
         {
-            //filePath = "C:/Users/cla473/Dropbox/APSIMInitiative/ApsimX/Tests/";
-            //filePath = "\\scoop.apsim.info\c$\Jenkins\workspace/1. GitHub pull request/ApsimX/Tests/";
-            //List<ApsimFile> apsimFiles = new List<ApsimFile>();
+            //"C:/Jenkins/workspace/1. GitHub pull request/ApsimX/Tests/C:/Jenkins/workspace/1. GitHub pull request/ApsimX/Prototypes/";
+
 
             //need to allow for "Tests" and "ProtoTypes" directory
-            string[] filePaths = ConfigurationManager.AppSettings["searchDirectory"].ToString().Split(';');
+            //searchDir = @"C:/ApsimWork/Tests/;C:/ApsimWork/Prototypes/";
+            //searchDir = @"C:/Users/cla473/Dropbox/APSIMInitiative/ApsimX/Tests/;C:/Users/cla473/Dropbox/APSIMInitiative/ApsimX/Prototypes/;";
+
+            string searchDir = ConfigurationManager.AppSettings["searchDirectory"].ToString();
+
+            string[] filePaths = searchDir.Split(';');
 
             foreach (string filePath in filePaths)
             {
@@ -201,7 +204,10 @@ namespace APSIM.PerformanceTests.Collector
                 {
                     try
                     {
+                        //We don't need to save the full pathing here
+                        WriteToLogFile("--------------------------------");
                         WriteToLogFile(string.Format("Apsimx file {0} found, Pull Request Id {1}, dated {2}", fi.FullName, pullId, runDate));
+
                         ApsimFile apsimFile = new ApsimFile();
                         apsimFile.FullFileName = fi.FullName;
                         apsimFile.FileName = Path.GetFileNameWithoutExtension(fi.FullName);
@@ -350,7 +356,7 @@ namespace APSIM.PerformanceTests.Collector
                 }
                 else
                 {
-                     throw new Exception(string.Format("Database {0} does not exist", dbName));
+                     throw new Exception(string.Format("ERROR Database file {0} does not exist", dbName));
                 }
 
                 string ColumnName;
@@ -370,15 +376,8 @@ namespace APSIM.PerformanceTests.Collector
                         {
                             try
                             {
-                                //this will error on null values
-                                //DataTable dtCloned = POdata.Clone();
-                                //dtCloned.Columns[i].DataType = typeof(System.Double);
-                                //foreach (DataRow row in POdata.Rows)
-                                //{
-                                //    dtCloned.ImportRow(row);
-                                //}
-                                //POdata = dtCloned;
-                                //WriteToLogFile(String.Format("ERROR: Datatable {0} column {1} Format Type {2} is not the correct; it should be a numeric column", POdata.TableName, ColumnName, POdata.Columns[i].DataType));
+                                //Update the log file to report incorrect data types
+                                WriteToLogFile(String.Format("        NOTE: {0}.{1} Format Type {2} is not the correct; it should be a numeric column", POdata.TableName, ColumnName, POdata.Columns[i].DataType));
 
                                 ////rename the original
                                 string origCol = "orig" + ColumnName;
@@ -402,7 +401,7 @@ namespace APSIM.PerformanceTests.Collector
                             }
                             catch (Exception ex)
                             {
-                                WriteToLogFile(String.Format("ERROR:  Unable to convert datatable {0} column {1} to double: {2}", POdata.TableName, ColumnName, ex.Message.ToString()));
+                                WriteToLogFile(String.Format("        ERROR:  Unable to convert {0}.{1} to double: {2}", POdata.TableName, ColumnName, ex.Message.ToString()));
                             }
                         }
                         
@@ -500,8 +499,10 @@ namespace APSIM.PerformanceTests.Collector
 
             //To get the location the assembly normally resides on disk or the install directory
             string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-
             returnStr = Path.GetDirectoryName(path) + "\\" + fileName;
+#if DEBUG
+            returnStr = "C:\\ApsimWork\\" + fileName; 
+#endif
             return returnStr;
         }
     }
