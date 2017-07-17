@@ -1,1 +1,1 @@
-﻿<%@ Application Codebehind="Global.asax.cs" Inherits="APSIM.PerformanceTests.Portal.MvcApplication" Language="C#" %>
+﻿<%@ Application Codebehind="Global.asax.cs" Inherits="APSIM.PerformanceTests.Portal.Global" Language="C#" %>

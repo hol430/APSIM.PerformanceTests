@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
 
 
 namespace APSIM.PerformanceTests.Portal.Models
@@ -21,9 +18,9 @@ namespace APSIM.PerformanceTests.Portal.Models
         public string FieldNameUsedForMatch { get; set; }
         public string FieldName2UsedForMatch { get; set; }
         public string FieldName3UsedForMatch { get; set; }
-        public float PassedTests { get; set; }
+        public Nullable<double> PassedTests { get; set; }
 
-        public virtual ApsimFile ApsimFile { get; set; }
+        //public virtual ApsimFile ApsimFile { get; set; }
         //public virtual ICollection<PredictedObservedValue> PredictedObservedValues { get; set; }
     }
 }

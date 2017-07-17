@@ -1,32 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Portal", "APSIM.PerformanceTests.Portal\APSIM.PerformanceTests.Portal.csproj", "{1F88D588-05DD-46E7-877B-FB7DE280F5E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Portal", "APSIM.PerformanceTests.Portal\APSIM.PerformanceTests.Portal.csproj", "{AE6E791B-6946-4273-9B4A-F012845AFF76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		Debug|x86 = Debug|x86
-		DebugAnyCPU|Any CPU = DebugAnyCPU|Any CPU
-		DebugAnyCPU|x86 = DebugAnyCPU|x86
 		Release|Any CPU = Release|Any CPU
-		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.Debug|x86.Build.0 = Debug|Any CPU
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.DebugAnyCPU|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.DebugAnyCPU|Any CPU.Build.0 = Debug|Any CPU
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.DebugAnyCPU|x86.ActiveCfg = Debug|Any CPU
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.DebugAnyCPU|x86.Build.0 = Debug|Any CPU
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.Release|x86.ActiveCfg = Release|Any CPU
-		{1F88D588-05DD-46E7-877B-FB7DE280F5E4}.Release|x86.Build.0 = Release|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
