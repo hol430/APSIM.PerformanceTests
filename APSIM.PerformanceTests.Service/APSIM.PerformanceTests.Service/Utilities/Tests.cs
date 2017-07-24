@@ -42,9 +42,11 @@ namespace APSIM.PerformanceTests.Service
                 DataTable currentTable = new DataTable("StatTests");
                 currentTable.Columns.Add("Variable", typeof(string));
                 currentTable.Columns.Add("Test", typeof(string));
-                //currentTable.Columns.Add("Accepted", typeof(double));
+                currentTable.Columns.Add("Accepted", typeof(double));
                 currentTable.Columns.Add("Current", typeof(double));
-                //currentTable.Columns.Add("AcceptedPredictedObservedTestsID", typeof(int));
+                currentTable.Columns.Add("Difference", typeof(double));
+                currentTable.Columns.Add("PassedTest", typeof(string));
+                currentTable.Columns.Add("AcceptedPredictedObservedTestsID", typeof(int));
 
 
                 MathUtilities.RegrStats[] stats;
@@ -198,28 +200,78 @@ namespace APSIM.PerformanceTests.Service
                 //Now merge this with out Accepted Table
                 if (acceptedStats.Rows.Count > 0)
                 {
-                    DataColumn[] currentKeys = new DataColumn[2];
-                    currentKeys[0] = currentTable.Columns["Variable"];
-                    currentKeys[1] = currentTable.Columns["Test"];
-                    currentTable.PrimaryKey = currentKeys;
+                    foreach (DataRow rowCurrent in currentTable.Rows)
+                    {
+                        DataRow[] rowAccepted = acceptedStats.Select("Variable = '" + rowCurrent["Variable"] + "' AND Test = '" + rowCurrent["Test"] + "'");
 
-                    DataColumn[] acceptedKeys = new DataColumn[2];
-                    acceptedKeys[0] = acceptedStats.Columns["Variable"];
-                    acceptedKeys[1] = acceptedStats.Columns["Test"];
-                    acceptedStats.PrimaryKey = acceptedKeys;
+                        if (rowAccepted.Count() == 0)
+                        {
+                            rowCurrent["Accepted"] = DBNull.Value;
+                            rowCurrent["AcceptedPredictedObservedTestsID"] = DBNull.Value; ;
+                        }
+                        else
+                        {
+                            rowCurrent["Accepted"] = rowAccepted[0]["Accepted"];
+                            rowCurrent["AcceptedPredictedObservedTestsID"] = rowAccepted[0]["AcceptedPredictedObservedTestsID"];
+                        }
+                    }
 
-                    currentTable.Merge(acceptedStats);
+                    ////Need to ensure that both tables contain the same Variable/Test name combinations
+                    //DataView view = new DataView(acceptedStats);
+                    //DataTable acceptedVariables = view.ToTable(true, "Variable");
+
+                    //view = new DataView(currentTable);
+                    //DataTable currentVariables = view.ToTable(true, "Variable");
+                    //DataRow newRow;
+                    //foreach (DataRow acceptedRow in acceptedVariables.Rows)
+                    //{
+                    //    //find match in  currentVariables
+                    //    bool columnFound = false;
+                    //    foreach (DataRow currentRow in currentVariables.Rows)
+                    //    {
+                    //        if (acceptedRow["Variable"].ToString() == currentRow["Variable"].ToString())
+                    //        {
+                    //            columnFound = true;
+                    //            break;
+                    //        }
+                    //    }
+                    //    if (columnFound == false)
+                    //    {
+                    //        //add a record for each of the stats names (ie, n, slope, intercept, etc).
+                    //        for (int j = 1; j < statNames.Count; j++) //start at 1; we don't want Name field.
+                    //        {
+                    //            newRow = currentTable.NewRow();
+                    //            newRow["Variable"] = acceptedRow["Variable"];
+                    //            newRow["Test"] = statNames[j];
+                    //            currentTable.Rows.Add(newRow);
+                    //        }
+                    //        columnFound = true;
+                    //    }
+                    //}
+
+                    //DataColumn[] currentKeys = new DataColumn[2];
+                    //currentKeys[0] = currentTable.Columns["Variable"];
+                    //currentKeys[1] = currentTable.Columns["Test"];
+                    //currentTable.PrimaryKey = currentKeys;
+
+                    //DataColumn[] acceptedKeys = new DataColumn[2];
+                    //acceptedKeys[0] = acceptedStats.Columns["Variable"];
+                    //acceptedKeys[1] = acceptedStats.Columns["Test"];
+                    //acceptedStats.PrimaryKey = acceptedKeys;
+
+
+                    //currentTable.Merge(acceptedStats, false, MissingSchemaAction.AddWithKey);
+
+
                 }
-                else
-                {
-                    currentTable.Columns.Add("Accepted", typeof(double));
-                    currentTable.Columns.Add("AcceptedPredictedObservedTestsID", typeof(int));
-                }
+                //else
+                //{
+                //    currentTable.Columns.Add("Accepted", typeof(double));
+                //    currentTable.Columns.Add("AcceptedPredictedObservedTestsID", typeof(int));
+                //}
 
 
                 //Now add the comparison columns and determine values
-                currentTable.Columns.Add("Difference", typeof(double));
-                currentTable.Columns.Add("PassedTest", typeof(string));
 
                 foreach (DataRow row in currentTable.Rows)
                 {
