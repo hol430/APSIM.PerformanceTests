@@ -12,7 +12,13 @@ namespace APSIM.PerformanceTests.Service.Controllers
 {
     public class PassedTestsController : ApiController
     {
-        //  GET (Read): api/passedtests/333
+        /// <summary>
+        /// Determines whether or not (returning true/false), the PredictdObservedValues for all Apsim Simulation files Pass the testing criteria
+        /// for a specific Pull Request Id
+        ///  Usage:  GET (Read): api/passedtests/333
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         public bool GetPassedTestsStatus(int id)
         {
@@ -27,12 +33,15 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 {
                     double PercentPassed = 0;
 
-                    //strSQL = "SELECT a.[PullRequestId], a.[RunDate], a.[IsReleased], COUNT(CASE WHEN [PassedTests] = 100 THEN 1 ELSE NULL END), COUNT([PassedTests]), "
-                    //       + " 100 * COUNT(CASE WHEN[PassedTests] = 100 THEN 1 ELSE NULL END) / COUNT([PassedTests]) as PercentPassed "
-                    //       + " FROM  [dbo].[ApsimFiles] AS a "
-                    //       + "    INNER JOIN[dbo].[PredictedObservedDetails] AS p ON a.ID = p.ApsimFilesID "
-                    //       + "  WHERE a.[PullRequestId] = @PullRequestId "
-                    //       + "  GROUP BY a.[PullRequestId], a.[RunDate], a.[IsReleased] ";
+                    //This example will return all records - for testing only
+                    //DECLARE @PullRequestId INT
+                    //SET @PullRequestId = 1776
+                    //SELECT a.[PullRequestId], a.[RunDate], a.[IsReleased], COUNT(CASE WHEN [PassedTests] = 100 THEN 1 ELSE NULL END), COUNT([PassedTests]), 
+                    // 100 * COUNT(CASE WHEN[PassedTests] = 100 THEN 1 ELSE NULL END) / COUNT([PassedTests]) as PercentPassed 
+                    // FROM  [dbo].[ApsimFiles] AS a 
+                    //   INNER JOIN[dbo].[PredictedObservedDetails] AS p ON a.ID = p.ApsimFilesID 
+                    //  WHERE a.[PullRequestId] = @PullRequestId 
+                    //  GROUP BY a.[PullRequestId], a.[RunDate], a.[IsReleased] 
 
                     string strSQL = "SELECT  100 * COUNT(CASE WHEN[PassedTests] = 100 THEN 1 ELSE NULL END) / COUNT([PassedTests]) as PercentPassed "
                                   + " FROM  [dbo].[ApsimFiles] AS a "

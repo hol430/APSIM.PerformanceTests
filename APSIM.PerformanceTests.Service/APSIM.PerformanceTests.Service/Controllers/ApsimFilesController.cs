@@ -19,8 +19,11 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
     public class ApsimFilesController : ApiController
     {
-
-        //  GET (Read): api/apsimfiles/ 
+        /// <summary>
+        /// Returns all ApsimFile details
+        /// Usage:  GET (Read): api/apsimfiles/
+        /// </summary>
+        /// <returns></returns>
         public List<ApsimFile> GetAllApsimFiles()
         {
             List<ApsimFile> apsimFiles = new List<ApsimFile>();
@@ -28,7 +31,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
             using (SqlConnection con = new SqlConnection(connectStr))
             {
-                string strSQL = "SELECT * FROM ApsimFiles";
+                string strSQL = "SELECT * FROM ApsimFiles ORDER BY RunDate DESC, PullRequestId ";
                 using (SqlCommand command = new SqlCommand(strSQL, con))
                 {
                     command.CommandType = CommandType.Text;
@@ -52,7 +55,12 @@ namespace APSIM.PerformanceTests.Service.Controllers
         }
 
 
-        //  GET (Read): api/apsimfiles/5 
+        /// <summary>
+        /// Returns the details of Apsim Files, based on the Pull Request ID
+        ///  Usage:  GET (Read): api/apsimfiles/5 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [ResponseType(typeof(ApsimFile))]
         public List<ApsimFile> GetApsimFile(int id)
         {
@@ -61,7 +69,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
             using (SqlConnection con = new SqlConnection(connectStr))
             {
-                string strSQL = "SELECT * FROM ApsimFiles WHERE PullRequestId = @PullRequestId";
+                string strSQL = "SELECT * FROM ApsimFiles WHERE PullRequestId = @PullRequestId ORDER BY RunDate DESC";
                 using (SqlCommand command = new SqlCommand(strSQL, con))
                 {
                     command.CommandType = CommandType.Text;
@@ -85,79 +93,15 @@ namespace APSIM.PerformanceTests.Service.Controllers
             return apsimFiles;
         }
 
-        //  GET (Read): api/apsimfiles/333/true  (was a put)
-        public List<ApsimFile> GetApsimFileUpdatedIsReleased(int id, bool releaseStatus)
-        {
-            List<ApsimFile> apsimFiles = new List<ApsimFile>();
 
-            try
-            {
-                string connectStr = Utilities.GetConnectionString();
-                Utilities.WriteToLogFile("-----------------------------------");
-
-                int IsReleased = Convert.ToInt32(releaseStatus);
-                using (SqlConnection con = new SqlConnection(connectStr))
-                {
-                    string strSQL = "UPDATE ApsimFiles SET IsReleased = @IsReleased WHERE PullRequestId = @PullRequestId";
-                    using (SqlCommand command = new SqlCommand(strSQL, con))
-                    {
-                        command.CommandType = CommandType.Text;
-                        command.Parameters.AddWithValue("@IsReleased", IsReleased);
-                        command.Parameters.AddWithValue("@PullRequestId", id);
-                        con.Open();
-                        command.ExecuteNonQuery();
-                        con.Close();
-                    }
-                }
-                apsimFiles = GetApsimFile(id);
-                Utilities.WriteToLogFile(string.Format("Pull Request Id {0}, updated IsReleased as {1} on {2}!", id.ToString(), releaseStatus.ToString(), System.DateTime.Now.ToString("dd/mm/yyyy HH:mm")));
-            }
-
-            catch (Exception ex)
-            {
-                Utilities.WriteToLogFile(string.Format("ERROR:  Pull Request Id {0}, Failed to update as Release version: {1}", id.ToString(), ex.Message.ToString()));
-            }
-            return apsimFiles; ;
-
-        }
-
-        // PUT (Update): api/apsimfiles/1638/true
-        [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutApsimFileIsReleased(int id, bool releaseStatus)
-        {
-            try
-            {
-                //do the changes here
-                string connectStr = Utilities.GetConnectionString();
-
-                Utilities.WriteToLogFile("-----------------------------------");
-
-                int IsReleased = Convert.ToInt32(releaseStatus);
-                using (SqlConnection con = new SqlConnection(connectStr))
-                {
-                    string strSQL = "UPDATE ApsimFiles SET IsReleased = @IsReleased WHERE PullRequestId = @PullRequestId";
-                    using (SqlCommand command = new SqlCommand(strSQL, con))
-                    {
-                        command.CommandType = CommandType.Text;
-                        command.Parameters.AddWithValue("@IsReleased", IsReleased);
-                        command.Parameters.AddWithValue("@PullRequestId", id);
-                        con.Open();
-                        command.ExecuteNonQuery();
-                        con.Close();
-                    }
-                }
-                Utilities.WriteToLogFile(string.Format("Pull Request Id {0}, updated IsReleased as {1} on {2}!", id.ToString(), releaseStatus.ToString(), System.DateTime.Now.ToString("dd/mm/yyyy HH:mm")));
-                return StatusCode(HttpStatusCode.NoContent);
-            }
-
-            catch (Exception ex)
-            {
-                Utilities.WriteToLogFile(string.Format("ERROR:  Pull Request Id {0}, Failed to update as Release version: {1}", id.ToString(), ex.Message.ToString()));
-                return StatusCode(HttpStatusCode.NoContent);
-            }
-        }
-
-        //DELETE : api/apsimfiles/ID
+        /// <summary>
+        /// NOTE:  This is intended for localhost use only, will not work on production server
+        /// Deletes all files (ApsimFiles, PredictedObservedDetails, PredictedObservedValues, PredictedObservedTests and Simualtions) for
+        /// the specified Pull Request Id
+        /// Usage:  DELETE : api/apsimfiles/ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [ResponseType(typeof(void))]
         public async Task<IHttpActionResult> DeleteByPullRequestId(int id)
         {
@@ -180,7 +124,12 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
 
 
-        // POST (Create): api/apsimfiles/ apsimfile
+        /// <summary>
+        /// This takes the ApsimFile data, and provided from the APSIM.PerformanceTests.Collector and saves all of the date to the database
+        /// Usage:  POST (Create): api/apsimfiles/ apsimfile
+        /// </summary>
+        /// <param name="apsimfile"></param>
+        /// <returns></returns>
         [ResponseType(typeof(ApsimFile))]
         public async Task<IHttpActionResult> PostApsimFile(ApsimFile apsimfile)
         {
@@ -204,11 +153,12 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 int pullRequestCount = 0;
                 using (SqlConnection con = new SqlConnection(connectStr))
                 {
-                    strSQL = "SELECT COUNT(ID) FROM ApsimFiles WHERE PullRequestId = @PullRequestId";
+                    strSQL = "SELECT COUNT(ID) FROM ApsimFiles WHERE PullRequestId = @PullRequestId AND RunDate != @RunDate";
                     using (SqlCommand command = new SqlCommand(strSQL, con))
                     {
                         command.CommandType = CommandType.Text;
                         command.Parameters.AddWithValue("@PullRequestId", apsimfile.PullRequestId);
+                        command.Parameters.AddWithValue("@RunDate", apsimfile.RunDate);
 
                         con.Open();
                         pullRequestCount = (int)command.ExecuteScalar();
@@ -217,7 +167,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 }
                 if (pullRequestCount > 0)
                 {
-                    DeleteByPullRequest(connectStr, apsimfile.PullRequestId);
+                    DeleteByPullRequestRunDate(connectStr, apsimfile.PullRequestId, apsimfile.RunDate);
                     Utilities.WriteToLogFile("    Removed original Pull Request Data.");
                 }
 
@@ -483,29 +433,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
                                     con.Close();
                                 }
                             }
-
-                            //NOT sure the following is 'necessary' - NOT DONE YET
-                            //TODO: Need to update the PredictedObservedValues 'Accepted' reference agains the 'Current' PredictedObservedValues.
-                            //using (SqlConnection con = new SqlConnection(connectStr))
-                            //{
-                            //    strSQL = "usp_UpdatePredictedObservedValues_AcceptedID";
-                            //    using (SqlCommand command = new SqlCommand(strSQL, con))
-                            //    {
-                            //        command.CommandType = CommandType.StoredProcedure;
-                            //        command.Parameters.AddWithValue("@AcceptedPredictedObservedDetailsID", acceptedPredictedObservedDetailsID);
-                            //        command.Parameters.AddWithValue("@CurrentPredictedObservedDetailsID", predictedObservedID);
-
-                            //        ErrMessageHelper = "- Updating 'Accepted' PredictedObservedValuesID for Current PredictedObservedValues.";
-                            //        con.Open();
-                            //        command.ExecuteNonQuery();
-                            //        con.Close();
-                            //    }
-                            //}
-
                         }
-
                     }
-
                 }   //foreach (PredictedObservedDetails poDetail in apsimfile.PredictedObserved)
 
                 return CreatedAtRoute("DefaultApi", new { id = ApsimID }, apsimfile);
@@ -518,7 +447,15 @@ namespace APSIM.PerformanceTests.Service.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Returns the PredictedObservedTests data for 'Accepted' data set, based on matching 'Current' Details
+        /// </summary>
+        /// <param name="conStr"></param>
+        /// <param name="currentApsim"></param>
+        /// <param name="poDetail"></param>
+        /// <param name="predictedObservedId"></param>
+        /// <param name="acceptedPredictedObservedDetailsID"></param>
+        /// <returns></returns>
         private static DataTable RetrieveAcceptedStatsData(string conStr, ApsimFile currentApsim, PredictedObservedDetails poDetail, int predictedObservedId, ref int acceptedPredictedObservedDetailsID)
         {
             try
@@ -546,7 +483,6 @@ namespace APSIM.PerformanceTests.Service.Controllers
                             acceptedApsim.IsReleased = sdReader.GetBoolean(5);
                         }
                         con.Close();
-
                     }
                 };
 
@@ -578,7 +514,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         {
                             command.CommandType = CommandType.Text;
                             command.Parameters.AddWithValue("@PullRequestId", acceptedApsim.PullRequestId);
-                            command.Parameters.AddWithValue("@filename", acceptedApsim.FileName);
+                            command.Parameters.AddWithValue("@filename", currentApsim.FileName);
                             command.Parameters.AddWithValue("@tablename", poDetail.DatabaseTableName);
                             command.Parameters.AddWithValue("@predictedTableName", poDetail.PredictedTableName);
                             command.Parameters.AddWithValue("@observedTableName", poDetail.ObservedTableName);
@@ -637,6 +573,11 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
         }
 
+        /// <summary>
+        /// Deletes all Data for a specified Pull RequestId
+        /// </summary>
+        /// <param name="connectStr"></param>
+        /// <param name="pullRequestId"></param>
         private static void DeleteByPullRequest(string connectStr, int pullRequestId)
         {
             using (SqlConnection con = new SqlConnection(connectStr))
@@ -654,11 +595,17 @@ namespace APSIM.PerformanceTests.Service.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes all Data for a specified Pull RequestId, excluding those for this Run Date
+        /// </summary>
+        /// <param name="connectStr"></param>
+        /// <param name="pullRequestId"></param>
+        /// <param name="runDate"></param>
         private static void DeleteByPullRequestRunDate(string connectStr, int pullRequestId, DateTime runDate)
         {
             using (SqlConnection con = new SqlConnection(connectStr))
             {
-                using (SqlCommand command = new SqlCommand("usp_DeleteByPullRequestIdRunDate", con))
+                using (SqlCommand command = new SqlCommand("usp_DeleteByPullRequestIdButNotRunDate", con))
                 {
                     // Configure the command and parameter.
                     command.CommandType = CommandType.StoredProcedure;

@@ -59,7 +59,9 @@ namespace APSIM.PerformanceTests.Collector
                     }
                     pullId = Int32.Parse(args[1]);
                     runDate = DateTime.ParseExact(args[2], "yyyy.MM.dd-HH:mm", CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal);
-
+#if DEBUG
+                    runDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 0);
+#endif
                     WriteToLogFile("  ");
                     WriteToLogFile("==========================================================");
                     WriteToLogFile(string.Format("Pull Request ID {0}, date {1}, command type: {2} ", pullId.ToString(), runDate.ToString("dd-MM-yyyy HH:mm"), pullCmd));
@@ -88,7 +90,11 @@ namespace APSIM.PerformanceTests.Collector
             return retValue;
         }
 
-
+        /// <summary>
+        /// Gets all of the ApsimFiles from the WebAPI
+        /// </summary>
+        /// <param name="cons"></param>
+        /// <returns></returns>
         private static async Task GetAllApsimFiles(HttpClient cons)
         {
             HttpResponseMessage response = await cons.GetAsync("api/apsimfiles");
@@ -165,6 +171,7 @@ namespace APSIM.PerformanceTests.Collector
             return param == "-h" || param == "--help" || param == "/?";
         }
 
+
         private static void DisplayHelp()
         {
 
@@ -177,6 +184,7 @@ namespace APSIM.PerformanceTests.Collector
         }
 
         /// <summary>
+        /// THIS IS THE MAIN FUNCTION WITHIN THIS PROGRAM
         /// Retreieves all Apsimx simulation files with for the search directory specified in the App.config file
         /// and then process these files
         /// </summary>
@@ -193,6 +201,8 @@ namespace APSIM.PerformanceTests.Collector
             string searchDir = ConfigurationManager.AppSettings["searchDirectory"].ToString();
 
             string[] filePaths = searchDir.Split(';');
+            
+
 
             foreach (string filePath in filePaths)
             {
@@ -417,6 +427,12 @@ namespace APSIM.PerformanceTests.Collector
             }
         }
 
+        /// <summary>
+        /// Returns the Simulation dataTable from the SQLite database for a specific PredictedObserved TableName
+        /// </summary>
+        /// <param name="predictedObservedName"></param>
+        /// <param name="databasePath"></param>
+        /// <returns></returns>
         private static DataTable GetSimulationDataTable(string predictedObservedName, string databasePath)
         {
             DataTable simData = new DataTable("Simulations");
