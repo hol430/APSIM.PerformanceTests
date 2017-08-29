@@ -20,6 +20,12 @@ namespace APSIM.PerformanceTests.Portal.Models
         public string FieldName3UsedForMatch { get; set; }
         public Nullable<double> PassedTests { get; set; }
 
+        public int HasTests { get; set; }
+
+
+        //[ForeignKey("PredictedObservedDetail.ID")]
+        public Nullable<int> AcceptedPredictedObservedDetailsID { get; set; }
+
         //public virtual ApsimFile ApsimFile { get; set; }
         //public virtual ICollection<PredictedObservedValue> PredictedObservedValues { get; set; }
     }

@@ -14,10 +14,14 @@ namespace APSIM.PerformanceTests.Portal.Models
 
         public string Variable { get; set; }
         public string Test { get; set; }
-        public double Accepted { get; set; }
-        public double Current { get; set; }
-        public double Difference { get; set; }
-        public bool PassedTest { get; set; }
+        public Nullable<double> Accepted { get; set; }
+        public Nullable<double> Current { get; set; }
+        public Nullable<double> Difference { get; set; }
+        public Nullable<bool> PassedTest { get; set; }
+
+        //[ForeignKey("PredictedObservedTest.ID")]
+        public Nullable<int> AcceptedPredictedObservedTestsID { get; set; }
+
 
         //public virtual PredictedObservedDetail PredictedObservedDetail { get; set; }
     }

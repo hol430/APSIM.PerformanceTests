@@ -11,7 +11,10 @@ namespace APSIM.PerformanceTests.Models
         public string FileName { get; set; }
         public string FullFileName { get; set; }
         public DateTime RunDate { get; set; }
-        public bool IsReleased { get; set; }
+        public bool StatsAccepted { get; set; }
+        public bool IsMerged { get; set; }
+        public string SubmitDetails { get; set; }
+
 
         public DataTable Simulations { get; set; }
 

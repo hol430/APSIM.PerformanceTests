@@ -12,33 +12,12 @@ namespace APSIM.PerformanceTests.Service
     public class Tests
     {
         /// <summary>
-        /// A collection of validated stats.
-        /// </summary>
-        //[APSIM.Shared.Soils.Description("An array of validated regression stats.")]
-        //public static MathUtilities.RegrStats[] acceptedStats { get; set; }
-
-        /// <summary>
-        /// A string containing the names of stats in the accepted values.
-        /// Used for checking if the stats class has changed.
-        /// </summary>
-        //public static string AcceptedStatsName { get; set; }
-
-        /// <summary>
-        /// The name of the associated Predicted Observed node.
-        /// </summary>
-        //public static string POName { get; set; }
-
-        /// <summary>
         /// Run tests
         /// </summary>
         public static DataTable DoValidationTest(string PO_Name, DataTable POtable, DataTable acceptedStats)
         {
             try
             {
-                //PredictedObserved PO = Parent as PredictedObserved;
-                //if (PO == null)
-                //    return;
-                //DataStore DS = PO.Parent as DataStore;
                 DataTable currentTable = new DataTable("StatTests");
                 currentTable.Columns.Add("Variable", typeof(string));
                 currentTable.Columns.Add("Test", typeof(string));
@@ -48,21 +27,9 @@ namespace APSIM.PerformanceTests.Service
                 currentTable.Columns.Add("PassedTest", typeof(string));
                 currentTable.Columns.Add("AcceptedPredictedObservedTestsID", typeof(int));
 
-
                 MathUtilities.RegrStats[] stats;
                 List<string> statNames = (new MathUtilities.RegrStats()).GetType().GetFields().Select(f => f.Name).ToList(); // use reflection, get names of stats available
-                //DataTable POtable = DS.GetData("*", PO.Name);
                 List<string> columnNames;
-                string sigIdent = "0";   //false   (1 = true)
-
-                if (POtable == null)
-                {
-                    //object sim = PO.Parent;
-                    //while (sim as Simulations == null)
-                    //    sim = ((Model)sim).Parent;
-
-                    //throw new ApsimXException(this, "Could not find PO table in " + (sim != null ? ((Simulations)sim).FileName : "<unknown>") + ". Has the simulation been run?");
-                }
 
                 columnNames = POtable.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList(); //get list of column names
                 columnNames = columnNames.Where(c => c.Contains("Observed")).ToList(); //filter names that are not pred/obs pairs
@@ -120,57 +87,9 @@ namespace APSIM.PerformanceTests.Service
                         columnNames.RemoveAt(i);
                 }
 
-                //turn stats array into a DataTable
-                //first, check if there is already an AcceptedStats array, create if not.
-                //If the names don't match, then use current stats as user has dragged
-                //an already existing Test to a new node.
-                //if (acceptedStats == null)
-                //{
-                //    throw new Exception("Tests Error:  Accepted Stats do not exist for this.");
-                //    acceptedStats = stats;
-                //    AcceptedStatsName = StringUtilities.Build(statNames, " ");
-                //}
-
-                //then make sure the names and order of the accepted stats are the same as the new ones.
-                //if (StringUtilities.Build(statNames, " ") != AcceptedStatsName)
-                //{
-                //    throw new Exception("Tests Error:  Names, number or order of accepted stats do not match class MathUtilities.RegrStats. The class has probably changed.");
-                //}
-
-                //double accepted;
                 double current;
-
-                //DataTable AcceptedTable = Table.Copy();
-                //DataTable CurrentTable = currentTable.Copy();
-
                 DataRow tRow;
                 bool hasValue;
-                ////accepted table
-                //for (int i = 0; i < acceptedStats.Count(); i++)
-                //{
-                //    for (int j = 1; j < statNames.Count; j++) //start at 1; we don't want Name field.
-                //    {
-                //        accepted = Math.Round(Convert.ToDouble(acceptedStats[i].GetType().GetField(statNames[j]).GetValue(acceptedStats[i])),6);
-                //        //AcceptedTable.Rows.Add(PO_Name, AcceptedStats[i].Name, statNames[j],  accepted, null, null, null);
-
-                //        tRow = AcceptedTable.NewRow();
-                //        tRow["Name"] = PO_Name;
-                //        tRow["Variable"] = acceptedStats[i].Name;
-                //        tRow["Test"] = statNames[j];
-
-                //        hasValue = true;
-                //        if (double.IsNaN(accepted) == true) { hasValue = false; }
-                //        if (double.IsInfinity(accepted) == true) { hasValue = false; }
-                //        if (hasValue == true)
-                //        {
-                //            tRow["Accepted"] = accepted;
-                //        }
-                //        AcceptedTable.Rows.Add(tRow);
-                //    }
-                //}
-
-                //current table
-                //Table = AcceptedTable.Copy();
 
                 //Loop through stats and put them into a datatable
                 int rowIndex = 0;
@@ -215,90 +134,28 @@ namespace APSIM.PerformanceTests.Service
                             rowCurrent["AcceptedPredictedObservedTestsID"] = rowAccepted[0]["AcceptedPredictedObservedTestsID"];
                         }
                     }
-
-                    ////Need to ensure that both tables contain the same Variable/Test name combinations
-                    //DataView view = new DataView(acceptedStats);
-                    //DataTable acceptedVariables = view.ToTable(true, "Variable");
-
-                    //view = new DataView(currentTable);
-                    //DataTable currentVariables = view.ToTable(true, "Variable");
-                    //DataRow newRow;
-                    //foreach (DataRow acceptedRow in acceptedVariables.Rows)
-                    //{
-                    //    //find match in  currentVariables
-                    //    bool columnFound = false;
-                    //    foreach (DataRow currentRow in currentVariables.Rows)
-                    //    {
-                    //        if (acceptedRow["Variable"].ToString() == currentRow["Variable"].ToString())
-                    //        {
-                    //            columnFound = true;
-                    //            break;
-                    //        }
-                    //    }
-                    //    if (columnFound == false)
-                    //    {
-                    //        //add a record for each of the stats names (ie, n, slope, intercept, etc).
-                    //        for (int j = 1; j < statNames.Count; j++) //start at 1; we don't want Name field.
-                    //        {
-                    //            newRow = currentTable.NewRow();
-                    //            newRow["Variable"] = acceptedRow["Variable"];
-                    //            newRow["Test"] = statNames[j];
-                    //            currentTable.Rows.Add(newRow);
-                    //        }
-                    //        columnFound = true;
-                    //    }
-                    //}
-
-                    //DataColumn[] currentKeys = new DataColumn[2];
-                    //currentKeys[0] = currentTable.Columns["Variable"];
-                    //currentKeys[1] = currentTable.Columns["Test"];
-                    //currentTable.PrimaryKey = currentKeys;
-
-                    //DataColumn[] acceptedKeys = new DataColumn[2];
-                    //acceptedKeys[0] = acceptedStats.Columns["Variable"];
-                    //acceptedKeys[1] = acceptedStats.Columns["Test"];
-                    //acceptedStats.PrimaryKey = acceptedKeys;
-
-
-                    //currentTable.Merge(acceptedStats, false, MissingSchemaAction.AddWithKey);
-
-
                 }
-                //else
-                //{
-                //    currentTable.Columns.Add("Accepted", typeof(double));
-                //    currentTable.Columns.Add("AcceptedPredictedObservedTestsID", typeof(int));
-                //}
-
 
                 //Now add the comparison columns and determine values
 
+                string sigIdent = "0";   //false   (1 = true)
                 foreach (DataRow row in currentTable.Rows)
                 {
-                    //DataRow[] rowAccepted = AcceptedTable.Select("Name = '" + row["Name"] + "' AND Variable = '" + row["Variable"] + "' AND Test = '" + row["Test"] + "'");
-                    //DataRow[] rowCurrent = CurrentTable.Select("Name = '" + row["Name"] + "' AND Variable = '" + row["Variable"] + "' AND Test = '" + row["Test"] + "'");
-
-                    //if (rowAccepted.Count() == 0)
-                    //    row["Accepted"] = DBNull.Value;
-                    //else
-                    //    row["Accepted"] = rowAccepted[0]["Accepted"];
-
-                    //if (rowCurrent.Count() == 0)
-                    //    row["Current"] = DBNull.Value;
-                    //else
-                    //    row["Current"] = rowCurrent[0]["Current"];
-
                     //If we are starting from scratch, then set the Accepted the same as the Current.
                     if (acceptedStats.Rows.Count <= 0)
                     {
                         row["Accepted"] = row["Current"];
                     }
 
-
                     if (row["Accepted"] != DBNull.Value && row["Current"] != DBNull.Value)
                     {
                         row["Difference"] = Convert.ToDouble(row["Current"]) - Convert.ToDouble(row["Accepted"]);
                         row["PassedTest"] = Math.Abs(Convert.ToDouble(row["Difference"])) > Math.Abs(Convert.ToDouble(row["Accepted"])) * 0.01 ? sigIdent : "1";
+                    }
+                    else if (row["Accepted"] == DBNull.Value && row["Current"] == DBNull.Value)
+                    {
+                        //if the tests are both null, ie where n=1 and the other stats don't calculate, then make sure that we dont update the passed tests value.
+                        row["PassedTest"] = DBNull.Value;       
                     }
                     else
                     {
@@ -307,9 +164,6 @@ namespace APSIM.PerformanceTests.Service
                     }
                 }
 
-                //Tables could be large so free the memory.
-                //AcceptedTable = null;
-                //CurrentTable = null;
                 //Need to ensure that the order of the columns in the Datatable matches our table type
                 currentTable.Columns["Variable"].SetOrdinal(0);
                 currentTable.Columns["Test"].SetOrdinal(1);

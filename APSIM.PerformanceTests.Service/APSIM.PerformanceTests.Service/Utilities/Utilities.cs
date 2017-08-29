@@ -26,8 +26,8 @@ namespace APSIM.PerformanceTests.Service
 
         public static string GetConnectionString()
         {
-            string file = @"D:\Websites\dbConnect.txt";
             string connectionString = string.Empty;
+            string file = @"D:\Websites\dbConnect.txt";
 #if DEBUG
             file = @"C:\Dev\PerformanceTests\dbConnect.txt";
 #endif
@@ -44,6 +44,41 @@ namespace APSIM.PerformanceTests.Service
             }
         }
 
+        public static string GetGitHubToken()
+        {
+            string tokenString = string.Empty;
+            string file = @"D:\Websites\GitHubToken.txt";
+#if DEBUG
+            file =@"C:\Dev\PerformanceTests\GitHubToken.txt";
+#endif
+            try
+            {
+                tokenString = File.ReadAllText(file);
+            }
+            catch (Exception ex)
+            {
+                WriteToLogFile("ERROR: Unable to retrieve GitHub Token: " + ex.Message.ToString());
+            }
+            return tokenString;
+        }
+
+        public static string GetStatsAcceptedToken()
+        {
+            string tokenString = string.Empty;
+            string file = @"D:\Websites\PerformanceTestsStatsAcceptedToken.txt";
+#if DEBUG
+            file = @"C:\Dev\PerformanceTests\PerformanceTestsStatsAcceptedToken.txt";
+#endif
+            try
+            {
+                tokenString = File.ReadAllText(file);
+            }
+            catch (Exception ex)
+            {
+                WriteToLogFile("ERROR: Unable to retrieve AcceptedStats Token: " + ex.Message.ToString());
+            }
+            return tokenString;
+        }
 
 
         public static void WriteToLogFile(string message)

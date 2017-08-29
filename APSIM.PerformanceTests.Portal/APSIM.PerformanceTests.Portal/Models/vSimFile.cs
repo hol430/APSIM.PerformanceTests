@@ -14,7 +14,8 @@ namespace APSIM.PerformanceTests.Portal.Models
         public string FileName { get; set; }
         public string FullFileName { get; set; }
         public System.DateTime RunDate { get; set; }
-        public Nullable<bool> IsReleased { get; set; }
+        public Nullable<bool> StatsAccepted { get; set; }
+        public string SubmitDetails { get; set; }
 
         public int PredictedObservedID { get; set; }
         //this is purely for use im the grid - need to have a string value (not an int)

@@ -15,12 +15,14 @@ namespace APSIM.PerformanceTests.Portal.Models
         {
         }
 
+
         //these are in the database
         public virtual DbSet<ApsimFile> ApsimFiles { get; set; }
         public virtual DbSet<PredictedObservedDetail> PredictedObservedDetails { get; set; }
         public virtual DbSet<PredictedObservedTest> PredictedObservedTests { get; set; }
         public virtual DbSet<PredictedObservedValue> PredictedObservedValues { get; set; }
         public virtual DbSet<Simulation> Simulations { get; set; }
+        public virtual DbSet<AcceptStatsLog> AcceptStatsLogs  { get; set; }
 
 
         /// <summary>

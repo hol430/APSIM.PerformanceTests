@@ -45,7 +45,9 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         apsim.FileName = reader.GetString(2);
                         apsim.FullFileName = reader.GetString(3);
                         apsim.RunDate = reader.GetDateTime(4);
-                        apsim.IsReleased = reader.GetBoolean(5);
+                        apsim.StatsAccepted = reader.GetBoolean(5);
+                        apsim.IsMerged = reader.GetBoolean(6);
+                        apsim.SubmitDetails = reader.GetString(7);
                         apsimFiles.Add(apsim);
                     }
                     con.Close();
@@ -84,7 +86,9 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         apsim.FileName = reader.GetString(2);
                         apsim.FullFileName = reader.GetString(3);
                         apsim.RunDate = reader.GetDateTime(4);
-                        apsim.IsReleased = reader.GetBoolean(5);
+                        apsim.StatsAccepted = reader.GetBoolean(5);
+                        apsim.IsMerged = reader.GetBoolean(6);
+                        apsim.SubmitDetails = reader.GetString(7);
                         apsimFiles.Add(apsim);
                     }
                     con.Close();
@@ -176,7 +180,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 //--------------------------------------------------------------------------------------
                 using (SqlConnection con = new SqlConnection(connectStr))
                 {
-                    strSQL = "INSERT INTO ApsimFiles (PullRequestId, FileName, FullFileName, RunDate, IsReleased) OUTPUT INSERTED.ID Values (@PullRequestId, @FileName, @FullFileName, @RunDate, @IsReleased)";
+                    strSQL = "INSERT INTO ApsimFiles (PullRequestId, FileName, FullFileName, RunDate, StatsAccepted, IsMerged, SubmitDetails) "
+                            + " OUTPUT INSERTED.ID Values ("
+                            + "@PullRequestId, @FileName, @FullFileName, @RunDate, @StatsAccepted, @IsMerged, @SubmitDetails "
+                            + " )";
                     using (SqlCommand command = new SqlCommand(strSQL, con))
                     {
                         command.CommandType = CommandType.Text;
@@ -184,7 +191,9 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         command.Parameters.AddWithValue("@FileName", apsimfile.FileName);
                         command.Parameters.AddWithValue("@FullFileName", Utilities.GetModifiedFileName(apsimfile.FullFileName));
                         command.Parameters.AddWithValue("@RunDate", apsimfile.RunDate);
-                        command.Parameters.AddWithValue("@IsReleased", apsimfile.IsReleased);
+                        command.Parameters.AddWithValue("@StatsAccepted", apsimfile.StatsAccepted);
+                        command.Parameters.AddWithValue("@IsMerged", apsimfile.IsMerged);
+                        command.Parameters.AddWithValue("@SubmitDetails", apsimfile.SubmitDetails);
 
 
                         //this should return the IDENTITY value for this record (which is required for the next update)
@@ -371,8 +380,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         ErrMessageHelper = string.Empty;
                         Utilities.WriteToLogFile(string.Format("    Tests Data for {0}.{1} import started.", apsimfile.FileName, poDetail.DatabaseTableName));
 
-                        //need to retrieve data for the "IsReleased" version, so that we can update the stats
-                        //Get the 'IsRelease' Pull request id
+                        //need to retrieve data for the "AcceptedStats" version, so that we can update the stats
                         int acceptedPredictedObservedDetailsID = 0;    //this should get updated in 'RetrieveAcceptedStatsData' 
                         DataTable acceptedStats = RetrieveAcceptedStatsData(connectStr, apsimfile, poDetail, predictedObservedID, ref acceptedPredictedObservedDetailsID);
 
@@ -436,7 +444,6 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         }
                     }
                 }   //foreach (PredictedObservedDetails poDetail in apsimfile.PredictedObserved)
-
                 return CreatedAtRoute("DefaultApi", new { id = ApsimID }, apsimfile);
             }
 
@@ -463,7 +470,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 DataTable acceptedStats = new DataTable();
                 ApsimFile acceptedApsim = new ApsimFile();
 
-                string strSQL = "SELECT TOP 1 * FROM ApsimFiles WHERE IsReleased = 1 AND PullRequestId != @PullRequestId ORDER BY RunDate DESC";
+                string strSQL = "SELECT TOP 1 * FROM ApsimFiles WHERE StatsAccepted = 1 AND PullRequestId != @PullRequestId ORDER BY RunDate DESC";
                 using (SqlConnection con = new SqlConnection(conStr))
                 {
                     using (SqlCommand command = new SqlCommand(strSQL, con))
@@ -480,7 +487,9 @@ namespace APSIM.PerformanceTests.Service.Controllers
                             acceptedApsim.FileName = sdReader.GetString(2);
                             acceptedApsim.FullFileName = sdReader.GetString(3);
                             acceptedApsim.RunDate = sdReader.GetDateTime(4);
-                            acceptedApsim.IsReleased = sdReader.GetBoolean(5);
+                            acceptedApsim.StatsAccepted = sdReader.GetBoolean(5);
+                            acceptedApsim.IsMerged = sdReader.GetBoolean(6);
+                            acceptedApsim.SubmitDetails = sdReader.GetString(7);
                         }
                         con.Close();
                     }
