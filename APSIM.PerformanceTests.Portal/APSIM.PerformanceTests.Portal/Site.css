@@ -19,10 +19,11 @@
     height: 500px;
     border: 1px solid black;
 }
+
 #GridDataDiv_POTests {
     overflow: auto; 
     /*border: 1px solid black;*/ 
-    width: 820px; 
+    width: 870px; 
     height: 400px;
     border: 1px solid black;
 }
@@ -32,23 +33,20 @@
     bottom: 0px;
 }
 
-
- .modalBackground
-{
+ .modalBackground {
       background-color: White;
       filter: alpha(opacity=50);
       opacity: 0.7;
 }
-.modalPopup
-{
+.modalPopup {
     background-color: #FFFFFF;
     border-width: 3px;
     border-style: solid;
     border-color: black;
     padding-top: 10px;
     padding-left: 10px;
-    width: 450px;
-    height: 230px;
+    width: 500px;
+    height: 250px;
 }
 
 .GridHeader, .GridHeader_Left, .GridHeader_Row1, .GridHeader_Row2 {
@@ -82,6 +80,12 @@
     background-color: White; 
 }
 
+.GridViewStyle_DropDown {    
+    font-family:  Verdana;
+    font-size: 11px;
+    background-color: White; 
+}
+
 .GridViewStyle_POValues {    
     font-family:  Verdana;
     font-size: 12px;
@@ -91,6 +95,13 @@
 .GridViewHeaderStyle {
     font-family:  Verdana;
     font-size: 13px;
+	color: White;
+	background: #004844 url(Image/gridheader.jpg) repeat-x;
+}
+.GridViewHeaderStyle_DropDown {
+    font-family:  Verdana;
+    font-size: 11px;
+    font-weight: bold;
 	color: White;
 	background: #004844 url(Image/gridheader.jpg) repeat-x;
 }
@@ -105,6 +116,12 @@
 
 .GridViewRowStyle {
     height: 25px;
+}
+
+.invisibleColumn
+{
+    display: none;
+    width: 0px;
 }
 
 

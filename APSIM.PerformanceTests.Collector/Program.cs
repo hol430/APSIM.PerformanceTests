@@ -69,6 +69,7 @@ namespace APSIM.PerformanceTests.Collector
 
 #if DEBUG
                     runDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 0);
+                    runDate = runDate.AddDays(-1);
 #endif
                     WriteToLogFile("  ");
                     WriteToLogFile("==========================================================");

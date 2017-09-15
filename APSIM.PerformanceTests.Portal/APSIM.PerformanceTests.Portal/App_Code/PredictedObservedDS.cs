@@ -6,6 +6,7 @@ using System.Web;
 using APSIM.PerformanceTests.Portal.Models;
 using System.Data.SqlClient;
 
+
 public class PredictedObservedDS
 {
     //NOTE:  Dont forget that these need to have the build property set to compile
@@ -65,6 +66,32 @@ public class PredictedObservedDS
                        && pod.PredictedTableName == predictedTableName
                        && pod.ObservedTableName == observedTableName
                        && pod.FieldNameUsedForMatch == fieldNameUsedForMatch
+                    select pod.ID)
+                    .SingleOrDefault();
+        }
+    }
+
+    /// <summary>
+    /// Thes the Predicted Observed Details ID, for a specific Pull Request ID (int), by matching specific 
+    /// PredictedObservedDetails information.  This is used when the 'Accepted' PredictedObservedDetailsID is
+    /// not saved with the 'Current' PredictedObservedDetails record.
+    /// </summary>
+    /// <param name="pullRequestId"></param>
+    /// <param name="filename"></param>
+    /// <param name="tablename"></param>
+    /// <param name="predictedTableName"></param>
+    /// <param name="observedTableName"></param>
+    /// <param name="fieldNameUsedForMatch"></param>
+    /// <returns></returns>
+    public static int GetIDByMatchingDetails(int pullRequestId, string filename, string tablename)
+    {
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            return (from pod in context.PredictedObservedDetails
+                    join af in context.ApsimFiles on pod.ApsimFilesID equals af.ID
+                    where af.PullRequestId == pullRequestId
+                       && af.FileName == filename
+                       && pod.TableName == tablename
                     select pod.ID)
                     .SingleOrDefault();
         }

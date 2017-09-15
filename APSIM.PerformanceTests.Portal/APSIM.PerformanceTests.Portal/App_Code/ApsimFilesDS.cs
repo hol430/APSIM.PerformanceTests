@@ -126,7 +126,8 @@ public class ApsimFilesDS
                         SubmitDetails = grp.FirstOrDefault().af.SubmitDetails,
                         StatsAccepted = grp.FirstOrDefault().af.StatsAccepted,
                         PercentPassed = 100 * grp.Count(m => m.pod.PassedTests == 100) / grp.Count(m => m.pod.PassedTests != null),
-                        Total = grp.Count()
+                        Total = grp.Count(),
+                        AcceptedPullRequestId = grp.FirstOrDefault().af.AcceptedPullRequestId
                     })
                     .OrderByDescending(h => h.RunDate)
                     .ThenByDescending(h => h.PullRequestId)
@@ -163,6 +164,7 @@ public class ApsimFilesDS
                         strPredictedObservedID = sf.PredictedObservedDetails.ID.ToString(),
                         PredictedObservedTableName = sf.PredictedObservedDetails.TableName,
                         PassedTests = sf.PredictedObservedDetails.PassedTests,
+                        AcceptedPredictedObservedDetailsID = sf.PredictedObservedDetails.AcceptedPredictedObservedDetailsID
                     })
                     .OrderBy(sf => sf.FileName)
                     .ToList();
@@ -200,6 +202,7 @@ public class ApsimFilesDS
                         strPredictedObservedID = sf.PredictedObservedDetails.ID.ToString(),
                         PredictedObservedTableName = sf.PredictedObservedDetails.TableName,
                         PassedTests = sf.PredictedObservedDetails.PassedTests,
+                        AcceptedPredictedObservedDetailsID = sf.PredictedObservedDetails.AcceptedPredictedObservedDetailsID
                     })
                     .OrderBy(sf => sf.FileName)
                     .ToList();

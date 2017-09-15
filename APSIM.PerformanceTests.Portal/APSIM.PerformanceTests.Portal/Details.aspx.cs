@@ -42,8 +42,9 @@ namespace APSIM.PerformanceTests.Portal
                     BindCurrentAcceptedTests(currPODetails.ID);
 
                     lblPullRequest.Text = "Pull Request: " + apsim.PullRequestId.ToString();
+                    //lblApsimFile.Text = "Apsim File: " + apsim.FileName;
                     lblApsimFile.Text = "Apsim File: " + apsim.FileName;
-                    lblPOTableName.Text = "Table: " + currPODetails.TableName;
+                    lblPOTableName.Text = "Table: " + currPODetails.TableName + " (PO Id: " + currPODetails.ID.ToString() + ")";
 
                     BindPredictedObservedVariables(currPODetails.ID);
 
@@ -107,10 +108,15 @@ namespace APSIM.PerformanceTests.Portal
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                //this is the true/false column
+                //this is the true/false PassedTest column
                 if (e.Row.Cells[5].Text.Trim().ToLower() == "false")
                 {
                     e.Row.ForeColor = Color.Red;
+                }
+                //this is the true/false IsImprovement column
+                if (e.Row.Cells[6].Text.Trim().ToLower() == "true")
+                {
+                    e.Row.ForeColor = Color.Green;
                 }
             }
         }

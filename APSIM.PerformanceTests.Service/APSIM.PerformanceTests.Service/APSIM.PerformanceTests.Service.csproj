@@ -93,7 +93,9 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\ApsimFilesController.cs" />
     <Compile Include="Controllers\AcceptStatsController.cs" />
+    <Compile Include="Controllers\UpdateStatsController.cs" />
     <Compile Include="Models\AcceptStatsLog.cs" />
+    <Compile Include="Utilities\DBFunctions.cs" />
     <Compile Include="Utilities\Tests.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

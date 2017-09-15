@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
+
 namespace APSIM.PerformanceTests.Portal.Models
 {
     public class AcceptStatsLog
@@ -14,7 +15,9 @@ namespace APSIM.PerformanceTests.Portal.Models
         public string LogPerson { get; set; }
         public string LogReason { get; set; }
         public bool LogStatus { get; set; }
+        public System.DateTime LogAcceptDate { get; set; }
 
+        public int StatsPullRequestId { get; set; }
 
     }
 }

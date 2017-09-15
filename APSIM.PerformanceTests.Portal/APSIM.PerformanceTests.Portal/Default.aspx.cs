@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -41,23 +42,56 @@ namespace APSIM.PerformanceTests.Portal
             }
         }
 
+        protected void btnCompare_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Compare.aspx");
+        }
 
 
         protected void btnOk_Click(object sender, EventArgs e)
         {
             AcceptStatsLog acceptlog = new AcceptStatsLog();
             acceptlog.PullRequestId = int.Parse(txtPullRequestID.Text);
-            acceptlog.SubmitDate = DateTime.Parse(txtSubmitDate.Text);
+            acceptlog.SubmitDate = DateTime.ParseExact(txtSubmitDate.Text, "dd/MM/yyyy HH:mm", CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal);
+
             acceptlog.SubmitPerson = txtSubmitPerson.Text;
             acceptlog.LogPerson = txtName.Text;
             acceptlog.LogReason = txtDetails.Text;
+            acceptlog.LogAcceptDate = DateTime.ParseExact(txtAcceptDate.Text, "dd/MM/yyyy HH:mm", CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal);
             acceptlog.LogStatus = true;
+
+            bool doAcceptStats = false;
+            bool doUpdateStats = false;
+            if (lblTitle.Text.StartsWith("Update"))
+            {
+                int pullRequestId2 = 0;
+                if (int.TryParse(txtPullRequestId2.Text, out pullRequestId2) == true)
+                {
+                    acceptlog.StatsPullRequestId = pullRequestId2;
+                    acceptlog.LogReason = "Update 'Accepted' Stats to Pull Request Id: " + pullRequestId2.ToString();
+                    doUpdateStats = true;
+                }
+            }
+            else
+            {
+                doAcceptStats = true;
+            }
 
             txtName.Text = string.Empty;
             txtDetails.Text = string.Empty;
+            txtPullRequestId2.Text = string.Empty;
             this.ModalPopupExtender1.Hide();
 
-            UpdatePullRequestAcceptStatsStatus(acceptlog).Wait();
+            if (doAcceptStats == true)
+            {
+                UpdatePullRequestStats("Accept", acceptlog);
+            }
+            else if (doUpdateStats == true)
+            {
+                UpdatePullRequestStats("Update", acceptlog);
+            }
+
+            Response.Redirect(Request.RawUrl);
         }
 
         protected void btnCancel_Click(object sender, EventArgs e)
@@ -72,15 +106,13 @@ namespace APSIM.PerformanceTests.Portal
 
         protected void gvApsimFiles_RowCommand(object sender, GridViewCommandEventArgs e)
         {
-            // Don't interfere with other commands.
-            // We may not have any now, but this is another safe-code strategy.
-            if (e.CommandName == "CellSelect" || e.CommandName == "UpdateStats")
+            // Don't interfere with other commands.  We may not have any now, but this is another safe-code strategy.
+            if (e.CommandName == "CellSelect" || e.CommandName == "AcceptStats" || e.CommandName == "UpdateStats")
             {
                 // Unpack the arguments.
                 String[] arguments = ((String)e.CommandArgument).Split(new char[] { ',' });
 
-                // More safe coding: Don't assume there are at least 2 arguments.
-                // (And ignore when there are more.)
+                // More safe coding: Don't assume there are at least 2 arguments. (And ignore when there are more.)
                 if (arguments.Length >= 2)
                 {
                     // And even more safe coding: Don't assume the arguments are proper int values.
@@ -98,17 +130,34 @@ namespace APSIM.PerformanceTests.Portal
 
                     //here we either update the Update Panel (if the user clicks only anything OTHER THAN our'Button'
                     //or we process the UpdatePullRequest as Merged
-                    if (e.CommandName == "UpdateStats" && cellIndex == 6 && canUpdate == true)
+                    if (e.CommandName == "AcceptStats" && cellIndex == 7 && canUpdate == true)
                     {
-                        int pullRequestId = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[0].Text);
-
+                        lblTitle.Text = "Accept Stats Request";
+                        lblPullRequestId2.Visible = false;
+                        txtPullRequestId2.Visible = false;
+                        lblDetails.Visible = true;
+                        txtDetails.Visible = true;
                         txtPullRequestID.Text = gvApsimFiles.Rows[rowIndex].Cells[0].Text;
-                        txtSubmitDate.Text = gvApsimFiles.Rows[rowIndex].Cells[1].Text;
+                        DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[1].Text);
+                        txtSubmitDate.Text = subDate.ToString("dd/MM/yyyy HH:mm");
                         txtSubmitPerson.Text = gvApsimFiles.Rows[rowIndex].Cells[2].Text;
-
+                        txtAcceptDate.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                        this.ModalPopupExtender1.Show();
+                    }
+                    else if (e.CommandName == "UpdateStats")
+                    {
+                        lblTitle.Text = "Update Accepted Stats for this Pull Request";
+                        lblPullRequestId2.Visible = true;
+                        txtPullRequestId2.Visible = true;
+                        lblDetails.Visible = false;
+                        txtDetails.Visible = false;
+                        txtPullRequestID.Text = gvApsimFiles.Rows[rowIndex].Cells[0].Text;
+                        DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[1].Text);
+                        txtSubmitDate.Text = subDate.ToString("dd/MM/yyyy HH:mm");
+                        txtSubmitPerson.Text = gvApsimFiles.Rows[rowIndex].Cells[2].Text;
+                        txtAcceptDate.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
                         this.ModalPopupExtender1.Show();
 
-                        
                     }
                     else if (e.CommandName == "CellSelect")
                     {
@@ -144,7 +193,7 @@ namespace APSIM.PerformanceTests.Portal
                         int cellIndex = e.Row.Cells.GetCellIndex(cell);
                         bool canUpdate = false;
                         // if we are binding the 'Button' column, and the "StatsAccepted' is false, then whe can Update the Merge Status.
-                        if (cellIndex == 6)
+                        if (cellIndex == 7)
                         {
                             if (e.Row.Cells[3].Text.ToLower().Equals("false"))
                             {
@@ -152,10 +201,21 @@ namespace APSIM.PerformanceTests.Portal
                                 Button db = (Button)e.Row.Cells[cellIndex].FindControl("btnAcceptStats");
                                 if (db != null)
                                 {
-                                    db.OnClientClick = "return confirm('Are you certain you want to Update the Stats for this Pull Request?');";
-                                    db.CommandName = "UpdateStats";
+                                    db.OnClientClick = "return confirm('Are you certain you want to Accept the Stats for this Pull Request?');";
+                                    db.CommandName = "AcceptStats";
                                     db.CommandArgument = String.Format("{0},{1},{2}", e.Row.RowIndex, cellIndex, canUpdate);
                                 }
+                            }
+                        }
+                        else if (cellIndex == 8)
+                        {
+                            canUpdate = true;
+                            Button db = (Button)e.Row.Cells[cellIndex].FindControl("btnUpdateStats");
+                            if (db != null)
+                            {
+                                db.OnClientClick = "return confirm('Are you certain you want to Update the Stats for this Pull Request?');";
+                                db.CommandName = "UpdateStats";
+                                db.CommandArgument = String.Format("{0},{1},{2}", e.Row.RowIndex, cellIndex, canUpdate);
                             }
                         }
                         else
@@ -200,8 +260,8 @@ namespace APSIM.PerformanceTests.Portal
 
         private void BindApsimFilesGrid()
         {
-            vApsimFile acceptedPR = ApsimFilesDS.GetLatestAcceptedPullRequestDetails();
-            lblAcceptedDetails.Text = string.Format("Current Accepted Stats are for Pull Request Id {0}, submitted by {1} on {2}.", acceptedPR.PullRequestId, acceptedPR.SubmitDetails, acceptedPR.RunDate);
+            AcceptStatsLog acceptedPR = AcceptStatsLogDS.GetLatestAcceptedStatsLog();
+            lblAcceptedDetails.Text = string.Format("Current Accepted Stats are for Pull Request Id {0}, submitted by {1}, accepted on {2}.", acceptedPR.PullRequestId, acceptedPR.SubmitPerson, acceptedPR.LogAcceptDate.ToString("dd-MMM-yyyy HH:MM"));
 
             ApsimFileList = ApsimFilesDS.GetPullRequestsWithStatus();
             gvApsimFiles.DataSource = ApsimFileList;
@@ -231,22 +291,12 @@ namespace APSIM.PerformanceTests.Portal
 
             ClientScript.RegisterStartupScript(this.GetType(), "CreateGridHeader", "<script>CreateGridHeader('GridDataDiv_SimFiles', 'ContentPlaceHolder1_gvSimFiles', 'GridHeaderDiv_SimFiles');</script>");
         }
-
-
-        protected bool HasPullRequestBeenMerged(bool isMerged)
-        {
-            bool visible = true;
-            if (isMerged)
-                visible = false;
-
-            return visible;
-        }
         #endregion
 
 
         #region WebAPI Interaction
 
-        private static async Task UpdatePullRequestAcceptStatsStatus(AcceptStatsLog apsimLog)
+        private void UpdatePullRequestStats(string updateType, AcceptStatsLog apsimLog)
         {
             HttpClient httpClient = new HttpClient();
 
@@ -259,35 +309,21 @@ namespace APSIM.PerformanceTests.Portal
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
-            HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/acceptStats", apsimLog);
-            response.EnsureSuccessStatusCode();
-            if (response.IsSuccessStatusCode)
+            HttpResponseMessage response = new HttpResponseMessage();
+            if (updateType == "Accept")
             {
+                response = httpClient.PostAsJsonAsync("api/acceptStats", apsimLog).Result;
+            }
+            else if (updateType == "Update")
+            {
+                response = httpClient.PostAsJsonAsync("api/updateStats", apsimLog).Result;
             }
 
-        }
-
-        private static async Task UpdatePullRequestAcceptStatsStatus( int id, bool updateStatus)
-        {
-            HttpClient httpClient = new HttpClient();
-
-            string serviceUrl = ConfigurationManager.AppSettings["serviceAddress"].ToString() + "APSIM.PerformanceTests.Service/";
-            httpClient.BaseAddress = new Uri(serviceUrl);
-            //httpClient.BaseAddress = new Uri("http://www.apsim.info/APSIM.PerformanceTests.Service/");
-#if DEBUG
-            httpClient.BaseAddress = new Uri("http://localhost:53187/");
-#endif
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            //api/acceptStats/{id}/{acceptedStatsToken}
-            var url = "api/acceptStats/" + id + "/" + updateStatus.ToString();
-            HttpResponseMessage response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             if (response.IsSuccessStatusCode)
             {
             }
         }
-
         #endregion
     }
 }

@@ -13,5 +13,8 @@ namespace APSIM.PerformanceTests.Models
         public string LogPerson { get; set; }
         public string LogReason { get; set; }
         public bool LogStatus { get; set; }
+        public System.DateTime LogAcceptDate { get; set; }
+        public int StatsPullRequestId { get; set; }
+
     }
 }

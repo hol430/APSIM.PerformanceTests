@@ -14,10 +14,14 @@ namespace APSIM.PerformanceTests.Service
             // Web API routes
             config.MapHttpAttributeRoutes();
 
+            //config.Routes.MapHttpRoute(
+            //    name: "UpdateAcceptStats",
+            //    routeTemplate: "api/{controller}/{id}/{updateStatus}"
+            //);
 
             config.Routes.MapHttpRoute(
-                name: "UpdateAcceptStats",
-                routeTemplate: "api/{controller}/{id}/{updateStatus}"
+                name: "GetUpdatedStatsforPullRequestbyPR",
+                routeTemplate: "api/{controller}/{currentPullRequestID}/{acceptedPullRequestID}"
             );
 
             config.Routes.MapHttpRoute(

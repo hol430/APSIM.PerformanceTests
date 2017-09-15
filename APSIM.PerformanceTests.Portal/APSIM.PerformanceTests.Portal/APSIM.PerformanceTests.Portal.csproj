@@ -97,6 +97,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Compare.aspx" />
     <Content Include="packages.config" />
     <Content Include="Site.Master" />
     <None Include="Properties\PublishProfiles\ApsimInfoPerformanceTests_Portal.pubxml" />
@@ -120,8 +121,16 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App_Code\AcceptStatsLogDS.cs" />
     <Compile Include="App_Code\ApsimFilesDS.cs" />
     <Compile Include="App_Code\PredictedObservedDS.cs" />
+    <Compile Include="Compare.aspx.cs">
+      <DependentUpon>Compare.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Compare.aspx.designer.cs">
+      <DependentUpon>Compare.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

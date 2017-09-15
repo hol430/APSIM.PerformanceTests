@@ -24,5 +24,7 @@ namespace APSIM.PerformanceTests.Portal.Models
         public string PredictedObservedTableName { get; set; }
         public Nullable<double> PassedTests { get; set; }
 
+        public Nullable<int>AcceptedPredictedObservedDetailsID { get; set; }
+
     }
 }

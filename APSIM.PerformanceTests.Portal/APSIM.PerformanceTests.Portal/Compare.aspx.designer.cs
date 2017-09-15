@@ -10,7 +10,16 @@
 namespace APSIM.PerformanceTests.Portal {
     
     
-    public partial class Default {
+    public partial class Compare {
+        
+        /// <summary>
+        /// UpdatePanel1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel UpdatePanel1;
         
         /// <summary>
         /// Label1 control.
@@ -22,85 +31,94 @@ namespace APSIM.PerformanceTests.Portal {
         protected global::System.Web.UI.WebControls.Label Label1;
         
         /// <summary>
-        /// gvApsimFiles control.
+        /// Label2 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvApsimFiles;
+        protected global::System.Web.UI.WebControls.Label Label2;
         
         /// <summary>
-        /// lblAcceptedDetails control.
+        /// txtPullRequest1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblAcceptedDetails;
+        protected global::System.Web.UI.WebControls.TextBox txtPullRequest1;
         
         /// <summary>
-        /// upSimFiles control.
+        /// pnlApsimFiles1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upSimFiles;
+        protected global::System.Web.UI.WebControls.Panel pnlApsimFiles1;
         
         /// <summary>
-        /// lblPullRequestId control.
+        /// gvApsimFiles1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblPullRequestId;
+        protected global::System.Web.UI.WebControls.GridView gvApsimFiles1;
         
         /// <summary>
-        /// gvSimFiles control.
+        /// DropDownExtender1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvSimFiles;
+        protected global::AjaxControlToolkit.DropDownExtender DropDownExtender1;
         
         /// <summary>
-        /// lnkDummy control.
+        /// txtPullRequest2 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lnkDummy;
+        protected global::System.Web.UI.WebControls.TextBox txtPullRequest2;
         
         /// <summary>
-        /// ModalPopupExtender1 control.
+        /// pnlApsimFiles2 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::AjaxControlToolkit.ModalPopupExtender ModalPopupExtender1;
+        protected global::System.Web.UI.WebControls.Panel pnlApsimFiles2;
         
         /// <summary>
-        /// pnlpopup control.
+        /// gvApsimFiles2 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlpopup;
+        protected global::System.Web.UI.WebControls.GridView gvApsimFiles2;
         
         /// <summary>
-        /// lblTitle control.
+        /// DropDownExtender2 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTitle;
+        protected global::AjaxControlToolkit.DropDownExtender DropDownExtender2;
+        
+        /// <summary>
+        /// pnlFileAndTableName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlFileAndTableName;
         
         /// <summary>
         /// Label4 control.
@@ -112,31 +130,49 @@ namespace APSIM.PerformanceTests.Portal {
         protected global::System.Web.UI.WebControls.Label Label4;
         
         /// <summary>
-        /// txtPullRequestID control.
+        /// txtSimFiles control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtPullRequestID;
+        protected global::System.Web.UI.WebControls.TextBox txtSimFiles;
         
         /// <summary>
-        /// Label5 control.
+        /// pnlSimFiles control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label Label5;
+        protected global::System.Web.UI.WebControls.Panel pnlSimFiles;
         
         /// <summary>
-        /// txtSubmitDate control.
+        /// gvSimFiles control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtSubmitDate;
+        protected global::System.Web.UI.WebControls.GridView gvSimFiles;
+        
+        /// <summary>
+        /// DropDownExtender3 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::AjaxControlToolkit.DropDownExtender DropDownExtender3;
+        
+        /// <summary>
+        /// pnlPredictedObservedIds control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlPredictedObservedIds;
         
         /// <summary>
         /// Label6 control.
@@ -148,102 +184,120 @@ namespace APSIM.PerformanceTests.Portal {
         protected global::System.Web.UI.WebControls.Label Label6;
         
         /// <summary>
-        /// txtSubmitPerson control.
+        /// Label8 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtSubmitPerson;
+        protected global::System.Web.UI.WebControls.Label Label8;
         
         /// <summary>
-        /// Label7 control.
+        /// txtPredictedObservedID1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label Label7;
+        protected global::System.Web.UI.WebControls.TextBox txtPredictedObservedID1;
         
         /// <summary>
-        /// txtAcceptDate control.
+        /// txtPredictedObservedID2 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtAcceptDate;
+        protected global::System.Web.UI.WebControls.TextBox txtPredictedObservedID2;
         
         /// <summary>
-        /// Label2 control.
+        /// btnCompare control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label Label2;
+        protected global::System.Web.UI.WebControls.Button btnCompare;
         
         /// <summary>
-        /// txtName control.
+        /// pnlVariables control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtName;
+        protected global::System.Web.UI.WebControls.Panel pnlVariables;
         
         /// <summary>
-        /// lblPullRequestId2 control.
+        /// LoadTimer control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblPullRequestId2;
+        protected global::System.Web.UI.Timer LoadTimer;
         
         /// <summary>
-        /// txtPullRequestId2 control.
+        /// Label3 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtPullRequestId2;
+        protected global::System.Web.UI.WebControls.Label Label3;
         
         /// <summary>
-        /// lblDetails control.
+        /// ddlVariables control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblDetails;
+        protected global::System.Web.UI.WebControls.DropDownList ddlVariables;
         
         /// <summary>
-        /// txtDetails control.
+        /// UpdatePanel2 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtDetails;
+        protected global::System.Web.UI.UpdatePanel UpdatePanel2;
         
         /// <summary>
-        /// btnOk control.
+        /// lblError control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnOk;
+        protected global::System.Web.UI.WebControls.Label lblError;
         
         /// <summary>
-        /// btnCancel control.
+        /// chartPODetails control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnCancel;
+        protected global::System.Web.UI.DataVisualization.Charting.Chart chartPODetails;
+        
+        /// <summary>
+        /// lblValues control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblValues;
+        
+        /// <summary>
+        /// gvPOValues control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.GridView gvPOValues;
     }
 }

@@ -34,24 +34,13 @@
                         OnRowDataBound="gvPOTests_RowDataBound" >
                         <HeaderStyle CssClass="GridViewHeaderStyle" />
                         <Columns>
-                            <asp:BoundField DataField="Variable" 
-                                HeaderText="Variable" HeaderStyle-Width="200px" 
-                                ItemStyle-Width="80px" />
-                            <asp:BoundField DataField="Test" 
-                                HeaderText="Test" HeaderStyle-Width="120px" 
-                                ItemStyle-Width="80px"  />
-                            <asp:BoundField DataField="Accepted" HtmlEncode="false"
-                                HeaderText="Accepted" HeaderStyle-Width="120px" 
-                                ItemStyle-HorizontalAlign="Right" ItemStyle-Width="80px"  />
-                            <asp:BoundField DataField="Current"  HtmlEncode="false"
-                                HeaderText="Current" HeaderStyle-Width="120px" 
-                                ItemStyle-HorizontalAlign="Right" ItemStyle-Width="80px"/>
-                            <asp:BoundField DataField="Difference" 
-                                HeaderText="Difference" HeaderStyle-Width="100px" 
-                                ItemStyle-HorizontalAlign="Right" ItemStyle-Width="80px"  />
-                            <asp:BoundField DataField="PassedTest" HtmlEncode="False" 
-                                HeaderText="Passed<br />Test" HeaderStyle-Width="100px" 
-                                ItemStyle-Width="80px"  />
+                            <asp:BoundField DataField="Variable" HeaderText="Variable" HeaderStyle-Width="200px" ItemStyle-Width="80px" />
+                            <asp:BoundField DataField="Test" HeaderText="Test" HeaderStyle-Width="70px" ItemStyle-Width="70px"  />
+                            <asp:BoundField DataField="Accepted" HtmlEncode="false" HeaderText="Accepted" HeaderStyle-Width="120px" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="80px"  />
+                            <asp:BoundField DataField="Current" HtmlEncode="false" HeaderText="Current" HeaderStyle-Width="120px" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="80px"/>
+                            <asp:BoundField DataField="Difference" HeaderText="Difference" HeaderStyle-Width="100px" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="80px"  />
+                            <asp:BoundField DataField="PassedTest" HtmlEncode="False" HeaderText="Passed<br />Test" HeaderStyle-Width="70px" ItemStyle-Width="70px"  />
+                            <asp:BoundField DataField="IsImprovement" HtmlEncode="False" HeaderText="Is<br />Improvement" HeaderStyle-Width="100px" ItemStyle-Width="80px"  />
                         </Columns>
                     </asp:GridView>
                 </div>

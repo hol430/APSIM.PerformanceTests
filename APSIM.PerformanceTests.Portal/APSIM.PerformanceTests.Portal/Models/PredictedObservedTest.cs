@@ -22,6 +22,10 @@ namespace APSIM.PerformanceTests.Portal.Models
         //[ForeignKey("PredictedObservedTest.ID")]
         public Nullable<int> AcceptedPredictedObservedTestsID { get; set; }
 
+        public Nullable<bool> IsImprovement { get; set; }
+
+
+        //public Nullable<bool> IsImprovement { get; set; }
 
         //public virtual PredictedObservedDetail PredictedObservedDetail { get; set; }
     }

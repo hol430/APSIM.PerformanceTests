@@ -1,8 +1,11 @@
 ﻿using APSIM.PerformanceTests.Models;
+using APSIM.Shared.Utilities;
 using Octokit;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Net;
 using System.IO;
 using System.Web.Http;
@@ -62,9 +65,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 Utilities.WriteToLogFile(string.Format("ERROR:  Pull Request Id {0}, Unable to determine Passed/Failed status: {1}", id.ToString(), ex.Message.ToString())); ;
             }
             return Ok();
-
         }
-
 
         [ResponseType(typeof(AcceptStatsLog))]
         public async Task<IHttpActionResult> PostAcceptStats(AcceptStatsLog acceptLog)
@@ -75,7 +76,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 if (acceptLog.LogPerson == authenCode)
                 {
                     //update the 'Stats accepted column from here
-                    UpdateAsStatsAccepted(acceptLog);
+                    DBFunctions.UpdateAsStatsAccepted("Accept", acceptLog);
                     CallGitHubWithPassFail(acceptLog.PullRequestId, acceptLog.LogStatus);
                     Utilities.WriteToLogFile(string.Format("   Pull Request Id {0}, AcceptedStats has been confirmed and Github updated.", acceptLog.PullRequestId.ToString())); ;
                 }
@@ -85,9 +86,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
             {
                 Utilities.WriteToLogFile(string.Format("ERROR:  Pull Request Id {0}, Unable to update AcceptedStats status: {1}", acceptLog.PullRequestId.ToString(), ex.Message.ToString())); ;
             }
-            return Ok();
+            return StatusCode(HttpStatusCode.NoContent);
         }
-
 
 
         private static void CallGitHubWithPassFail(int pullRequestID, bool pass)
@@ -130,58 +130,6 @@ namespace APSIM.PerformanceTests.Service.Controllers
             using (Stream s = webRequest.GetRequestStream())
                 s.Write(byte1, 0, byte1.Length);
             webRequest.GetResponse();
-        }
-
-
-        private void UpdateAsStatsAccepted(AcceptStatsLog acceptLog)
-        {
-            try
-            {
-                string connectStr = Utilities.GetConnectionString();
-                Utilities.WriteToLogFile("-----------------------------------");
-
-                //need to authenticate the process
-
-                int statsAccepted = Convert.ToInt32(acceptLog.LogStatus);
-                using (SqlConnection con = new SqlConnection(connectStr))
-                {
-                    string strSQL = "INSERT INTO AcceptStatsLog (PullRequestId, SubmitPerson, SubmitDate, LogPerson, LogReason, LogStatus) "
-                                  + " Values ( @PullRequestId, @SubmitPerson, @SubmitDate, @LogPerson, @LogReason, @LogStatus )";
-                    using (SqlCommand command = new SqlCommand(strSQL, con))
-                    {
-                        command.CommandType = CommandType.Text;
-                        command.Parameters.AddWithValue("@PullRequestId", acceptLog.PullRequestId);
-                        command.Parameters.AddWithValue("@SubmitPerson", acceptLog.SubmitPerson);
-                        command.Parameters.AddWithValue("@SubmitDate", acceptLog.SubmitDate);
-                        command.Parameters.AddWithValue("@LogPerson", acceptLog.LogPerson);
-                        command.Parameters.AddWithValue("@LogReason", acceptLog.LogReason);
-                        command.Parameters.AddWithValue("@LogStatus", acceptLog.LogStatus);
-
-                        con.Open();
-                        command.ExecuteNonQuery();
-                        con.Close();
-                    }
-
-                    strSQL = "UPDATE ApsimFiles SET StatsAccepted = @StatsAccepted, IsMerged = @IsMerged WHERE PullRequestId = @PullRequestId";
-                    using (SqlCommand command = new SqlCommand(strSQL, con))
-                    {
-                        command.CommandType = CommandType.Text;
-                        command.Parameters.AddWithValue("@StatsAccepted", statsAccepted);
-                        command.Parameters.AddWithValue("@IsMerged", statsAccepted);        //do this the same to during changeover
-                        command.Parameters.AddWithValue("@PullRequestId", acceptLog.PullRequestId);
-
-                        con.Open();
-                        command.ExecuteNonQuery();
-                        con.Close();
-                    }
-                }
-                //Utilities.WriteToLogFile(string.Format("    Accept Stats Status updated to {0} by {1} on {2}. Reason: {3}", acceptLog.LogStatus, acceptLog.LogPerson, acceptLog.SubmitDate, acceptLog.LogReason));
-            }
-
-            catch (Exception ex)
-            {
-                Utilities.WriteToLogFile(string.Format("ERROR:  Pull Request Id {0}, Failed to update as 'Stats Accepted': {1}", acceptLog.PullRequestId.ToString(), ex.Message.ToString()));
-            }
         }
 
     }
