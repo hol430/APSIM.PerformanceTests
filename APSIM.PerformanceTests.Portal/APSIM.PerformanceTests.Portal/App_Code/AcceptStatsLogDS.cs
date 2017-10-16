@@ -18,7 +18,7 @@ public class AcceptStatsLogDS
                 .Where(a => a.LogStatus == true && a.StatsPullRequestId == 0)
                 .OrderByDescending(a => a.LogAcceptDate)
                 .ThenByDescending(a => a.PullRequestId)
-                .First();
+                .FirstOrDefault();
         }
     }
 }

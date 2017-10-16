@@ -261,8 +261,10 @@ namespace APSIM.PerformanceTests.Portal
         private void BindApsimFilesGrid()
         {
             AcceptStatsLog acceptedPR = AcceptStatsLogDS.GetLatestAcceptedStatsLog();
-            lblAcceptedDetails.Text = string.Format("Current Accepted Stats are for Pull Request Id {0}, submitted by {1}, accepted on {2}.", acceptedPR.PullRequestId, acceptedPR.SubmitPerson, acceptedPR.LogAcceptDate.ToString("dd-MMM-yyyy HH:MM"));
-
+            if (acceptedPR != null)
+            {
+                lblAcceptedDetails.Text = string.Format("Current Accepted Stats are for Pull Request Id {0}, submitted by {1}, accepted on {2}.", acceptedPR.PullRequestId, acceptedPR.SubmitPerson, acceptedPR.LogAcceptDate.ToString("dd-MMM-yyyy HH:MM"));
+            }
             ApsimFileList = ApsimFilesDS.GetPullRequestsWithStatus();
             gvApsimFiles.DataSource = ApsimFileList;
             gvApsimFiles.DataBind();

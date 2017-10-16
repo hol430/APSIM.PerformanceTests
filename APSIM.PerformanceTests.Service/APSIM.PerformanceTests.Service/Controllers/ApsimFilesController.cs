@@ -396,14 +396,18 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     if (poDetail.PredictedObservedData.Rows.Count > 0)
                     {
                         ErrMessageHelper = string.Empty;
+
                         Utilities.WriteToLogFile(string.Format("    Tests Data for {0}.{1} import started.", apsimfile.FileName, poDetail.DatabaseTableName));
 
                         //need to retrieve data for the "AcceptedStats" version, so that we can update the stats
                         int acceptedPredictedObservedDetailsID = 0;    //this should get updated in 'RetrieveAcceptedStatsData' 
+                        ErrMessageHelper = "Processing RetrieveAcceptedStatsData.";
                         DataTable acceptedStats = RetrieveAcceptedStatsData(connectStr, ApsimID, apsimfile, poDetail, predictedObservedID, ref acceptedPredictedObservedDetailsID);
 
+                        ErrMessageHelper = "Processing Tests.DoValidationTest.";
                         DataTable dtTests = Tests.DoValidationTest(poDetail.DatabaseTableName, poDetail.PredictedObservedData, acceptedStats);
 
+                        ErrMessageHelper = "Processing DBFunctions.AddPredictedObservedTestsData.";
                         DBFunctions.AddPredictedObservedTestsData(connectStr, apsimfile.FileName, predictedObservedID, poDetail.DatabaseTableName, dtTests);
 
                         //if (dtTests.Rows.Count > 0)
@@ -441,6 +445,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         //}
 
                         //Update the accepted reference for Predicted Observed Values, so that it can be 
+                        ErrMessageHelper = "Processing DBFunctions.UpdatePredictedObservedDetails.";
                         DBFunctions.UpdatePredictedObservedDetails(connectStr, acceptedPredictedObservedDetailsID, predictedObservedID);
                         //if (acceptedPredictedObservedDetailsID > 0 && predictedObservedID > 0)
                         //{
@@ -470,8 +475,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
             catch (Exception ex)
             {
-                Utilities.WriteToLogFile("    ERROR:  Unable to update SQL Server: " + ErrMessageHelper.ToString() + " - " + ex.Message.ToString());
-                throw new Exception("Unable to update SQL Server: " + ex.Message.ToString());
+                Utilities.WriteToLogFile("    ERROR in PostApsimFile:  " + ErrMessageHelper.ToString() + " - " + ex.Message.ToString());
+                throw new Exception("    ERROR in PostApsimFile:  " + ErrMessageHelper.ToString() + " - " + ex.Message.ToString());
             }
         }
 

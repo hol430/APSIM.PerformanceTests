@@ -153,6 +153,7 @@ namespace APSIM.PerformanceTests.Collector
             }
         }
 
+
         static async Task UpdatePullRequestsPassedTestsStatus(int id)
         {
             try
@@ -452,7 +453,7 @@ namespace APSIM.PerformanceTests.Collector
                     using (SQLiteConnection con = new SQLiteConnection("Data Source=" + fullPath))
                     {
                         con.Open();
-                        string selectSQL = "SELECT * FROM Simulations ";
+                        string selectSQL = "SELECT * FROM _Simulations ";
 
                         using (SQLiteCommand cmd = new SQLiteCommand(selectSQL, con))
                         {

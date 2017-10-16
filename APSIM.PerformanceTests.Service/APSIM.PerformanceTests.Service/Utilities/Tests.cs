@@ -122,90 +122,97 @@ namespace APSIM.PerformanceTests.Service
             }
             catch (Exception ex)
             {
-                throw new Exception("ERROR:  Unable to process Test Data: " + ex.Message.ToString());
+                throw new Exception("ERROR in DoValidationTest:: " + ex.Message.ToString());
             }
 
         }
 
         public static void MergeAndCompareAcceptedAgainstCurrent(ref DataTable currentTable, DataTable acceptedStats)
         {
-            //Now merge this with out Accepted Table
-            if (acceptedStats.Rows.Count > 0)
+            try
             {
-                foreach (DataRow rowCurrent in currentTable.Rows)
+                //Now merge this with out Accepted Table
+                if (acceptedStats.Rows.Count > 0)
                 {
-                    DataRow[] rowAccepted = acceptedStats.Select("Variable = '" + rowCurrent["Variable"] + "' AND Test = '" + rowCurrent["Test"] + "'");
-
-                    if (rowAccepted.Count() == 0)
+                    foreach (DataRow rowCurrent in currentTable.Rows)
                     {
-                        rowCurrent["Accepted"] = DBNull.Value;
-                        rowCurrent["AcceptedPredictedObservedTestsID"] = DBNull.Value; ;
+                        DataRow[] rowAccepted = acceptedStats.Select("Variable = '" + rowCurrent["Variable"] + "' AND Test = '" + rowCurrent["Test"] + "'");
+
+                        if (rowAccepted.Count() == 0)
+                        {
+                            rowCurrent["Accepted"] = DBNull.Value;
+                            rowCurrent["AcceptedPredictedObservedTestsID"] = DBNull.Value; ;
+                        }
+                        else
+                        {
+                            rowCurrent["Accepted"] = rowAccepted[0]["Accepted"];
+                            rowCurrent["AcceptedPredictedObservedTestsID"] = rowAccepted[0]["AcceptedPredictedObservedTestsID"];
+                        }
+                    }
+                }
+
+                string sigIdent = "0";   //false   (1 = true)
+                foreach (DataRow row in currentTable.Rows)
+                {
+                    //If we are starting from scratch, then set the Accepted the same as the Current.
+                    if (acceptedStats.Rows.Count <= 0)
+                    {
+                        // 30/08/2017 - modLMC - originally this was updated when there were not Accepted Stats (ie, first time being saved), however
+                        // now don't save anything to see how it will work (as per discussion with Dean Holzworth).
+                        //row["Accepted"] = row["Current"];
+                        row["Accepted"] = DBNull.Value;
+                    }
+
+                    if (row["Accepted"] != DBNull.Value && row["Current"] != DBNull.Value)
+                    {
+                        double currentValue = Convert.ToDouble(row["Current"]);
+                        double acceptedValue = Convert.ToDouble(row["Accepted"]);
+
+                        row["Difference"] = currentValue - acceptedValue;
+                        row["PassedTest"] = Math.Abs(Convert.ToDouble(row["Difference"])) > Math.Abs(Convert.ToDouble(row["Accepted"])) * 0.01 ? sigIdent : "1";
+
+                        bool isImprovement = false;
+                        switch (row["Test"].ToString())
+                        {
+                            case "R2":  //if the current is GREATER than accepted (ie difference is POSITIVE) then is an improvement
+                                if (currentValue < acceptedValue) isImprovement = true;
+                                break;
+
+                            case "RMSE":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
+                                if (currentValue > acceptedValue) isImprovement = true;
+                                break;
+
+                            case "NSE":  //if the current value is closer to ZERO than the accepted , then it is an improvement
+                                if (Math.Abs(currentValue) < Math.Abs(acceptedValue)) isImprovement = true;
+                                break;
+
+                            case "RSR":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
+                                if (currentValue < acceptedValue) isImprovement = true;
+                                break;
+                        }
+                        if (isImprovement == true)
+                        {
+                            row["PassedTest"] = true;
+                        }
+                        //Always update this
+                        row["IsImprovement"] = isImprovement;
+
+                    }
+                    else if (row["Accepted"] == DBNull.Value && row["Current"] == DBNull.Value)
+                    {
+                        //if the tests are both null, ie where n=1 and the other stats don't calculate, then make sure that we dont update the passed tests value.
+                        row["PassedTest"] = DBNull.Value;
                     }
                     else
                     {
-                        rowCurrent["Accepted"] = rowAccepted[0]["Accepted"];
-                        rowCurrent["AcceptedPredictedObservedTestsID"] = rowAccepted[0]["AcceptedPredictedObservedTestsID"];
+                        row["Difference"] = DBNull.Value;
+                        row["PassedTest"] = sigIdent;
                     }
                 }
             }
-
-            string sigIdent = "0";   //false   (1 = true)
-            foreach (DataRow row in currentTable.Rows)
+            catch (Exception ex)
             {
-                //If we are starting from scratch, then set the Accepted the same as the Current.
-                if (acceptedStats.Rows.Count <= 0)
-                {
-                    // 30/08/2017 - modLMC - originally this was updated when there were not Accepted Stats (ie, first time being saved), however
-                    // now don't save anything to see how it will work (as per discussion with Dean Holzworth).
-                    //row["Accepted"] = row["Current"];
-                    row["Accepted"] = DBNull.Value;
-                }
-
-                if (row["Accepted"] != DBNull.Value && row["Current"] != DBNull.Value)
-                {
-                    double currentValue = Convert.ToDouble(row["Current"]);
-                    double acceptedValue = Convert.ToDouble(row["Accepted"]);
-
-                    row["Difference"] = currentValue - acceptedValue;
-                    row["PassedTest"] = Math.Abs(Convert.ToDouble(row["Difference"])) > Math.Abs(Convert.ToDouble(row["Accepted"])) * 0.01 ? sigIdent : "1";
-
-                    bool isImprovement = false;
-                    switch (row["Test"].ToString())
-                    {
-                        case "R2":  //if the current is GREATER than accepted (ie difference is POSITIVE) then is an improvement
-                            if (currentValue < acceptedValue) isImprovement = true;
-                            break;
-
-                        case "RMSE":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
-                            if (currentValue > acceptedValue) isImprovement = true;
-                            break;
-
-                        case "NSE":  //if the current value is closer to ZERO than the accepted , then it is an improvement
-                            if (Math.Abs(currentValue) < Math.Abs(acceptedValue)) isImprovement = true;
-                            break;
-
-                        case "RSR":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
-                            if (currentValue < acceptedValue) isImprovement = true;
-                            break;
-                    }
-                    if (isImprovement == true)
-                    {
-                        row["PassedTest"] = true;
-                    }
-                    //Always update this
-                    row["IsImprovement"] = isImprovement;
-
-                }
-                else if (row["Accepted"] == DBNull.Value && row["Current"] == DBNull.Value)
-                {
-                    //if the tests are both null, ie where n=1 and the other stats don't calculate, then make sure that we dont update the passed tests value.
-                    row["PassedTest"] = DBNull.Value;
-                }
-                else
-                {
-                    row["Difference"] = DBNull.Value;
-                    row["PassedTest"] = sigIdent;
-                }
+                throw new Exception("    ERROR in MergeAndCompareAcceptedAgainstCurrent: " + ex.Message.ToString());
             }
 
         }
@@ -313,7 +320,7 @@ namespace APSIM.PerformanceTests.Service
             }
             catch (Exception ex)
             {
-                throw new Exception("ERROR:  Unable to process Test Data: " + ex.Message.ToString());
+                throw new Exception("ERROR in CalculateStatsOnPredictedObservedValues:  Unable to process Test Data: " + ex.Message.ToString());
             }
 
         }
@@ -426,7 +433,7 @@ namespace APSIM.PerformanceTests.Service
             }
             catch (Exception ex)
             {
-                throw new Exception("Unable to merge Current and Accepted Stats:  " + ex.Message.ToString());
+                throw new Exception("ERROR in MergeTestsStatsAndCompare:  " + ex.Message.ToString());
             }
             return dtTests;
         }

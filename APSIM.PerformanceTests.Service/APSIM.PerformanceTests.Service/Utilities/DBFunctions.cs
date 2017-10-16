@@ -94,7 +94,7 @@ namespace APSIM.PerformanceTests.Service
             }
             catch (Exception ex)
             {
-                Utilities.WriteToLogFile(string.Format("    ERROR: Unable to retrieve 'Accepted' PredictedObservedDetailsID for Pull Request {0}: {1}", acceptedPullRequestID, ex.Message.ToString()));
+                Utilities.WriteToLogFile(string.Format("    ERROR in GetAcceptedPredictedObservedDetailsId: Unable to retrieve 'Accepted' PredictedObservedDetailsID for Pull Request {0}: {1}", acceptedPullRequestID, ex.Message.ToString()));
             }
             return acceptedPredictedObservedDetailsID;
         }
@@ -135,7 +135,7 @@ namespace APSIM.PerformanceTests.Service
             }
             catch (Exception ex)
             {
-                Utilities.WriteToLogFile(string.Format("    ERROR: Unable to retrieve Tests Data PredictedObserved ID {0}: {1}", acceptedPredictedObservedDetailsID, ex.Message.ToString()));
+                Utilities.WriteToLogFile(string.Format("    ERROR in getPredictedObservedTestsData: Unable to retrieve Tests Data PredictedObserved ID {0}: {1}", acceptedPredictedObservedDetailsID, ex.Message.ToString()));
             }
             return acceptedStats;
         }
@@ -175,7 +175,7 @@ namespace APSIM.PerformanceTests.Service
 
             catch (Exception ex)
             {
-                Utilities.WriteToLogFile(string.Format("    ERROR: Unable to retrieve PredictedObserved Values for ID {0}: {1}", predictedObservedID, ex.Message.ToString()));
+                Utilities.WriteToLogFile(string.Format("    ERROR in getPredictedObservedValues: Unable to retrieve PredictedObserved Values for ID {0}: {1}", predictedObservedID, ex.Message.ToString()));
             }
             return resultDT;
         }
@@ -217,7 +217,7 @@ namespace APSIM.PerformanceTests.Service
 
                 catch (Exception ex)
                 {
-                    Utilities.WriteToLogFile(string.Format("    ERROR: Unable to save Tests Data for {0}.{1}:  {2}", currentApsimFileFileName, currentPODetailsDatabaseTableName, ex.Message.ToString()));
+                    Utilities.WriteToLogFile(string.Format("    ERROR in AddPredictedObservedTestsData: Unable to save Tests Data for {0}.{1}:  {2}", currentApsimFileFileName, currentPODetailsDatabaseTableName, ex.Message.ToString()));
                 }
             }
 
@@ -258,7 +258,7 @@ namespace APSIM.PerformanceTests.Service
 
                 catch (Exception ex)
                 {
-                    Utilities.WriteToLogFile(string.Format("    ERROR: Unable to update 'Accepted' PredictedObservedDetailsID {0} ON PredictedObservedDetails ID {1}: {2} ", acceptedPredictedObservedDetailsID, currentPODetailsID, ex.Message.ToString()));
+                    Utilities.WriteToLogFile(string.Format("    ERROR in UpdatePredictedObservedDetails: Unable to update 'Accepted' PredictedObservedDetailsID {0} ON PredictedObservedDetails ID {1}: {2} ", acceptedPredictedObservedDetailsID, currentPODetailsID, ex.Message.ToString()));
                 }
             }
         }
@@ -298,7 +298,7 @@ namespace APSIM.PerformanceTests.Service
 
                 catch (Exception ex)
                 {
-                    Utilities.WriteToLogFile(string.Format("    ERROR: Unable to update 'Accepted' Pull Request Id to {0} ON Pull Request ID {1}: {2} ", acceptedPullRequestID, currentPullRequestID, ex.Message.ToString()));
+                    Utilities.WriteToLogFile(string.Format("    ERROR in UpdateAllApsimFileAcceptedDetails: Unable to update 'Accepted' Pull Request Id to {0} ON Pull Request ID {1}: {2} ", acceptedPullRequestID, currentPullRequestID, ex.Message.ToString()));
                 }
             }
         }
@@ -339,7 +339,7 @@ namespace APSIM.PerformanceTests.Service
 
             catch (Exception ex)
             {
-                Utilities.WriteToLogFile(String.Format("    ERROR: Unable to update Accepted Pull Request ID {0} ON ApsimFile ID {1}: {2}", acceptedPullRequestID, currentApsimFileID, ex.Message.ToString()));
+                Utilities.WriteToLogFile(String.Format("    ERROR in UpdateApsimFileAcceptedDetails: Unable to update Accepted Pull Request ID {0} ON ApsimFile ID {1}: {2}", acceptedPullRequestID, currentApsimFileID, ex.Message.ToString()));
             }
         }
 
@@ -405,7 +405,7 @@ namespace APSIM.PerformanceTests.Service
 
             catch (Exception ex)
             {
-                Utilities.WriteToLogFile(string.Format("ERROR:  Pull Request Id {0}, Failed to update as 'Stats Accepted': {1}", acceptLog.PullRequestId.ToString(), ex.Message.ToString()));
+                Utilities.WriteToLogFile(string.Format("ERROR in UpdateAsStatsAccepted:  Pull Request Id {0}, Failed to update as 'Stats Accepted': {1}", acceptLog.PullRequestId.ToString(), ex.Message.ToString()));
             }
         }
 

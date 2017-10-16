@@ -85,28 +85,35 @@ namespace APSIM.PerformanceTests.Service
         {
             if (message.Length > 0)
             {
-                //this is just a temporary measure so that I can see what is happening
-                //Console.WriteLine(message);
+                try
+                {
+                    //this is just a temporary measure so that I can see what is happening
+                    //Console.WriteLine(message);
 
-                //Need to make sure we are in the same directory as this application 
-                //string fileName = getDirectoryPath("PerformanceTestsLog.txt");
-                string fileName = @"D:\Websites\APSIM.PerformanceTests.Service\PerformanceTestsLog.txt";
+                    //Need to make sure we are in the same directory as this application 
+                    //string fileName = getDirectoryPath("PerformanceTestsLog.txt");
+                    string fileName = @"D:\Websites\APSIM.PerformanceTests.Service\PerformanceTestsLog.txt";
 #if DEBUG
-                fileName = @"C:\Dev\PerformanceTests\PerformanceTestsLog.txt";
+                    fileName = @"C:\Dev\PerformanceTests\PerformanceTestsLog.txt";
 #endif
-                StreamWriter sw;
+                    StreamWriter sw;
 
-                if (!File.Exists(fileName))
-                {
-                    sw = new StreamWriter(fileName);
+                    if (!File.Exists(fileName))
+                    {
+                        sw = new StreamWriter(fileName);
+                    }
+                    else
+                    {
+                        sw = File.AppendText(fileName);
+                    }
+                    string logLine = String.Format("{0}: {1}", System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm"), message);
+                    sw.WriteLine(logLine);
+                    sw.Close();
+
                 }
-                else
+                catch (Exception)
                 {
-                    sw = File.AppendText(fileName);
                 }
-                string logLine = String.Format("{0}: {1}", System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm"), message);
-                sw.WriteLine(logLine);
-                sw.Close();
             }
         }
 
