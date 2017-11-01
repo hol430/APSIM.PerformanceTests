@@ -26,8 +26,8 @@ namespace APSIM.PerformanceTests.Service
 
         public static string GetConnectionString()
         {
-            string file = @"D:\Websites\dbConnect.txt";
             string connectionString = string.Empty;
+            string file = @"D:\Websites\dbConnect.txt";
 #if DEBUG
             file = @"C:\Dev\PerformanceTests\dbConnect.txt";
 #endif
@@ -44,34 +44,76 @@ namespace APSIM.PerformanceTests.Service
             }
         }
 
+        public static string GetGitHubToken()
+        {
+            string tokenString = string.Empty;
+            string file = @"D:\Websites\GitHubToken.txt";
+#if DEBUG
+            file =@"C:\Dev\PerformanceTests\GitHubToken.txt";
+#endif
+            try
+            {
+                tokenString = File.ReadAllText(file);
+            }
+            catch (Exception ex)
+            {
+                WriteToLogFile("ERROR: Unable to retrieve GitHub Token: " + ex.Message.ToString());
+            }
+            return tokenString;
+        }
+
+        public static string GetStatsAcceptedToken()
+        {
+            string tokenString = string.Empty;
+            string file = @"D:\Websites\PerformanceTestsStatsAcceptedToken.txt";
+#if DEBUG
+            file = @"C:\Dev\PerformanceTests\PerformanceTestsStatsAcceptedToken.txt";
+#endif
+            try
+            {
+                tokenString = File.ReadAllText(file);
+            }
+            catch (Exception ex)
+            {
+                WriteToLogFile("ERROR: Unable to retrieve AcceptedStats Token: " + ex.Message.ToString());
+            }
+            return tokenString;
+        }
 
 
         public static void WriteToLogFile(string message)
         {
             if (message.Length > 0)
             {
-                //this is just a temporary measure so that I can see what is happening
-                //Console.WriteLine(message);
+                try
+                {
+                    //this is just a temporary measure so that I can see what is happening
+                    //Console.WriteLine(message);
 
-                //Need to make sure we are in the same directory as this application 
-                //string fileName = getDirectoryPath("PerformanceTestsLog.txt");
-                string fileName = @"D:\Websites\APSIM.PerformanceTests.Service\PerformanceTestsLog.txt";
+                    //Need to make sure we are in the same directory as this application 
+                    //string fileName = getDirectoryPath("PerformanceTestsLog.txt");
+                    string fileName = @"D:\Websites\APSIM.PerformanceTests.Service\PerformanceTestsLog.txt";
 #if DEBUG
-                fileName = @"C:\Dev\PerformanceTests\PerformanceTestsLog.txt";
+                    fileName = @"C:\Dev\PerformanceTests\PerformanceTestsLog.txt";
 #endif
-                StreamWriter sw;
+                    StreamWriter sw;
 
-                if (!File.Exists(fileName))
-                {
-                    sw = new StreamWriter(fileName);
+                    if (!File.Exists(fileName))
+                    {
+                        sw = new StreamWriter(fileName);
+                    }
+                    else
+                    {
+                        sw = File.AppendText(fileName);
+                    }
+                    string logLine = String.Format("{0}: {1}", System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm"), message);
+                    sw.WriteLine(logLine);
+                    sw.Close();
+
                 }
-                else
+                catch (Exception)
                 {
-                    sw = File.AppendText(fileName);
                 }
-                string logLine = String.Format("{0}: {1}", System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm"), message);
-                sw.WriteLine(logLine);
-                sw.Close();
             }
         }
 

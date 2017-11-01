@@ -6,7 +6,8 @@
 <head runat="server">
     <title></title>
     <link rel="stylesheet" href="Site.css" type="text/css" />
-    <script type="text/javascript" src="JavaScript/ScrollingGrids.js"></script>
+    <script src="JavaScript/ScrollingGrids.js" type="text/javascript"></script>
+    <meta name="format-detection" content="telephone=no">
 </head>
 <body>
     <form id="form1" runat="server">

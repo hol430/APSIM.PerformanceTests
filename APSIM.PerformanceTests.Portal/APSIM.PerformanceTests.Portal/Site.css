@@ -1,16 +1,31 @@
 ﻿
-/*Div Style Definitions*/
+/*Div Style Definitions - DEFAULT*/
 #GridDataDiv {
     overflow: auto; 
     /*border: 1px solid black;*/ 
     width: 900px; 
     height: 500px;
 }
+#GridDataDiv_SimFiles {
+    overflow: auto; 
+    /*border: 1px solid black;*/ 
+    width: 1000px; 
+    height: 500px;
+}
 #GridDataDiv_POValues {
     overflow: auto; 
     /*border: 1px solid black;*/ 
-    width: 950px; 
+    width: 1000px; 
     height: 500px;
+    border: 1px solid black;
+}
+
+#GridDataDiv_POTests {
+    overflow: auto; 
+    /*border: 1px solid black;*/ 
+    width: 870px; 
+    height: 400px;
+    border: 1px solid black;
 }
 
 #footer {
@@ -18,19 +33,98 @@
     bottom: 0px;
 }
 
+ .modalBackground {
+      background-color: White;
+      filter: alpha(opacity=50);
+      opacity: 0.7;
+}
+.modalPopup {
+    background-color: #FFFFFF;
+    border-width: 3px;
+    border-style: solid;
+    border-color: black;
+    padding-top: 10px;
+    padding-left: 10px;
+    width: 500px;
+    height: 250px;
+}
+
+.GridHeader, .GridHeader_Left, .GridHeader_Row1, .GridHeader_Row2 {
+    background: #004844;
+    color: White;
+    font-family:  Verdana;
+    font-size: 12px;
+    font-weight: bold;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+.GridHeader_Left, .GridHeader_Row1, .GridHeader_Row2 {
+    border-left: 1px solid lightgray; 
+}
+
+.GridHeader_Row1, .GridHeader_Row2 {
+    text-align: center; 
+    padding-top: 5px ;
+    padding-bottom: 5px ;
+}
+
+.GridHeader_Row1 {
+    border-bottom: 1px solid lightgray; 
+}
+
 
 /*Class Style Definitions*/
 .GridViewStyle {    
+    text-decoration: none;
     font-family:  Verdana;
     font-size: 13px;
     background-color: White; 
 }
+
+.GridViewStyle_DropDown {    
+    text-decoration: none;
+    font-family:  Verdana;
+    font-size: 11px;
+    background-color: White; 
+}
+
+.GridViewStyle_POValues {    
+    text-decoration: none;
+    font-family:  Verdana;
+    font-size: 12px;
+    background-color: White;
+}
         
 .GridViewHeaderStyle {
     font-family:  Verdana;
-    font-size: 14px;
+    font-size: 13px;
 	color: White;
 	background: #004844 url(Image/gridheader.jpg) repeat-x;
+}
+.GridViewHeaderStyle_DropDown {
+    font-family:  Verdana;
+    font-size: 11px;
+    font-weight: bold;
+	color: White;
+	background: #004844 url(Image/gridheader.jpg) repeat-x;
+}
+
+.GridViewHeaderStyle_POValues {
+    font-family:  Verdana;
+    font-size: 12px;
+    font-weight: bold;
+	color: White;
+	background: #004844 url(Image/gridheader.jpg) repeat-x;
+}
+
+.GridViewRowStyle {
+    height: 25px;
+}
+
+.invisibleColumn
+{
+    display: none;
+    width: 0px;
 }
 
 
@@ -74,6 +168,10 @@
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-size: 14px;
     font-weight: bold;
+}
+.ScreenDetails {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 13px;
 }
 
 .PassedTests {

@@ -16,7 +16,6 @@ using APSIM.Shared.Utilities;
 
 namespace APSIM.PerformanceTests.Service.Controllers
 {
-
     public class ApsimFilesController : ApiController
     {
         /// <summary>
@@ -45,7 +44,18 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         apsim.FileName = reader.GetString(2);
                         apsim.FullFileName = reader.GetString(3);
                         apsim.RunDate = reader.GetDateTime(4);
-                        apsim.IsReleased = reader.GetBoolean(5);
+                        apsim.StatsAccepted = reader.GetBoolean(5);
+                        apsim.IsMerged = reader.GetBoolean(6);
+                        apsim.SubmitDetails = reader.GetString(7);
+                        if (reader.IsDBNull(8))
+                        {
+                            apsim.AcceptedPullRequestId = 0;
+                        }
+                        else
+                        {
+                            apsim.AcceptedPullRequestId = reader.GetInt32(8);
+                        }
+
                         apsimFiles.Add(apsim);
                     }
                     con.Close();
@@ -84,7 +94,18 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         apsim.FileName = reader.GetString(2);
                         apsim.FullFileName = reader.GetString(3);
                         apsim.RunDate = reader.GetDateTime(4);
-                        apsim.IsReleased = reader.GetBoolean(5);
+                        apsim.StatsAccepted = reader.GetBoolean(5);
+                        apsim.IsMerged = reader.GetBoolean(6);
+                        apsim.SubmitDetails = reader.GetString(7);
+                        if (reader.IsDBNull(8))
+                        {
+                            apsim.AcceptedPullRequestId = 0;
+                        }
+                        else
+                        {
+                            apsim.AcceptedPullRequestId = reader.GetInt32(8);
+                        }
+
                         apsimFiles.Add(apsim);
                     }
                     con.Close();
@@ -143,7 +164,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
                 Utilities.WriteToLogFile("  ");
                 Utilities.WriteToLogFile("==========================================================");
-                Utilities.WriteToLogFile(string.Format("Processing PullRequestId {0}, Apsim Filename {1}, dated {2}!", apsimfile.PullRequestId, apsimfile.FileName, apsimfile.RunDate.ToString("dd/mm/yyyy HH:mm")));
+                Utilities.WriteToLogFile(string.Format("Processing PullRequestId {0}, Apsim Filename {1}, dated {2}!", apsimfile.PullRequestId, apsimfile.FileName, apsimfile.RunDate.ToString("dd/MM/yyyy HH:mm")));
 
 
                 //--------------------------------------------------------------------------------------
@@ -154,21 +175,43 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 using (SqlConnection con = new SqlConnection(connectStr))
                 {
                     strSQL = "SELECT COUNT(ID) FROM ApsimFiles WHERE PullRequestId = @PullRequestId AND RunDate != @RunDate";
-                    using (SqlCommand command = new SqlCommand(strSQL, con))
+                    using (SqlCommand commandES = new SqlCommand(strSQL, con))
                     {
-                        command.CommandType = CommandType.Text;
-                        command.Parameters.AddWithValue("@PullRequestId", apsimfile.PullRequestId);
-                        command.Parameters.AddWithValue("@RunDate", apsimfile.RunDate);
+                        commandES.CommandType = CommandType.Text;
+                        commandES.Parameters.AddWithValue("@PullRequestId", apsimfile.PullRequestId);
+                        commandES.Parameters.AddWithValue("@RunDate", apsimfile.RunDate);
 
                         con.Open();
-                        pullRequestCount = (int)command.ExecuteScalar();
+                        pullRequestCount = (int)commandES.ExecuteScalar();
                         con.Close();
                     }
-                }
-                if (pullRequestCount > 0)
-                {
-                    DeleteByPullRequestRunDate(connectStr, apsimfile.PullRequestId, apsimfile.RunDate);
-                    Utilities.WriteToLogFile("    Removed original Pull Request Data.");
+
+                    if (pullRequestCount > 0)
+                    {
+                        try
+                        {
+                            using (SqlConnection conSP = new SqlConnection(connectStr))
+                            {
+                                //DeleteByPullRequestButNotRunDate(connectStr, apsimfile.PullRequestId, apsimfile.RunDate);
+                                using (SqlCommand commandSP = new SqlCommand("usp_DeleteByPullRequestIdButNotRunDate", conSP))
+                                {
+                                    // Configure the command and parameter.
+                                    commandSP.CommandType = CommandType.StoredProcedure;
+                                    commandSP.CommandTimeout = 0;
+                                    commandSP.Parameters.AddWithValue("@PullRequestID", apsimfile.PullRequestId);
+                                    commandSP.Parameters.AddWithValue("@RunDate", apsimfile.RunDate);
+                                    conSP.Open();
+                                    commandSP.ExecuteNonQuery();
+                                    conSP.Close();
+                                }
+                            }
+                            Utilities.WriteToLogFile("    Removed original Pull Request Data.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Utilities.WriteToLogFile("    ERROR:  Error Removing original Pull Request Data: " + ex.Message.ToString());
+                        }
+                    }
                 }
 
                 //--------------------------------------------------------------------------------------
@@ -176,7 +219,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 //--------------------------------------------------------------------------------------
                 using (SqlConnection con = new SqlConnection(connectStr))
                 {
-                    strSQL = "INSERT INTO ApsimFiles (PullRequestId, FileName, FullFileName, RunDate, IsReleased) OUTPUT INSERTED.ID Values (@PullRequestId, @FileName, @FullFileName, @RunDate, @IsReleased)";
+                    strSQL = "INSERT INTO ApsimFiles (PullRequestId, FileName, FullFileName, RunDate, StatsAccepted, IsMerged, SubmitDetails) "
+                            + " OUTPUT INSERTED.ID Values ("
+                            + "@PullRequestId, @FileName, @FullFileName, @RunDate, @StatsAccepted, @IsMerged, @SubmitDetails "
+                            + " )";
                     using (SqlCommand command = new SqlCommand(strSQL, con))
                     {
                         command.CommandType = CommandType.Text;
@@ -184,7 +230,9 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         command.Parameters.AddWithValue("@FileName", apsimfile.FileName);
                         command.Parameters.AddWithValue("@FullFileName", Utilities.GetModifiedFileName(apsimfile.FullFileName));
                         command.Parameters.AddWithValue("@RunDate", apsimfile.RunDate);
-                        command.Parameters.AddWithValue("@IsReleased", apsimfile.IsReleased);
+                        command.Parameters.AddWithValue("@StatsAccepted", apsimfile.StatsAccepted);
+                        command.Parameters.AddWithValue("@IsMerged", apsimfile.IsMerged);
+                        command.Parameters.AddWithValue("@SubmitDetails", apsimfile.SubmitDetails);
 
 
                         //this should return the IDENTITY value for this record (which is required for the next update)
@@ -369,101 +417,54 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     if (poDetail.PredictedObservedData.Rows.Count > 0)
                     {
                         ErrMessageHelper = string.Empty;
+
                         Utilities.WriteToLogFile(string.Format("    Tests Data for {0}.{1} import started.", apsimfile.FileName, poDetail.DatabaseTableName));
 
-                        //need to retrieve data for the "IsReleased" version, so that we can update the stats
-                        //Get the 'IsRelease' Pull request id
+                        //need to retrieve data for the "AcceptedStats" version, so that we can update the stats
                         int acceptedPredictedObservedDetailsID = 0;    //this should get updated in 'RetrieveAcceptedStatsData' 
-                        DataTable acceptedStats = RetrieveAcceptedStatsData(connectStr, apsimfile, poDetail, predictedObservedID, ref acceptedPredictedObservedDetailsID);
+                        //ErrMessageHelper = "Processing RetrieveAcceptedStatsData.";
+                        DataTable acceptedStats = RetrieveAcceptedStatsData(connectStr, ApsimID, apsimfile, poDetail, predictedObservedID, ref acceptedPredictedObservedDetailsID);
 
+                        //ErrMessageHelper = "Processing Tests.DoValidationTest.";
                         DataTable dtTests = Tests.DoValidationTest(poDetail.DatabaseTableName, poDetail.PredictedObservedData, acceptedStats);
 
-                        if (dtTests.Rows.Count > 0)
-                        {
-                            using (SqlConnection con = new SqlConnection(connectStr))
-                            {
-                                using (SqlCommand command = new SqlCommand("usp_PredictedObservedTestsInsert", con))
-                                {
-                                    //Now update the database with the test results
-                                    // Configure the command and parameter.
-                                    command.CommandType = CommandType.StoredProcedure;
-                                    command.Parameters.AddWithValue("@PredictedObservedID", predictedObservedID);
-
-                                    SqlParameter tvpParam = command.Parameters.AddWithValue("@Tests", dtTests);
-                                    tvpParam.SqlDbType = SqlDbType.Structured;
-                                    tvpParam.TypeName = "dbo.PredictedObservedTestsTableType";
-
-                                    try
-                                    {
-                                        con.Open();
-                                        command.ExecuteNonQuery();
-                                        con.Close();
-                                        Utilities.WriteToLogFile(string.Format("    Tests Data for {0}.{1} import completed successfully!", apsimfile.FileName, poDetail.DatabaseTableName));
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Utilities.WriteToLogFile(string.Format("    ERROR: Unable to save Tests Data for {0}.{1}:  {2}", apsimfile.FileName, poDetail.DatabaseTableName, ex.Message.ToString()));
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Utilities.WriteToLogFile(string.Format("    ERROR:  Tests Data for {0}.{1} does not exist.", apsimfile.FileName, poDetail.DatabaseTableName));
-                        }
+                        //ErrMessageHelper = "Processing DBFunctions.AddPredictedObservedTestsData.";
+                        DBFunctions.AddPredictedObservedTestsData(connectStr, apsimfile.FileName, predictedObservedID, poDetail.DatabaseTableName, dtTests);
 
                         //Update the accepted reference for Predicted Observed Values, so that it can be 
-                        if (acceptedPredictedObservedDetailsID > 0 && predictedObservedID > 0)
-                        {
-                            using (SqlConnection con = new SqlConnection(connectStr))
-                            {
-                                strSQL = "UPDATE PredictedObservedDetails "
-                                       + " SET AcceptedPredictedObservedDetailsID = @AcceptedPredictedObservedDetailsID "
-                                       + " WHERE ID = @PredictedObservedDetailsID ";
-
-                                using (SqlCommand command = new SqlCommand(strSQL, con))
-                                {
-                                    command.CommandType = CommandType.Text;
-                                    command.Parameters.AddWithValue("@AcceptedPredictedObservedDetailsID", acceptedPredictedObservedDetailsID);
-                                    command.Parameters.AddWithValue("@PredictedObservedDetailsID", predictedObservedID);
-
-                                    ErrMessageHelper = "- Updating 'Accepted' PredictedObservedDetailsID for Current PredictedObservedDetails.";
-                                    con.Open();
-                                    command.ExecuteNonQuery();
-                                    con.Close();
-                                }
-                            }
-                        }
+                        ErrMessageHelper = "Processing DBFunctions.UpdatePredictedObservedDetails.";
+                        DBFunctions.UpdatePredictedObservedDetails(connectStr, acceptedPredictedObservedDetailsID, predictedObservedID);
                     }
                 }   //foreach (PredictedObservedDetails poDetail in apsimfile.PredictedObserved)
-
                 return CreatedAtRoute("DefaultApi", new { id = ApsimID }, apsimfile);
             }
 
             catch (Exception ex)
             {
-                Utilities.WriteToLogFile("    ERROR:  Unable to update SQL Server: " + ErrMessageHelper.ToString() + " - " + ex.Message.ToString());
-                throw new Exception("Unable to update SQL Server: " + ex.Message.ToString());
+                Utilities.WriteToLogFile("    ERROR in PostApsimFile:  " + ErrMessageHelper.ToString() + " - " + ex.Message.ToString());
+                throw new Exception("    ERROR in PostApsimFile:  " + ErrMessageHelper.ToString() + " - " + ex.Message.ToString());
             }
         }
 
+ 
+
         /// <summary>
-        /// Returns the PredictedObservedTests data for 'Accepted' data set, based on matching 'Current' Details
+        // Returns the PredictedObservedTests data for 'Accepted' data set, based on matching 'Current' Details
         /// </summary>
         /// <param name="conStr"></param>
+        /// <param name="currentApsimID"></param>
         /// <param name="currentApsim"></param>
         /// <param name="poDetail"></param>
         /// <param name="predictedObservedId"></param>
         /// <param name="acceptedPredictedObservedDetailsID"></param>
         /// <returns></returns>
-        private static DataTable RetrieveAcceptedStatsData(string conStr, ApsimFile currentApsim, PredictedObservedDetails poDetail, int predictedObservedId, ref int acceptedPredictedObservedDetailsID)
+        private static DataTable RetrieveAcceptedStatsData(string conStr, int currentApsimID, ApsimFile currentApsim, PredictedObservedDetails poDetail, int predictedObservedId, ref int acceptedPredictedObservedDetailsID)
         {
+            DataTable acceptedStats = new DataTable();
+            ApsimFile acceptedApsim = new ApsimFile();
             try
             {
-                DataTable acceptedStats = new DataTable();
-                ApsimFile acceptedApsim = new ApsimFile();
-
-                string strSQL = "SELECT TOP 1 * FROM ApsimFiles WHERE IsReleased = 1 AND PullRequestId != @PullRequestId ORDER BY RunDate DESC";
+                string strSQL = "SELECT TOP 1 * FROM ApsimFiles WHERE StatsAccepted = 1 AND PullRequestId != @PullRequestId ORDER BY RunDate DESC";
                 using (SqlConnection con = new SqlConnection(conStr))
                 {
                     using (SqlCommand command = new SqlCommand(strSQL, con))
@@ -480,7 +481,17 @@ namespace APSIM.PerformanceTests.Service.Controllers
                             acceptedApsim.FileName = sdReader.GetString(2);
                             acceptedApsim.FullFileName = sdReader.GetString(3);
                             acceptedApsim.RunDate = sdReader.GetDateTime(4);
-                            acceptedApsim.IsReleased = sdReader.GetBoolean(5);
+                            acceptedApsim.StatsAccepted = sdReader.GetBoolean(5);
+                            acceptedApsim.IsMerged = sdReader.GetBoolean(6);
+                            acceptedApsim.SubmitDetails = sdReader.GetString(7);
+                            if (sdReader.IsDBNull(8))
+                            {
+                                acceptedApsim.AcceptedPullRequestId = 0;
+                            }
+                            else
+                            {
+                                acceptedApsim.AcceptedPullRequestId = sdReader.GetInt32(8);
+                            }
                         }
                         con.Close();
                     }
@@ -488,90 +499,22 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
                 if (acceptedApsim.PullRequestId > 0)
                 {
+                    DBFunctions.UpdateApsimFileAcceptedDetails(conStr, currentApsimID, acceptedApsim.PullRequestId, acceptedApsim.RunDate);
+
                     ////get the PredictedObservedDetail.ID for the records that match our current record 'matching' criteria
-                    using (SqlConnection con = new SqlConnection(conStr))
-                    {
-                        strSQL = "SELECT p.ID  "
-                        + " FROM PredictedObservedDetails p INNER JOIN ApsimFiles a ON p.ApsimFilesID = a.ID "
-                        + " WHERE a.PullRequestId = @pullRequestId "
-                        + "    AND a.FileName = @filename "
-                        + "    AND p.TableName = @tablename "
-                        + "    AND p.PredictedTableName = @predictedTableName "
-                        + "    AND p.ObservedTableName = @observedTableName "
-                        + "    AND p.FieldNameUsedForMatch = @fieldNameUsedForMatch ";
-
-                        if (poDetail.FieldName2UsedForMatch.Length > 0)
-                        {
-                            strSQL = strSQL + "    AND p.FieldName2UsedForMatch = @fieldName2UsedForMatch ";
-                        }
-
-                        if (poDetail.FieldName3UsedForMatch.Length > 0)
-                        {
-                            strSQL = strSQL + "    AND p.FieldName3UsedForMatch = @fieldName3UsedForMatch ";
-                        }
-
-                        using (SqlCommand command = new SqlCommand(strSQL, con))
-                        {
-                            command.CommandType = CommandType.Text;
-                            command.Parameters.AddWithValue("@PullRequestId", acceptedApsim.PullRequestId);
-                            command.Parameters.AddWithValue("@filename", currentApsim.FileName);
-                            command.Parameters.AddWithValue("@tablename", poDetail.DatabaseTableName);
-                            command.Parameters.AddWithValue("@predictedTableName", poDetail.PredictedTableName);
-                            command.Parameters.AddWithValue("@observedTableName", poDetail.ObservedTableName);
-                            command.Parameters.AddWithValue("@fieldNameUsedForMatch", poDetail.FieldNameUsedForMatch);
-
-
-                            if (poDetail.FieldName2UsedForMatch.Length > 0)
-                            {
-                                command.Parameters.AddWithValue("@fieldName2UsedForMatch", poDetail.FieldName2UsedForMatch);
-                            }
-
-                            if (poDetail.FieldName3UsedForMatch.Length > 0)
-                            {
-                                command.Parameters.AddWithValue("@fieldName3UsedForMatch", poDetail.FieldName3UsedForMatch);
-                            }
-                            con.Open();
-                            object obj = command.ExecuteScalar();
-                            con.Close();
-
-                            if (obj != null)
-                            {
-                                acceptedPredictedObservedDetailsID = int.Parse(obj.ToString());
-                            }
-                        }
-                    }
-
-                    if (acceptedPredictedObservedDetailsID > 0)
-                    {
-                        //Now retreieve the matching tests data for our predicted observed details
-                        using (SqlConnection con = new SqlConnection(conStr))
-                        {
-                            strSQL = "SELECT Variable, Test, [Current] as 'Accepted', ID As 'AcceptedPredictedObservedTestsID' "
-                                   + " FROM PredictedObservedTests "
-                                   + " WHERE PredictedObservedDetailsID = @PredictedObservedDetailsID ";
-
-                            using (SqlCommand command = new SqlCommand(strSQL, con))
-                            {
-                                command.CommandType = CommandType.Text;
-                                command.Parameters.AddWithValue("@PredictedObservedDetailsID", acceptedPredictedObservedDetailsID);
-
-                                con.Open();
-                                SqlDataReader reader = command.ExecuteReader();
-                                acceptedStats = new DataTable();
-                                acceptedStats.Load(reader);
-                                con.Close();
-                            }
-                        }
-                    }
+                    acceptedPredictedObservedDetailsID = DBFunctions.GetAcceptedPredictedObservedDetailsId(conStr, acceptedApsim.PullRequestId, currentApsim.FileName, poDetail);
+                    ////Now retreieve the matching tests data for our predicted observed details
+                    acceptedStats = DBFunctions.getPredictedObservedTestsData(conStr, acceptedPredictedObservedDetailsID);
                 }
-                return acceptedStats;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Utilities.WriteToLogFile(string.Format("    ERROR:  Unable to RetrieveAcceptedStatsData for ApsimFile {0}: Pull Request Id {1}: {2}.", currentApsim.FileName, currentApsim.PullRequestId, ex.Message.ToString()));
             }
-
+            return acceptedStats;
         }
+
+
 
         /// <summary>
         /// Deletes all Data for a specified Pull RequestId
@@ -580,18 +523,25 @@ namespace APSIM.PerformanceTests.Service.Controllers
         /// <param name="pullRequestId"></param>
         private static void DeleteByPullRequest(string connectStr, int pullRequestId)
         {
-            using (SqlConnection con = new SqlConnection(connectStr))
+            try
             {
-                using (SqlCommand command = new SqlCommand("usp_DeleteByPullRequestId", con))
+                using (SqlConnection con = new SqlConnection(connectStr))
                 {
-                    // Configure the command and parameter.
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.CommandTimeout = 0;
-                    command.Parameters.AddWithValue("@PullRequestID", pullRequestId);
-                    con.Open();
-                    command.ExecuteNonQuery();
-                    con.Close();
+                    using (SqlCommand command = new SqlCommand("usp_DeleteByPullRequestId", con))
+                    {
+                        // Configure the command and parameter.
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.CommandTimeout = 0;
+                        command.Parameters.AddWithValue("@PullRequestID", pullRequestId);
+                        con.Open();
+                        command.ExecuteNonQuery();
+                        con.Close();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Utilities.WriteToLogFile(string.Format("    ERROR:  Unable to remove data for Pull Request Id: {0}: {1}.", pullRequestId, ex.Message.ToString()));
             }
         }
 
@@ -601,21 +551,28 @@ namespace APSIM.PerformanceTests.Service.Controllers
         /// <param name="connectStr"></param>
         /// <param name="pullRequestId"></param>
         /// <param name="runDate"></param>
-        private static void DeleteByPullRequestRunDate(string connectStr, int pullRequestId, DateTime runDate)
+        private static void DeleteByPullRequestButNotRunDate(string connectStr, int pullRequestId, DateTime runDate)
         {
-            using (SqlConnection con = new SqlConnection(connectStr))
+            try
             {
-                using (SqlCommand command = new SqlCommand("usp_DeleteByPullRequestIdButNotRunDate", con))
+                using (SqlConnection conDel = new SqlConnection(connectStr))
                 {
-                    // Configure the command and parameter.
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.CommandTimeout = 0;
-                    command.Parameters.AddWithValue("@PullRequestID", pullRequestId);
-                    command.Parameters.AddWithValue("@RunDate", runDate);
-                    con.Open();
-                    command.ExecuteNonQuery();
-                    con.Close();
+                    using (SqlCommand commandSP = new SqlCommand("usp_DeleteByPullRequestIdButNotRunDate", conDel))
+                    {
+                        // Configure the command and parameter.
+                        commandSP.CommandType = CommandType.StoredProcedure;
+                        commandSP.CommandTimeout = 0;
+                        commandSP.Parameters.AddWithValue("@PullRequestID", pullRequestId);
+                        commandSP.Parameters.AddWithValue("@RunDate", runDate);
+                        conDel.Open();
+                        commandSP.ExecuteNonQuery();
+                        conDel.Close();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Utilities.WriteToLogFile(string.Format("    ERROR:  Unable to remove data for Pull Request Id: {0} on {1}: {2}.", pullRequestId, runDate.ToString("dd/MM/yyyy HH:mm"),  ex.Message.ToString()));
             }
         }
     }

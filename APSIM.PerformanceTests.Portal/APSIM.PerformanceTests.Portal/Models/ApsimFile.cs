@@ -14,7 +14,11 @@ namespace APSIM.PerformanceTests.Portal.Models
         public string FileName { get; set; }
         public string FullFileName { get; set; }
         public System.DateTime RunDate { get; set; }
-        public Nullable<bool> IsReleased { get; set; }
+        public Nullable<bool> StatsAccepted { get; set; }
+        public string SubmitDetails { get; set; }
+        public int AcceptedPullRequestId { get; set; }
+        public System.DateTime AcceptedRunDate { get; set; }
+
     }
 
 }

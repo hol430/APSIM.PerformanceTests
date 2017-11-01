@@ -18,16 +18,17 @@ namespace APSIM.PerformanceTests.Collector
 {
     class Program
     {
-        static HttpClient httpclient = new HttpClient();
+        static HttpClient httpClient = new HttpClient();
 
         static int Main(string[] args)
         {
-            httpclient.BaseAddress = new Uri("http://www.apsim.info/APSIM.PerformanceTests.Service/");
+            string serviceUrl = ConfigurationManager.AppSettings["serviceAddress"].ToString() + "APSIM.PerformanceTests.Service/";
+            httpClient.BaseAddress = new Uri(serviceUrl);
 #if DEBUG
-            httpclient.BaseAddress = new Uri("http://localhost:53187/");
+            httpClient.BaseAddress = new Uri("http://localhost:53187/");
 #endif
-            httpclient.DefaultRequestHeaders.Accept.Clear();
-            httpclient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
 
             //initially set to true
@@ -35,6 +36,7 @@ namespace APSIM.PerformanceTests.Collector
             //Console.Title = typeof(Program).Name;
             string pullCmd = string.Empty;
             int pullId = 0;
+            string submitDetails = string.Empty;
             DateTime runDate;
             string[] commandNames = new string[] { "AddToDatabase", "Check" };  //can add to this over time
 
@@ -59,8 +61,15 @@ namespace APSIM.PerformanceTests.Collector
                     }
                     pullId = Int32.Parse(args[1]);
                     runDate = DateTime.ParseExact(args[2], "yyyy.MM.dd-HH:mm", CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal);
+
+                    if (args.Length > 3)
+                    {
+                        submitDetails = args[3].ToString();
+                    }
+
 #if DEBUG
                     runDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 0);
+                    runDate = runDate.AddDays(-1);
 #endif
                     WriteToLogFile("  ");
                     WriteToLogFile("==========================================================");
@@ -72,12 +81,9 @@ namespace APSIM.PerformanceTests.Collector
                     //(GET) Get a single record back
                     //GetApsimFileByPullRequestID(httpclient, 2).Wait();
 
-                    //(PUT) Update a single record
-                    //UpdateApsimFileRequestName(httpclient, 2, "New").Wait();
-
                     if (pullCmd == "AddToDatabase")
                     {
-                        RetrieveData(pullId, runDate);
+                        RetrieveData(pullId, runDate, submitDetails);
                     }
                     //Console.ReadKey();      //this will pause the screen so that we can see the output in the console window
                 }
@@ -104,12 +110,13 @@ namespace APSIM.PerformanceTests.Collector
                 List<ApsimFile> apsimfiles = await response.Content.ReadAsAsync<List<ApsimFile>>();
                 foreach (ApsimFile apsim in apsimfiles)
                 {
-                    WriteToLogFile(string.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", apsim.ID, apsim.PullRequestId, apsim.FileName, apsim.FullFileName, apsim.RunDate, apsim.IsReleased));
+                    WriteToLogFile(string.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", apsim.ID, apsim.PullRequestId, apsim.FileName, apsim.FullFileName, apsim.RunDate, apsim.IsMerged));
                 }
                // Console.ReadLine();
 
             }
         }
+
 
         //ULTIMATELY, THIS WILL RETURN MULTIPLE, BUT FOR NOW, JUST LEAVE IT AS ONE
         private static async Task GetApsimFileByPullRequestID(HttpClient cons, int id)
@@ -119,40 +126,23 @@ namespace APSIM.PerformanceTests.Collector
             if (response.IsSuccessStatusCode)
             {
                 ApsimFile apsim = await response.Content.ReadAsAsync<ApsimFile>();
-                WriteToLogFile(string.Format("{0}\t{1}\t{2}\t{3}\t{4}", apsim.PullRequestId, apsim.FileName, apsim.FullFileName, apsim.RunDate, apsim.IsReleased));
+                WriteToLogFile(string.Format("{0}\t{1}\t{2}\t{3}\t{4}", apsim.PullRequestId, apsim.FileName, apsim.FullFileName, apsim.RunDate, apsim.IsMerged));
 
             }
         }
-
-        private static async Task UpdateApsimFileRequestName(HttpClient cons, int id, bool isReleased)
-        {
-            HttpResponseMessage response = await cons.GetAsync("api/apsimfiles/" + id);
-            response.EnsureSuccessStatusCode();
-            if (response.IsSuccessStatusCode)
-            {
-                //ApsimFile apsim = await response.Content.ReadAsAsync<ApsimFile>();
-                //apsim.FullFileName = newName + " " +  apsim.FullFileName;
-                response = await cons.PutAsJsonAsync("api/apsimfiles/" + id, isReleased);
-                response.EnsureSuccessStatusCode();
-                if (response.IsSuccessStatusCode)
-                {
-                    WriteToLogFile(string.Format("Pull Request Id {0} updated isReleased = {1}", id, isReleased));
-                }
-            }
-        }
-
-
  
+
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="apsimInstance"></param>
-        static async Task PostApsimRun(HttpClient con, ApsimFile apsimInstance)
+        static async Task PostApsimRun(ApsimFile apsimInstance)
         {
             string apsimFileName = apsimInstance.FileName;
             try
             {
-                HttpResponseMessage response = await con.PostAsJsonAsync("api/apsimfiles", apsimInstance);
+                HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/apsimfiles", apsimInstance);
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {
@@ -164,6 +154,26 @@ namespace APSIM.PerformanceTests.Collector
                 WriteToLogFile(string.Format("    ERROR posting Apsim File {0} to Web API: {2} ", apsimFileName, ex.Message.ToString()));
             }
         }
+
+
+        static async Task UpdatePullRequestsPassedTestsStatus(int id)
+        {
+            try
+            {
+                HttpResponseMessage response = await httpClient.GetAsync("api/acceptstats/" + id);
+                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                {
+                    WriteToLogFile(string.Format("    Successfully processed PassedTests Status for Pull Request Id: ", id));
+                }
+
+            }
+            catch (Exception ex)
+            {
+                WriteToLogFile(string.Format("  ERROR:  Unable to process PassedTests Status for Pull Request Id {0}: {1}", id, ex.Message.ToString()));
+            }
+        }
+
 
 
         private static bool HelpRequired(string param)
@@ -179,7 +189,8 @@ namespace APSIM.PerformanceTests.Collector
             Console.WriteLine("  1. (string) Command Type");
             Console.WriteLine("  2. (int) Pull Request Id");
             Console.WriteLine("  3. (datetime) Date");
-            Console.WriteLine("  Example: APSIM.PerformanceTests.Collector.exe AddToDatabase 1111 2016.12.01-06:33");
+            Console.WriteLine("  4. (string) UserID");
+            Console.WriteLine("  Example: APSIM.PerformanceTests.Collector.exe AddToDatabase 1111 2016.12.01-06:33 JHN321");
 
         }
 
@@ -189,21 +200,17 @@ namespace APSIM.PerformanceTests.Collector
         /// and then process these files
         /// </summary>
         /// <param name="pullId"></param>
-        private static void RetrieveData(int pullId, DateTime runDate)
+        private static void RetrieveData(int pullId, DateTime runDate, string submitDetails)
         {
             //"C:/Jenkins/workspace/1. GitHub pull request/ApsimX/Tests/C:/Jenkins/workspace/1. GitHub pull request/ApsimX/Prototypes/";
-
 
             //need to allow for "Tests" and "ProtoTypes" directory
             //searchDir = @"C:/ApsimWork/Tests/;C:/ApsimWork/Prototypes/";
             //searchDir = @"C:/Users/cla473/Dropbox/APSIMInitiative/ApsimX/Tests/;C:/Users/cla473/Dropbox/APSIMInitiative/ApsimX/Prototypes/;";
 
             string searchDir = ConfigurationManager.AppSettings["searchDirectory"].ToString();
-
             string[] filePaths = searchDir.Split(';');
             
-
-
             foreach (string filePath in filePaths)
             {
                 string currentPath = filePath.Trim();
@@ -221,20 +228,21 @@ namespace APSIM.PerformanceTests.Collector
                         ApsimFile apsimFile = new ApsimFile();
                         apsimFile.FullFileName = fi.FullName;
                         apsimFile.FileName = Path.GetFileNameWithoutExtension(fi.FullName);
+                        apsimFile.PullRequestId = pullId;
+                        apsimFile.RunDate = runDate;
 
                         apsimFile.PredictedObserved = GetPredictedObservedDetails(fi.FullName);
+                        apsimFile.SubmitDetails = submitDetails;
 
                         if (apsimFile.PredictedObserved.Count() > 0)
                         //if (PredictedObservedDatabaseDataExists == true)
                         {
                             apsimFile.Simulations = GetSimulationDataTable(apsimFile.FileName, apsimFile.FullFileName);
-                            //apsimFiles.Add(apsimFile);
-                            apsimFile.PullRequestId = pullId;
-                            apsimFile.RunDate = runDate;
+                            //apsimFiles.Add(apsimFile);q
 
                             try
                             {
-                                PostApsimRun(httpclient, apsimFile).Wait();
+                                PostApsimRun(apsimFile).Wait();
                             }
                             catch (Exception ex)
                             {
@@ -247,9 +255,11 @@ namespace APSIM.PerformanceTests.Collector
                     {
                         WriteToLogFile(ex.Message);
                     }
+
                 }
             }
-            //return apsimFiles;
+            //Call the Service to check the status of the Pull Request, (and subsequently call/update GitHub)
+            UpdatePullRequestsPassedTestsStatus(pullId).Wait();
         }
 
         /// <summary>
@@ -445,7 +455,7 @@ namespace APSIM.PerformanceTests.Collector
                     using (SQLiteConnection con = new SQLiteConnection("Data Source=" + fullPath))
                     {
                         con.Open();
-                        string selectSQL = "SELECT * FROM Simulations ";
+                        string selectSQL = "SELECT * FROM _Simulations ";
 
                         using (SQLiteCommand cmd = new SQLiteCommand(selectSQL, con))
                         {

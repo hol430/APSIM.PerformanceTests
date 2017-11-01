@@ -48,6 +48,9 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Octokit, Version=0.24.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Octokit.0.24.0\lib\net45\Octokit.dll</HintPath>
+    </Reference>
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -89,8 +92,10 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\ApsimFilesController.cs" />
-    <Compile Include="Controllers\PassedTestsController.cs" />
-    <Compile Include="Controllers\ReleaseController.cs" />
+    <Compile Include="Controllers\AcceptStatsController.cs" />
+    <Compile Include="Controllers\UpdateStatsController.cs" />
+    <Compile Include="Models\AcceptStatsLog.cs" />
+    <Compile Include="Utilities\DBFunctions.cs" />
     <Compile Include="Utilities\Tests.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
