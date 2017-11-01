@@ -84,6 +84,9 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 string connectStr = Utilities.GetConnectionString();
                 List<ApsimFile> currentApsimFiles = GetApsimFilesRelatedPredictedObservedData(connectStr, currentPullRequestID);
 
+                //need to get the (latest) run date for the acceptedPullRequestID 
+                DateTime acceptedRunDate = DBFunctions.GetLatestPullRequestRunDate(connectStr, acceptedPullRequestID);
+
                 foreach (ApsimFile currentApsimFile in currentApsimFiles)
                 {
                     foreach (PredictedObservedDetails currentPODetails in currentApsimFile.PredictedObserved)
@@ -109,7 +112,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         }
                     }
                 }
-                DBFunctions.UpdateAllApsimFileAcceptedDetails(connectStr, currentPullRequestID, acceptedPullRequestID);
+                DBFunctions.UpdateApsimFileAcceptedDetails(connectStr, currentPullRequestID, acceptedPullRequestID, acceptedRunDate);
             }
             catch (Exception ex)
             {

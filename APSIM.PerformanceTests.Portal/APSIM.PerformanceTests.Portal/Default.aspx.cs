@@ -69,6 +69,7 @@ namespace APSIM.PerformanceTests.Portal
                 {
                     acceptlog.StatsPullRequestId = pullRequestId2;
                     acceptlog.LogReason = "Update 'Accepted' Stats to Pull Request Id: " + pullRequestId2.ToString();
+                    acceptlog.LogStatus = false;
                     doUpdateStats = true;
                 }
             }
@@ -130,7 +131,7 @@ namespace APSIM.PerformanceTests.Portal
 
                     //here we either update the Update Panel (if the user clicks only anything OTHER THAN our'Button'
                     //or we process the UpdatePullRequest as Merged
-                    if (e.CommandName == "AcceptStats" && cellIndex == 7 && canUpdate == true)
+                    if (e.CommandName == "AcceptStats" && cellIndex == 8 && canUpdate == true)
                     {
                         lblTitle.Text = "Accept Stats Request";
                         lblPullRequestId2.Visible = false;
@@ -162,7 +163,9 @@ namespace APSIM.PerformanceTests.Portal
                     else if (e.CommandName == "CellSelect")
                     {
                         int pullRequestId = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[0].Text);
-                        BindSimFilesGrid(pullRequestId);
+                        DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[1].Text);
+                        int acceptedPullRequestId = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[6].Text);
+                        BindSimFilesGrid(pullRequestId, subDate, acceptedPullRequestId);
                     }
                 }
             }
@@ -193,7 +196,7 @@ namespace APSIM.PerformanceTests.Portal
                         int cellIndex = e.Row.Cells.GetCellIndex(cell);
                         bool canUpdate = false;
                         // if we are binding the 'Button' column, and the "StatsAccepted' is false, then whe can Update the Merge Status.
-                        if (cellIndex == 7)
+                        if (cellIndex == 8)
                         {
                             if (e.Row.Cells[3].Text.ToLower().Equals("false"))
                             {
@@ -207,7 +210,7 @@ namespace APSIM.PerformanceTests.Portal
                                 }
                             }
                         }
-                        else if (cellIndex == 8)
+                        else if (cellIndex == 9)
                         {
                             canUpdate = true;
                             Button db = (Button)e.Row.Cells[cellIndex].FindControl("btnUpdateStats");
@@ -260,19 +263,21 @@ namespace APSIM.PerformanceTests.Portal
 
         private void BindApsimFilesGrid()
         {
-            AcceptStatsLog acceptedPR = AcceptStatsLogDS.GetLatestAcceptedStatsLog();
-            if (acceptedPR != null)
-            {
-                lblAcceptedDetails.Text = string.Format("Current Accepted Stats are for Pull Request Id {0}, submitted by {1}, accepted on {2}.", acceptedPR.PullRequestId, acceptedPR.SubmitPerson, acceptedPR.LogAcceptDate.ToString("dd-MMM-yyyy HH:MM"));
-            }
             ApsimFileList = ApsimFilesDS.GetPullRequestsWithStatus();
             gvApsimFiles.DataSource = ApsimFileList;
             gvApsimFiles.DataBind();
+
+            AcceptStatsLog acceptedPR = AcceptStatsLogDS.GetLatestAcceptedStatsLog();
+            if (acceptedPR != null)
+            {
+                lblAcceptedDetails.Text = string.Format("Current Accepted Stats are for Pull Request Id {0}, submitted by {1}, accepted on {2}.", acceptedPR.PullRequestId, acceptedPR.SubmitPerson, acceptedPR.LogAcceptDate.ToString("dd-MMM-yyyy HH:MM tt"));
+            }
         }
 
 
         private void BindSimFilesGrid(int pullRequestId)
         {
+            lblMissing.Text = string.Empty;
             lblPullRequestId.Text = "Simulation Files for Pull Request Id: " + pullRequestId.ToString();
 
             List<vSimFile> simFiles = ApsimFilesDS.GetSimFilesByPullRequestID(pullRequestId);
@@ -285,6 +290,7 @@ namespace APSIM.PerformanceTests.Portal
 
         private void BindSimFilesGrid(int pullRequestId, DateTime runDate)
         {
+            lblMissing.Text = string.Empty;
             lblPullRequestId.Text = string.Format("Simulation Files for Pull Request Id: {0}, on {1}.", pullRequestId.ToString(), runDate.ToString());
 
             List<vSimFile> simFiles = ApsimFilesDS.GetSimFilesByPullRequestIDandDate(pullRequestId, runDate);
@@ -293,6 +299,30 @@ namespace APSIM.PerformanceTests.Portal
 
             ClientScript.RegisterStartupScript(this.GetType(), "CreateGridHeader", "<script>CreateGridHeader('GridDataDiv_SimFiles', 'ContentPlaceHolder1_gvSimFiles', 'GridHeaderDiv_SimFiles');</script>");
         }
+
+        private void BindSimFilesGrid(int pullRequestId, DateTime runDate, int acceptPullRequestId)
+        {
+            //how many files are in the accepted Pull Request Set
+            //what happens if they do not match
+            lblMissing.Text = string.Empty;
+            if (acceptPullRequestId > 0)
+            {
+                string errorMessage = ApsimFilesDS.GetFileCountDetails(pullRequestId, acceptPullRequestId);
+                if (errorMessage.Length > 0)
+                {
+                    lblMissing.Text = "Missing FileName.TableName(s): " + errorMessage + ".";
+                }
+            }
+
+            lblPullRequestId.Text = "Simulation Files for Pull Request Id: " + pullRequestId.ToString();
+
+            List<vSimFile> simFiles = ApsimFilesDS.GetSimFilesByPullRequestIDandDate(pullRequestId, runDate);
+            gvSimFiles.DataSource = simFiles;
+            gvSimFiles.DataBind();
+
+            ClientScript.RegisterStartupScript(this.GetType(), "CreateGridHeader", "<script>CreateGridHeader('GridDataDiv_SimFiles', 'ContentPlaceHolder1_gvSimFiles', 'GridHeaderDiv_SimFiles');</script>");
+        }
+
         #endregion
 
 

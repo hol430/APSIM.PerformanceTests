@@ -131,6 +131,8 @@ namespace APSIM.PerformanceTests.Collector
             }
         }
  
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -226,6 +228,8 @@ namespace APSIM.PerformanceTests.Collector
                         ApsimFile apsimFile = new ApsimFile();
                         apsimFile.FullFileName = fi.FullName;
                         apsimFile.FileName = Path.GetFileNameWithoutExtension(fi.FullName);
+                        apsimFile.PullRequestId = pullId;
+                        apsimFile.RunDate = runDate;
 
                         apsimFile.PredictedObserved = GetPredictedObservedDetails(fi.FullName);
                         apsimFile.SubmitDetails = submitDetails;
@@ -235,8 +239,6 @@ namespace APSIM.PerformanceTests.Collector
                         {
                             apsimFile.Simulations = GetSimulationDataTable(apsimFile.FileName, apsimFile.FullFileName);
                             //apsimFiles.Add(apsimFile);q
-                            apsimFile.PullRequestId = pullId;
-                            apsimFile.RunDate = runDate;
 
                             try
                             {

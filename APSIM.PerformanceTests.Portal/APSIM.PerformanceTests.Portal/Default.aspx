@@ -23,13 +23,14 @@
         <HeaderStyle CssClass="GridViewHeaderStyle" />
         <RowStyle CssClass="GridViewRowStyle" />
         <Columns>
-            <asp:BoundField DataField="PullRequestId" HeaderText="Pull Request Id" ItemStyle-Width="100px" />
-            <asp:BoundField DataField="RunDate" HtmlEncode="false" HeaderText="Run Date" ItemStyle-Width="220px" DataFormatString="{0:d MMMM, yyyy hh:mm tt}" />
+            <asp:BoundField DataField="PullRequestId" HtmlEncode="false" HeaderText="Pull<br />Req. Id" ItemStyle-Width="80px" />
+            <asp:BoundField DataField="RunDate" HtmlEncode="false" HeaderText="Run Date" ItemStyle-Width="200px" DataFormatString="{0:d-MMM-yyyy hh:mm tt}" />
             <asp:BoundField DataField="SubmitDetails" HtmlEncode="false" HeaderText="Submit<br />Persons" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="80px" />
-            <asp:BoundField DataField="StatsAccepted"  HtmlEncode="false" HeaderText="Stats<br />Accepted" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="90px" />
-            <asp:BoundField DataField="PercentPassed"  HtmlEncode="false" HeaderText="Percent<br />Passed" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="80px" />
-            <asp:BoundField DataField="Total" HtmlEncode="false" HeaderText="Total<br />Files" ItemStyle-HorizontalAlign="Center"  ItemStyle-Width="80px" />
-            <asp:BoundField DataField="AcceptedPullRequestId" HtmlEncode="false" HeaderText="Accepted<br />PR Id" ItemStyle-HorizontalAlign="Center"  ItemStyle-Width="90px" />
+            <asp:BoundField DataField="StatsAccepted"  HtmlEncode="false" HeaderText="Stats<br />Accepted" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="80px" />
+            <asp:BoundField DataField="PercentPassed"  HtmlEncode="false" HeaderText="Percent<br />Passed" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="70px" />
+            <asp:BoundField DataField="Total" HtmlEncode="false" HeaderText="Total<br />Files" ItemStyle-HorizontalAlign="Center"  ItemStyle-Width="70px" />
+            <asp:BoundField DataField="AcceptedPullRequestId" HtmlEncode="false" HeaderText="Accepted<br />PR Id" ItemStyle-HorizontalAlign="Center"  ItemStyle-Width="85px" />
+            <asp:BoundField DataField="AcceptedRunDate" HtmlEncode="false" HeaderText="Accepted<br />Run Date" ItemStyle-Width="180px" DataFormatString="{0:d-MMM-yyyy hh:mm tt}" />
             <asp:TemplateField>
                 <ItemTemplate>
                     <asp:Button ID="btnAcceptStats" runat="server" Text="Accept Stats"
@@ -53,6 +54,8 @@
         <ContentTemplate>
             <br />
             <asp:Label ID="lblPullRequestId" runat="server" CssClass="SectionTitles" Text=""></asp:Label>
+            <br />
+            <asp:Label ID="lblMissing" runat="server" CssClass="ScreenDetails" Text=""></asp:Label>
 
             <div id="GridHeaderDiv_SimFiles">
             </div>

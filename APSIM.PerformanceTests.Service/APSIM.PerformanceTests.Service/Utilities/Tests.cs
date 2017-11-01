@@ -18,14 +18,15 @@ namespace APSIM.PerformanceTests.Service
         /// </summary>
         public static DataTable DoValidationTest(string PO_Name, DataTable POtable, DataTable acceptedStats)
         {
+            DataTable currentTable = CreateTestsStatsTable();
+            string helperStr = string.Empty;
             try
             {
-                DataTable currentTable = CreateTestsStatsTable();
-
                 MathUtilities.RegrStats[] stats;
                 List<string> statNames = (new MathUtilities.RegrStats()).GetType().GetFields().Select(f => f.Name).ToList(); // use reflection, get names of stats available
                 List<string> columnNames;
 
+                Utilities.WriteToLogFile("    DoValidationTest: get the column names");
                 columnNames = POtable.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList(); //get list of column names
                 columnNames = columnNames.Where(c => c.Contains("Observed")).ToList(); //filter names that are not pred/obs pairs
                 for (int i = 0; i < columnNames.Count; i++)
@@ -41,6 +42,7 @@ namespace APSIM.PerformanceTests.Service
                 double xres;
                 double yres;
 
+                Utilities.WriteToLogFile("    DoValidationTest: get the predicted observed values and calc regression stats");
                 for (int c = 0; c < columnNames.Count; c++) //on each P/O column pair
                 {
                     x.Clear();
@@ -62,11 +64,13 @@ namespace APSIM.PerformanceTests.Service
                 }
 
                 //remove any null stats which can occur from non-numeric columns such as dates
+                Utilities.WriteToLogFile("    DoValidationTest: remove any null stats which can occur from non-numeric columns such as dates");
                 List<MathUtilities.RegrStats> list = new List<MathUtilities.RegrStats>(stats);
                 list.RemoveAll(l => l == null);
                 stats = list.ToArray();
 
                 //remove entries from column names
+                Utilities.WriteToLogFile("    DoValidationTest: remove entries from column names");
                 for (int i = columnNames.Count() - 1; i >= 0; i--)
                 {
                     bool found = false;
@@ -86,45 +90,65 @@ namespace APSIM.PerformanceTests.Service
                 DataRow tRow;
                 bool hasValue;
 
+                string variable, test, statValue;
                 //Loop through stats and put them into a datatable
+                Utilities.WriteToLogFile("    DoValidationTest: Loop through stats and put them into a datatable ");
+
                 int rowIndex = 0;
                 for (int i = 0; i < stats.Count(); i++)
                 {
                     for (int j = 1; j < statNames.Count; j++) //start at 1; we don't want Name field.
                     {
-                        current = Math.Round(Convert.ToDouble(stats[i].GetType().GetField(statNames[j]).GetValue(stats[i])),6);
+                        variable = stats[i].Name;
+                        test = statNames[j];
+                        statValue = stats[i].GetType().GetField(statNames[j]).GetValue(stats[i]).ToString();
+                        helperStr = "Variable: " + variable + ", Test: " + test + ", Value: " + statValue;
+
                         //CurrentTable.Rows.Add(PO_Name, stats[i].Name, statNames[j], null, current, null, null);
                         tRow = currentTable.NewRow();
-                        tRow["Variable"] = stats[i].Name;
-                        tRow["Test"] = statNames[j];
+                        tRow["Variable"] = variable;
+                        tRow["Test"] = test;
 
                         hasValue = true;
-                        if (double.IsNaN(current) == true) { hasValue = false; }
-                        if (double.IsInfinity(current) == true) { hasValue = false; }
-                        if (hasValue == true)
+                        try
                         {
-                            tRow["Current"] = current;
-                            //currentTable.Rows[rowIndex]["Current"] = current;
+                            current = Math.Round(Convert.ToDouble(statValue), 6);
+                            if (double.IsNaN(current) == true) { hasValue = false; }
+                            if (double.IsInfinity(current) == true) { hasValue = false; }
+                            if (hasValue == true)
+                            {
+                                tRow["Current"] = current;
+                                //currentTable.Rows[rowIndex]["Current"] = current;
+                            }
                         }
+                        catch (Exception)
+                        {
+                            Utilities.WriteToLogFile("    ERROR in DoValidationTest: Unable to convert:" + helperStr);
+                        }
+
                         currentTable.Rows.Add(tRow);
                         rowIndex++;
                     }
                 }
+                helperStr = string.Empty;
+                Utilities.WriteToLogFile("    DoValidationTest: Loop through stats and put them into a datatable - Completed");
 
                 //Now merge this with out Accepted Table
                 //Now add the comparison columns and determine values
+                Utilities.WriteToLogFile("    DoValidationTest: MergeAndCompareAcceptedAgainstCurrent ");
                 MergeAndCompareAcceptedAgainstCurrent(ref currentTable, acceptedStats);
 
                 //Need to ensure that the order of the columns in the Datatable matches our table type
+                Utilities.WriteToLogFile("    DoValidationTest: OrderCurrentTableforTableType ");
                 OrderCurrentTableforTableType(ref currentTable);
 
-                return currentTable;
             }
             catch (Exception ex)
             {
-                throw new Exception("ERROR in DoValidationTest:: " + ex.Message.ToString());
+                //throw new Exception("ERROR in DoValidationTest:: " + ex.Message.ToString());
+                Utilities.WriteToLogFile("    ERROR in DoValidationTest: " + helperStr + " - " + ex.Message.ToString());
             }
-
+            return currentTable;
         }
 
         public static void MergeAndCompareAcceptedAgainstCurrent(ref DataTable currentTable, DataTable acceptedStats)
@@ -212,17 +236,18 @@ namespace APSIM.PerformanceTests.Service
             }
             catch (Exception ex)
             {
-                throw new Exception("    ERROR in MergeAndCompareAcceptedAgainstCurrent: " + ex.Message.ToString());
+                //throw new Exception("    ERROR in MergeAndCompareAcceptedAgainstCurrent: " + ex.Message.ToString());
+                Utilities.WriteToLogFile("    ERROR in MergeAndCompareAcceptedAgainstCurrent: " + ex.Message.ToString());
             }
 
         }
 
         public static DataTable CalculateStatsOnPredictedObservedValues(DataTable POtable)
         {
+            DataTable currentTable = CreateTestsStatsTable();
+
             try
             {
-                DataTable currentTable = CreateTestsStatsTable();
-
                 MathUtilities.RegrStats[] stats;
                 List<string> statNames = (new MathUtilities.RegrStats()).GetType().GetFields().Select(f => f.Name).ToList(); // use reflection, get names of stats available
 
@@ -315,13 +340,13 @@ namespace APSIM.PerformanceTests.Service
                         rowIndex++;
                     }
                 }
-
-                return currentTable;
             }
             catch (Exception ex)
             {
-                throw new Exception("ERROR in CalculateStatsOnPredictedObservedValues:  Unable to process Test Data: " + ex.Message.ToString());
+                //throw new Exception("ERROR in CalculateStatsOnPredictedObservedValues:  Unable to process Test Data: " + ex.Message.ToString());
+                Utilities.WriteToLogFile("     ERROR in CalculateStatsOnPredictedObservedValues:  Unable to process Test Data: " + ex.Message.ToString());
             }
+            return currentTable;
 
         }
 
@@ -433,7 +458,8 @@ namespace APSIM.PerformanceTests.Service
             }
             catch (Exception ex)
             {
-                throw new Exception("ERROR in MergeTestsStatsAndCompare:  " + ex.Message.ToString());
+                //throw new Exception("ERROR in MergeTestsStatsAndCompare:  " + ex.Message.ToString());
+                Utilities.WriteToLogFile("     ERROR in MergeTestsStatsAndCompare:  " + ex.Message.ToString());
             }
             return dtTests;
         }

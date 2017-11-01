@@ -67,43 +67,43 @@ public class ApsimFilesDS
     /// in reverse date order
     /// </summary>
     /// <returns></returns>
-    public static List<vApsimFile> GetAllApsimFiles()
-    {
-        using (ApsimDBContext context = new ApsimDBContext())
-        {
-            return context.ApsimFiles
-                .Select(h => new vApsimFile
-                {
-                    PullRequestId = h.PullRequestId,
-                    RunDate = h.RunDate,
-                    SubmitDetails = h.SubmitDetails,
-                    StatsAccepted = h.StatsAccepted
-                })
-                .Distinct()
-                .OrderByDescending(h => h.RunDate)
-                .ThenByDescending(h => h.PullRequestId)
-                .ToList();
-        }
-    }
+    //public static List<vApsimFile> GetAllApsimFiles()
+    //{
+    //    using (ApsimDBContext context = new ApsimDBContext())
+    //    {
+    //        return context.ApsimFiles
+    //            .Select(h => new vApsimFile
+    //            {
+    //                PullRequestId = h.PullRequestId,
+    //                RunDate = h.RunDate,
+    //                SubmitDetails = h.SubmitDetails,
+    //                StatsAccepted = h.StatsAccepted
+    //            })
+    //            .Distinct()
+    //            .OrderByDescending(h => h.RunDate)
+    //            .ThenByDescending(h => h.PullRequestId)
+    //            .ToList();
+    //    }
+    //}
 
-    public static vApsimFile GetLatestAcceptedPullRequestDetails()
-    {
-        using (ApsimDBContext context = new ApsimDBContext())
-        {
-            return context.ApsimFiles
-                .Where(a => a.StatsAccepted == true)
-                .OrderByDescending(a => a.RunDate)
-                .ThenByDescending(a => a.PullRequestId)
-                .Select(a => new vApsimFile
-                {
-                    PullRequestId = a.PullRequestId,
-                    RunDate = a.RunDate,
-                    SubmitDetails = a.SubmitDetails,
-                    StatsAccepted = a.StatsAccepted
-                })
-                .First();
-        }
-    }
+    //public static vApsimFile GetLatestAcceptedPullRequestDetails()
+    //{
+    //    using (ApsimDBContext context = new ApsimDBContext())
+    //    {
+    //        return context.ApsimFiles
+    //            .Where(a => a.StatsAccepted == true)
+    //            .OrderByDescending(a => a.RunDate)
+    //            .ThenByDescending(a => a.PullRequestId)
+    //            .Select(a => new vApsimFile
+    //            {
+    //                PullRequestId = a.PullRequestId,
+    //                RunDate = a.RunDate,
+    //                SubmitDetails = a.SubmitDetails,
+    //                StatsAccepted = a.StatsAccepted
+    //            })
+    //            .First();
+    //    }
+    //}
 
     /// <summary>
     /// Get limited details (Pull Request ID, Run Date and Is Merged status, as well as the number of Apsim Files that
@@ -118,7 +118,7 @@ public class ApsimFilesDS
             return (from pod in context.PredictedObservedDetails
                     join af in context.ApsimFiles on  pod.ApsimFilesID equals af.ID
                     select new { pod , af } into t1
-                    group t1 by new {t1.af.PullRequestId, t1.af.RunDate, t1.af.SubmitDetails, t1.af.StatsAccepted } into grp
+                    group t1 by new {t1.af.PullRequestId, t1.af.RunDate, t1.af.SubmitDetails, t1.af.StatsAccepted, t1.af.AcceptedPullRequestId, t1.af.AcceptedRunDate } into grp
                     select new vApsimFile
                     {
                         PullRequestId = grp.FirstOrDefault().af.PullRequestId,
@@ -127,13 +127,43 @@ public class ApsimFilesDS
                         StatsAccepted = grp.FirstOrDefault().af.StatsAccepted,
                         PercentPassed = 100 * grp.Count(m => m.pod.PassedTests == 100) / grp.Count(m => m.pod.PassedTests != null),
                         Total = grp.Count(),
-                        AcceptedPullRequestId = grp.FirstOrDefault().af.AcceptedPullRequestId
+                        AcceptedPullRequestId = grp.FirstOrDefault().af.AcceptedPullRequestId,
+                        AcceptedRunDate = grp.FirstOrDefault().af.AcceptedRunDate
                     })
                     .OrderByDescending(h => h.RunDate)
                     .ThenByDescending(h => h.PullRequestId)
                     .ToList();
         }
     }
+
+
+    public static string GetFileCountDetails(int pullRequestId, int acceptedPullRequestId)
+    {
+        string returnStr = string.Empty;
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            string strsql = "SELECT b.[FileName] + '.' + b.[TableName] "
+                + "   FROM ( "
+                + "       SELECT 'currentPO' as 'Source', a1.[FileName], pod1.[TableName] "
+                + "       FROM [dbo].[ApsimFiles] a1 "
+                + "       INNER JOIN[dbo].[PredictedObservedDetails] pod1 on a1.ID = pod1.ApsimFilesID "
+                + "       WHERE a1.[PullRequestId] = " + pullRequestId
+                + "     UNION ALL "
+                + "       SELECT 'acceptedPO' as 'Source', a1.[FileName], pod1.[TableName] "
+                + "       FROM[dbo].[ApsimFiles] a1  "
+                + "       INNER JOIN[dbo].[PredictedObservedDetails] pod1 on a1.ID = pod1.ApsimFilesID "
+                + "       WHERE a1.[PullRequestId] = " + acceptedPullRequestId
+                + "   ) AS b "
+                + "   GROUP BY b.[FileName], b.[TableName] "
+                + "   HAVING  COUNT(b.Source) < 2 ";
+
+            var missing = context.Database.SqlQuery<string>(strsql).ToList();
+            returnStr = String.Join(", ", missing);
+
+        }
+        return returnStr;
+    }
+
 
     /// <summary>
     /// Gets Details of the individual Apsim simulation Files that make up this specified Pull Request

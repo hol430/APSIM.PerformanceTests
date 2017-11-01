@@ -75,18 +75,21 @@
 
 /*Class Style Definitions*/
 .GridViewStyle {    
+    text-decoration: none;
     font-family:  Verdana;
     font-size: 13px;
     background-color: White; 
 }
 
 .GridViewStyle_DropDown {    
+    text-decoration: none;
     font-family:  Verdana;
     font-size: 11px;
     background-color: White; 
 }
 
 .GridViewStyle_POValues {    
+    text-decoration: none;
     font-family:  Verdana;
     font-size: 12px;
     background-color: White;
@@ -165,6 +168,10 @@
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-size: 14px;
     font-weight: bold;
+}
+.ScreenDetails {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 13px;
 }
 
 .PassedTests {

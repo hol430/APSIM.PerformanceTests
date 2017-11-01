@@ -192,11 +192,11 @@ namespace APSIM.PerformanceTests.Service
         {
             if (dtTests.Rows.Count > 0)
             {
-                try
+                using (SqlConnection conSP = new SqlConnection(connectStr))
                 {
-                    using (SqlConnection con = new SqlConnection(connectStr))
+                    try
                     {
-                        using (SqlCommand command = new SqlCommand("usp_PredictedObservedTestsInsert", con))
+                        using (SqlCommand command = new SqlCommand("usp_PredictedObservedTestsInsert", conSP))
                         {
                             //Now update the database with the test results
                             // Configure the command and parameter.
@@ -207,20 +207,17 @@ namespace APSIM.PerformanceTests.Service
                             tvpParam.SqlDbType = SqlDbType.Structured;
                             tvpParam.TypeName = "dbo.PredictedObservedTestsTableType";
 
-                            con.Open();
+                            conSP.Open();
                             command.ExecuteNonQuery();
-                            con.Close();
                         }
+                        Utilities.WriteToLogFile(string.Format("    Tests Data for {0}.{1} import completed successfully!", currentApsimFileFileName, currentPODetailsDatabaseTableName));
                     }
-                    Utilities.WriteToLogFile(string.Format("    Tests Data for {0}.{1} import completed successfully!", currentApsimFileFileName, currentPODetailsDatabaseTableName));
-                }
-
-                catch (Exception ex)
-                {
-                    Utilities.WriteToLogFile(string.Format("    ERROR in AddPredictedObservedTestsData: Unable to save Tests Data for {0}.{1}:  {2}", currentApsimFileFileName, currentPODetailsDatabaseTableName, ex.Message.ToString()));
+                    catch (Exception ex)
+                    {
+                        Utilities.WriteToLogFile(string.Format("    ERROR in AddPredictedObservedTestsData: Unable to save Tests Data for {0}.{1}:  {2}", currentApsimFileFileName, currentPODetailsDatabaseTableName, ex.Message.ToString()));
+                    }
                 }
             }
-
         }
 
         /// <summary>
@@ -263,45 +260,6 @@ namespace APSIM.PerformanceTests.Service
             }
         }
 
-        /// <summary>
-        /// Updates All 'Accepted' Pull Request ID's for all ApsimFiles with specified PullRequestId
-        /// </summary>
-        /// <param name="connectStr"></param>
-        /// <param name="currentPullRequestID"></param>
-        /// <param name="acceptedPullRequestID"></param>
-        public static void UpdateAllApsimFileAcceptedDetails(string connectStr, int currentPullRequestID, int acceptedPullRequestID)
-        {
-            if ((currentPullRequestID > 0) && (acceptedPullRequestID > 0))
-            {
-                try
-                {
-                    //Need to update our 'Current' ApsimFile with PullRequestId from our Accepted Pull RequestId
-                    using (SqlConnection con = new SqlConnection(connectStr))
-                    {
-                        string strSQL = "UPDATE ApsimFiles "
-                               + " SET AcceptedPullRequestId = @AcceptedPullRequestId "
-                               + " WHERE PullRequestId = @PullRequestId ";
-
-                        using (SqlCommand command = new SqlCommand(strSQL, con))
-                        {
-                            command.CommandType = CommandType.Text;
-                            command.Parameters.AddWithValue("@AcceptedPullRequestId", acceptedPullRequestID);
-                            command.Parameters.AddWithValue("@PullRequestId", currentPullRequestID);
-
-                            con.Open();
-                            command.ExecuteNonQuery();
-                            con.Close();
-                        }
-                    }
-                    //Utilities.WriteToLogFile("    Accepted ApsimFilesID added to ApsimFiles.");
-                }
-
-                catch (Exception ex)
-                {
-                    Utilities.WriteToLogFile(string.Format("    ERROR in UpdateAllApsimFileAcceptedDetails: Unable to update 'Accepted' Pull Request Id to {0} ON Pull Request ID {1}: {2} ", acceptedPullRequestID, currentPullRequestID, ex.Message.ToString()));
-                }
-            }
-        }
 
         /// <summary>
         /// Updates 'Accepted' Pull Request ID' for ApsimFiles with current ApsimFile
@@ -309,24 +267,26 @@ namespace APSIM.PerformanceTests.Service
         /// <param name="connectStr"></param>
         /// <param name="currentApsimFileID"></param>
         /// <param name="acceptedPullRequestID"></param>
-        public static void UpdateApsimFileAcceptedDetails(string connectStr, int currentApsimFileID, int acceptedPullRequestID)
+        public static void UpdateApsimFileAcceptedDetails(string connectStr, int currentPullRequestID, int acceptedPullRequestID, DateTime acceptedRunDate)
         {
             try
             {
-                if ((currentApsimFileID > 0) && (acceptedPullRequestID > 0))
+                if ((currentPullRequestID > 0) && (acceptedPullRequestID > 0))
                 {
                     //Need to update our 'Current' ApsimFile with PullRequestId from our Accepted Pull RequestId
                     using (SqlConnection con = new SqlConnection(connectStr))
                     {
                         string strSQL = "UPDATE ApsimFiles "
-                               + " SET AcceptedPullRequestId = @AcceptedPullRequestId "
-                               + " WHERE ID = @ID ";
+                               + " SET AcceptedPullRequestId = @AcceptedPullRequestId, "
+                               + " AcceptedRunDate = @AcceptedRunDate "
+                               + " WHERE PullRequestId = @PullRequestID ";
 
                         using (SqlCommand command = new SqlCommand(strSQL, con))
                         {
                             command.CommandType = CommandType.Text;
                             command.Parameters.AddWithValue("@AcceptedPullRequestId", acceptedPullRequestID);
-                            command.Parameters.AddWithValue("@ID", currentApsimFileID);
+                            command.Parameters.AddWithValue("@AcceptedRunDate", acceptedRunDate);
+                            command.Parameters.AddWithValue("@PullRequestID", currentPullRequestID);
 
                             con.Open();
                             command.ExecuteNonQuery();
@@ -339,7 +299,7 @@ namespace APSIM.PerformanceTests.Service
 
             catch (Exception ex)
             {
-                Utilities.WriteToLogFile(String.Format("    ERROR in UpdateApsimFileAcceptedDetails: Unable to update Accepted Pull Request ID {0} ON ApsimFile ID {1}: {2}", acceptedPullRequestID, currentApsimFileID, ex.Message.ToString()));
+                Utilities.WriteToLogFile(String.Format("    ERROR in UpdateApsimFileAcceptedDetails: Unable to update Accepted Pull Request ID {0} for Pull Request ID {1}: {2}", acceptedPullRequestID, currentPullRequestID, ex.Message.ToString()));
             }
         }
 
@@ -399,6 +359,7 @@ namespace APSIM.PerformanceTests.Service
                             con.Close();
                         }
                     }
+
                 }
                 //Utilities.WriteToLogFile(string.Format("    Accept Stats Status updated to {0} by {1} on {2}. Reason: {3}", acceptLog.LogStatus, acceptLog.LogPerson, acceptLog.SubmitDate, acceptLog.LogReason));
             }
@@ -406,6 +367,27 @@ namespace APSIM.PerformanceTests.Service
             catch (Exception ex)
             {
                 Utilities.WriteToLogFile(string.Format("ERROR in UpdateAsStatsAccepted:  Pull Request Id {0}, Failed to update as 'Stats Accepted': {1}", acceptLog.PullRequestId.ToString(), ex.Message.ToString()));
+            }
+        }
+
+        public static DateTime GetLatestPullRequestRunDate(string connectStr, int acceptedPullRequestID)
+        {
+            DateTime returnDate = new DateTime();
+
+            using (SqlConnection con = new SqlConnection(connectStr))
+            {
+                string strSQL = "SELECT TOP 1 RunDate FROM ApsimFiles WHERE PullRequestId = @PullRequestId ORDER BY RunDate DESC";
+                using (SqlCommand commandES = new SqlCommand(strSQL, con))
+                {
+                    commandES.CommandType = CommandType.Text;
+                    commandES.Parameters.AddWithValue("@PullRequestId", acceptedPullRequestID);
+
+                    con.Open();
+                    returnDate = (DateTime)commandES.ExecuteScalar();
+                    con.Close();
+                }
+
+                return returnDate;
             }
         }
 

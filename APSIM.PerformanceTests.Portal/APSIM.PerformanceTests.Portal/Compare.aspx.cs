@@ -61,6 +61,7 @@ namespace APSIM.PerformanceTests.Portal
             e.Row.Attributes["onmouseout"] = "this.style.backgroundColor=this.originalBackgroundColor;";
             e.Row.Attributes["onclick"] = ClientScript.GetPostBackClientHyperlink(this.gvApsimFiles1, "Select$" + e.Row.RowIndex);
         }
+
         protected void gvApsimFiles1_SelectedIndexChanged(object sender, EventArgs e)
         {
             txtPullRequest1.Text = "";
@@ -82,6 +83,7 @@ namespace APSIM.PerformanceTests.Portal
             e.Row.Attributes["onmouseout"] = "this.style.backgroundColor=this.originalBackgroundColor;";
             e.Row.Attributes["onclick"] = ClientScript.GetPostBackClientHyperlink(this.gvApsimFiles2, "Select$" + e.Row.RowIndex);
         }
+
         protected void gvApsimFiles2_SelectedIndexChanged(object sender, EventArgs e)
         {
             txtPullRequest2.Text = "";
@@ -101,6 +103,7 @@ namespace APSIM.PerformanceTests.Portal
             e.Row.Attributes["onmouseout"] = "this.style.backgroundColor=this.originalBackgroundColor;";
             e.Row.Attributes["onclick"] = ClientScript.GetPostBackClientHyperlink(this.gvSimFiles, "Select$" + e.Row.RowIndex);
         }
+
         protected void gvSimFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
             txtSimFiles.Text = "";

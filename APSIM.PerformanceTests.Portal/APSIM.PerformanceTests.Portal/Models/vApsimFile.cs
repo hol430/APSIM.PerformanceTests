@@ -14,6 +14,7 @@ namespace APSIM.PerformanceTests.Portal.Models
         public Nullable<double> PercentPassed { get; set; }
         public Nullable<double> Total { get; set; }
         public int AcceptedPullRequestId { get; set; }
+        public System.DateTime AcceptedRunDate { get; set; }
 
     }
 }
