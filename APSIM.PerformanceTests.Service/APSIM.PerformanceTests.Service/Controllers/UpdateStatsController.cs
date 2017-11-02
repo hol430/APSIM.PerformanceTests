@@ -79,44 +79,49 @@ namespace APSIM.PerformanceTests.Service.Controllers
         {
             //Do I need to update the log table
             string HelperMessage = string.Empty;
-            try
+            string connectStr = Utilities.GetConnectionString();
+
+            using (SqlConnection sqlCon = new SqlConnection(connectStr))
             {
-                string connectStr = Utilities.GetConnectionString();
-                List<ApsimFile> currentApsimFiles = GetApsimFilesRelatedPredictedObservedData(connectStr, currentPullRequestID);
-
-                //need to get the (latest) run date for the acceptedPullRequestID 
-                DateTime acceptedRunDate = DBFunctions.GetLatestPullRequestRunDate(connectStr, acceptedPullRequestID);
-
-                foreach (ApsimFile currentApsimFile in currentApsimFiles)
+                sqlCon.Open();
+                try
                 {
-                    foreach (PredictedObservedDetails currentPODetails in currentApsimFile.PredictedObserved)
+                    List<ApsimFile> currentApsimFiles = GetApsimFilesRelatedPredictedObservedData(sqlCon, currentPullRequestID);
+
+                    //need to get the (latest) run date for the acceptedPullRequestID 
+                    DateTime acceptedRunDate = DBFunctions.GetLatestPullRequestRunDate(sqlCon, acceptedPullRequestID);
+
+                    foreach (ApsimFile currentApsimFile in currentApsimFiles)
                     {
-                        int acceptedPredictedObservedDetailsID = DBFunctions.GetAcceptedPredictedObservedDetailsId(connectStr, acceptedPullRequestID, currentApsimFile.FileName, currentPODetails);
-                        if (acceptedPredictedObservedDetailsID > 0)
+                        foreach (PredictedObservedDetails currentPODetails in currentApsimFile.PredictedObserved)
                         {
-                            HelperMessage = string.Format("Current Pull Request Id: {0} to Accepted Pull Request Id: {1} for FileName: {2} - PO TableName: {3}, Current PO Id: {4}, Accepted PO Id: {5}.", currentPullRequestID, acceptedPullRequestID, currentApsimFile.FileName, currentPODetails.DatabaseTableName, currentPODetails.ID, acceptedPredictedObservedDetailsID);
+                            int acceptedPredictedObservedDetailsID = DBFunctions.GetAcceptedPredictedObservedDetailsId(sqlCon, acceptedPullRequestID, currentApsimFile.FileName, currentPODetails);
+                            if (acceptedPredictedObservedDetailsID > 0)
+                            {
+                                HelperMessage = string.Format("Current Pull Request Id: {0} to Accepted Pull Request Id: {1} for FileName: {2} - PO TableName: {3}, Current PO Id: {4}, Accepted PO Id: {5}.", currentPullRequestID, acceptedPullRequestID, currentApsimFile.FileName, currentPODetails.DatabaseTableName, currentPODetails.ID, acceptedPredictedObservedDetailsID);
 
-                            DataTable currentPOValues = DBFunctions.getPredictedObservedValues(connectStr, currentPODetails.ID);
-                            DataTable currentStats = Tests.CalculateStatsOnPredictedObservedValues(currentPOValues);
+                                DataTable currentPOValues = DBFunctions.GetPredictedObservedValues(sqlCon, currentPODetails.ID);
+                                DataTable currentStats = Tests.CalculateStatsOnPredictedObservedValues(currentPOValues);
 
-                            DataTable acceptedPOValues = DBFunctions.getPredictedObservedValues(connectStr, acceptedPredictedObservedDetailsID);
-                            DataTable acceptedStats = Tests.CalculateStatsOnPredictedObservedValues(acceptedPOValues);
+                                DataTable acceptedPOValues = DBFunctions.GetPredictedObservedValues(sqlCon, acceptedPredictedObservedDetailsID);
+                                DataTable acceptedStats = Tests.CalculateStatsOnPredictedObservedValues(acceptedPOValues);
 
-                            //DataTable acceptedStats = DBFunctions.getPredictedObservedTestsData(connectStr, acceptedPredictedObservedDetailsID);
+                                //DataTable acceptedStats = DBFunctions.getPredictedObservedTestsData(connectStr, acceptedPredictedObservedDetailsID);
 
-                            DataTable dtTests = Tests.MergeTestsStatsAndCompare(currentStats, acceptedStats);
-                            DBFunctions.AddPredictedObservedTestsData(connectStr, currentApsimFile.FileName, currentPODetails.ID, currentPODetails.DatabaseTableName, dtTests);
+                                DataTable dtTests = Tests.MergeTestsStatsAndCompare(currentStats, acceptedStats);
+                                DBFunctions.AddPredictedObservedTestsData(sqlCon, currentApsimFile.FileName, currentPODetails.ID, currentPODetails.DatabaseTableName, dtTests);
 
-                            //Update the accepted reference for Predicted Observed Values, so that it can be 
-                            DBFunctions.UpdatePredictedObservedDetails(connectStr, acceptedPredictedObservedDetailsID, currentPODetails.ID);
+                                //Update the accepted reference for Predicted Observed Values, so that it can be 
+                                DBFunctions.UpdatePredictedObservedDetails(sqlCon, acceptedPredictedObservedDetailsID, currentPODetails.ID);
+                            }
                         }
                     }
+                    DBFunctions.UpdateApsimFileAcceptedDetails(sqlCon, currentPullRequestID, acceptedPullRequestID, acceptedRunDate);
                 }
-                DBFunctions.UpdateApsimFileAcceptedDetails(connectStr, currentPullRequestID, acceptedPullRequestID, acceptedRunDate);
-            }
-            catch (Exception ex)
-            {
-                Utilities.WriteToLogFile(string.Format("ERROR:  Unable to update {0}: {2}", HelperMessage, ex.Message.ToString())); ;
+                catch (Exception ex)
+                {
+                    Utilities.WriteToLogFile(string.Format("ERROR:  Unable to update {0}: {2}", HelperMessage, ex.Message.ToString())); ;
+                }
             }
         }
 
@@ -127,85 +132,81 @@ namespace APSIM.PerformanceTests.Service.Controllers
         /// <param name="connectStr"></param>
         /// <param name="pullRequestId"></param>
         /// <returns></returns>
-        private List<ApsimFile> GetApsimFilesRelatedPredictedObservedData(string connectStr, int pullRequestId)
+        private List<ApsimFile> GetApsimFilesRelatedPredictedObservedData(SqlConnection sqlCon, int pullRequestId)
         {
             string strSQL;
             List<ApsimFile> apsimFilesList = new List<ApsimFile>();
 
             try
             {
-                using (SqlConnection con = new SqlConnection(connectStr))
+                strSQL = "SELECT * FROM ApsimFiles WHERE PullRequestId = @PullRequestId ORDER BY RunDate DESC";
+                using (SqlCommand commandER = new SqlCommand(strSQL, sqlCon))
                 {
-                    strSQL = "SELECT * FROM ApsimFiles WHERE PullRequestId = @PullRequestId ORDER BY RunDate DESC";
-                    using (SqlCommand command = new SqlCommand(strSQL, con))
+                    commandER.CommandType = CommandType.Text;
+                    commandER.Parameters.AddWithValue("@PullRequestId", pullRequestId);
+                    SqlDataReader reader = commandER.ExecuteReader();
+                    while (reader.Read())
                     {
-                        command.CommandType = CommandType.Text;
-                        command.Parameters.AddWithValue("@PullRequestId", pullRequestId);
-                        con.Open();
-                        SqlDataReader reader = command.ExecuteReader();
-                        while (reader.Read())
+                        ApsimFile apsim = new ApsimFile
                         {
-                            ApsimFile apsim = new ApsimFile();
-                            apsim.ID = reader.GetInt32(0);
-                            apsim.PullRequestId = reader.GetInt32(1);
-                            apsim.FileName = reader.GetString(2);
-                            apsim.FullFileName = reader.GetString(3);
-                            apsim.RunDate = reader.GetDateTime(4);
-                            apsim.StatsAccepted = reader.GetBoolean(5);
-                            apsim.IsMerged = reader.GetBoolean(6);
-                            apsim.SubmitDetails = reader.GetString(7);
-                            if (reader.IsDBNull(8))
-                            {
-                                apsim.AcceptedPullRequestId = 0;
-                            }
-                            else
-                            {
-                                apsim.AcceptedPullRequestId = reader.GetInt32(8);
-                            }
-                            apsimFilesList.Add(apsim);
+                            ID = reader.GetInt32(0),
+                            PullRequestId = reader.GetInt32(1),
+                            FileName = reader.GetString(2),
+                            FullFileName = reader.GetString(3),
+                            RunDate = reader.GetDateTime(4),
+                            StatsAccepted = reader.GetBoolean(5),
+                            IsMerged = reader.GetBoolean(6),
+                            SubmitDetails = reader.GetString(7)
+                        };
+                        if (reader.IsDBNull(8))
+                        {
+                            apsim.AcceptedPullRequestId = 0;
                         }
-                        con.Close();
+                        else
+                        {
+                            apsim.AcceptedPullRequestId = reader.GetInt32(8);
+                        }
+                        apsimFilesList.Add(apsim);
                     }
+                    reader.Close();
                 }
 
                 foreach (ApsimFile currentApsimFile in apsimFilesList)
                 {
                     List<PredictedObservedDetails> currentPredictedObservedDetails = new List<PredictedObservedDetails>();
                     //retrieve the predicted observed details for this apsim file
-                    using (SqlConnection con = new SqlConnection(connectStr))
+                    strSQL = "SELECT * FROM PredictedObservedDetails WHERE ApsimFilesId = @ApsimFilesId ORDER BY ID";
+                    using (SqlCommand commandER = new SqlCommand(strSQL, sqlCon))
                     {
-                        strSQL = "SELECT * FROM PredictedObservedDetails WHERE ApsimFilesId = @ApsimFilesId ORDER BY ID";
-                        using (SqlCommand command = new SqlCommand(strSQL, con))
+                        commandER.CommandType = CommandType.Text;
+                        commandER.Parameters.AddWithValue("@ApsimFilesId", currentApsimFile.ID);
+                        SqlDataReader reader = commandER.ExecuteReader();
+                        while (reader.Read())
                         {
-                            command.CommandType = CommandType.Text;
-                            command.Parameters.AddWithValue("@ApsimFilesId", currentApsimFile.ID);
-                            con.Open();
-                            SqlDataReader reader = command.ExecuteReader();
-                            while (reader.Read())
+                            PredictedObservedDetails predictedObserved = new PredictedObservedDetails
                             {
-                                PredictedObservedDetails predictedObserved = new PredictedObservedDetails();
-                                predictedObserved.ID = reader.GetInt32(0);
-                                predictedObserved.ApsimID = reader.GetInt32(1);
-                                predictedObserved.DatabaseTableName = reader.GetString(2);
-                                predictedObserved.PredictedTableName = reader.GetString(3);
-                                predictedObserved.ObservedTableName = reader.GetString(4);
-                                predictedObserved.FieldNameUsedForMatch = reader.GetString(5);
-                                predictedObserved.FieldName2UsedForMatch = reader.GetString(6);
-                                predictedObserved.FieldName3UsedForMatch = reader.GetString(7);
-                                predictedObserved.PassedTests = reader.GetDouble(8);
-                                predictedObserved.HasTests = reader.GetInt32(9);
-                                if (reader.IsDBNull(10))
-                                {
-                                    predictedObserved.AcceptedPredictedObservedDetailsId = 0;
-                                }
-                                else
-                                {
-                                    predictedObserved.AcceptedPredictedObservedDetailsId = reader.GetInt32(10);
-                                }
-                                currentPredictedObservedDetails.Add(predictedObserved);
+                                ID = reader.GetInt32(0),
+                                ApsimID = reader.GetInt32(1),
+                                DatabaseTableName = reader.GetString(2),
+                                PredictedTableName = reader.GetString(3),
+                                ObservedTableName = reader.GetString(4),
+                                FieldNameUsedForMatch = reader.GetString(5),
+                                FieldName2UsedForMatch = reader.GetString(6),
+                                FieldName3UsedForMatch = reader.GetString(7),
+                                PassedTests = reader.GetDouble(8),
+                                HasTests = reader.GetInt32(9)
+                            };
+                            if (reader.IsDBNull(10))
+                            {
+                                predictedObserved.AcceptedPredictedObservedDetailsId = 0;
                             }
-                            con.Close();
+                            else
+                            {
+                                predictedObserved.AcceptedPredictedObservedDetailsId = reader.GetInt32(10);
+                            }
+                            currentPredictedObservedDetails.Add(predictedObserved);
                         }
+                        reader.Close();
                     }
                     currentApsimFile.PredictedObserved = currentPredictedObservedDetails;
                 }
@@ -223,24 +224,20 @@ namespace APSIM.PerformanceTests.Service.Controllers
         /// <param name="connectStr"></param>
         /// <param name="predictedObservedId"></param>
         /// <returns></returns>
-        private static DataTable GetPredictedObservedValues(string connectStr, int predictedObservedId)
+        private static DataTable GetPredictedObservedValues(SqlConnection sqlCon, int predictedObservedId)
         {
             DataTable dtResults = new DataTable();
             try
             {
-                using (SqlConnection con = new SqlConnection(connectStr))
+                string strSQL = "SELECT * FROM PredictedObservedValues WHERE PredictedObservedDetailsId = @PredictedObservedDetailsId ORDER BY ID DESC";
+                using (SqlCommand commandER = new SqlCommand(strSQL, sqlCon))
                 {
-                    string strSQL = "SELECT * FROM PredictedObservedValues WHERE PredictedObservedDetailsId = @PredictedObservedDetailsId ORDER BY ID DESC";
-                    using (SqlCommand command = new SqlCommand(strSQL, con))
-                    {
-                        command.CommandType = CommandType.Text;
-                        command.Parameters.AddWithValue("@PredictedObservedDetailsId", predictedObservedId);
+                    commandER.CommandType = CommandType.Text;
+                    commandER.Parameters.AddWithValue("@PredictedObservedDetailsId", predictedObservedId);
 
-                        con.Open();
-                        SqlDataReader reader = command.ExecuteReader();
-                        dtResults.Load(reader);
-                        con.Close();
-                    }
+                    SqlDataReader reader = commandER.ExecuteReader();
+                    dtResults.Load(reader);
+                    reader.Close();
                 }
             }
             catch (Exception ex)

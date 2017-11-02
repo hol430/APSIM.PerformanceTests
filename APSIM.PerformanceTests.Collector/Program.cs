@@ -164,7 +164,7 @@ namespace APSIM.PerformanceTests.Collector
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToLogFile(string.Format("    Successfully processed PassedTests Status for Pull Request Id: ", id));
+                    WriteToLogFile(string.Format("    Successfully processed PassedTests Status for Pull Request Id: {0}", id));
                 }
 
             }
@@ -246,7 +246,7 @@ namespace APSIM.PerformanceTests.Collector
                             }
                             catch (Exception ex)
                             {
-                                WriteToLogFile(string.Format("     ERROR Posting Apsim File: {0}, Pull Request Id {1}, dated {2}: {3}", apsimFile.FileName, pullId, runDate,  ex.Message.ToString()));
+                                WriteToLogFile(string.Format("    ERROR Posting Apsim File: {0}, Pull Request Id {1}, dated {2}: {3}", apsimFile.FileName, pullId, runDate,  ex.Message.ToString()));
                             }
 
                         }

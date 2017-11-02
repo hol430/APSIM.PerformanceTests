@@ -39,8 +39,7 @@ namespace APSIM.PerformanceTests.Service
                 List<double> x = new List<double>();
                 List<double> y = new List<double>();
                 string xstr, ystr;
-                double xres;
-                double yres;
+                Double xres, yres;
 
                 Utilities.WriteToLogFile("    DoValidationTest: get the predicted observed values and calc regression stats");
                 for (int c = 0; c < columnNames.Count; c++) //on each P/O column pair
@@ -51,7 +50,7 @@ namespace APSIM.PerformanceTests.Service
                     {
                         xstr = row["Observed." + columnNames[c]].ToString();
                         ystr = row["Predicted." + columnNames[c]].ToString();
-                        if (Double.TryParse(xstr, out xres) && Double.TryParse(ystr, out yres))
+                        if ((Double.TryParse(xstr, out xres)) && (Double.TryParse(ystr, out yres)))
                         {
                             x.Add(xres);
                             y.Add(yres);
@@ -259,8 +258,6 @@ namespace APSIM.PerformanceTests.Service
                 List<double> x = new List<double>();
                 List<double> y = new List<double>();
                 string valueName = string.Empty, xstr, ystr;
-                double xres;
-                double yres;
                 int c = 0;
                 string holdValueName = POtable.Rows[0]["ValueName"].ToString();
 
@@ -277,9 +274,10 @@ namespace APSIM.PerformanceTests.Service
                         c += 1;
                     }
 
+                    Double xres, yres;
                     xstr = row["ObservedValue"].ToString();
                     ystr = row["PredictedValue"].ToString();
-                    if (Double.TryParse(xstr, out xres) && Double.TryParse(ystr, out yres))
+                    if ((Double.TryParse(xstr, out xres)) && (Double.TryParse(ystr, out yres)))
                     {
                         x.Add(xres);
                         y.Add(yres);
