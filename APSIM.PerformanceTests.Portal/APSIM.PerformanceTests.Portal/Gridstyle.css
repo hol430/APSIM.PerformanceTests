@@ -1,0 +1,67 @@
+﻿
+.Grid, .Grid2 {
+    background-color: #fff; 
+    margin: 5px 0 10px 0;  /* top  right  bottom  left */
+    border: solid 1px #525252; 
+    border-collapse:collapse; 
+    font-family:Calibri; 
+    color: #474747;
+}
+
+.Grid a, .Grid2 a {
+    text-decoration: none; 
+    color: #fff; 
+    font-weight: bold; 
+}
+
+.Grid td {
+    padding: 2px 2px;   /* top/bottom  left/right */
+    border: solid 1px #c1c1c1; 
+}
+.Grid2 td {
+    padding: 1px 1px;   /* top/bottom  left/right */
+    border: solid 1px #c1c1c1; 
+}
+
+.Grid th, .Grid2 th  {
+    padding : 4px 2px;  /* top/bottom  left/right */
+    color: #fff; 
+    /*background: #363670 url(Images/gridHeaderGreen2.png) repeat-x top;*/ 
+    background: #004844;
+    border-left: solid 1px #525252; 
+    font-size: 0.9em; 
+}
+
+.Grid .alt, .Grid2 .alt {
+    background: #fcfcfc url(Images/grid-alt.png) repeat-x top; 
+}
+.Grid .pgr, .Grid2 .pgr {
+    /*background: #363670 url(Images/gridPgrGreen2.png) repeat-x top;*/ 
+    background: #004844;
+}
+.Grid .pgr table, .Grid2 .pgr table { 
+    margin: 3px 0;  /* top/bottom  left/right */
+}
+.Grid .pgr td, .Grid2 .pgr td { 
+    border-width: 0;
+    padding: 0 6px;  /* top/bottom  left/right */
+    border-left: solid 1px #666; 
+    font-weight: bold; 
+    color: #fff; 
+    line-height: 12px; 
+}   
+.Grid .pgr a, .Grid2 .pgr a { 
+    color: Gray; 
+    text-decoration: none; 
+}
+.Grid tr:hover, .Grid2 tr:hover {
+    background-color: #ddd;
+    background: #ddd;
+}
+.Grid .pgr a:hover, .Grid2 .pgr a:hover { 
+    color: #000; 
+    text-decoration: none; 
+}
+
+    
+ 

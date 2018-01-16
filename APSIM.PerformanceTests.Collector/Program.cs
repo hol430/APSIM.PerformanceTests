@@ -164,7 +164,7 @@ namespace APSIM.PerformanceTests.Collector
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToLogFile(string.Format("    Successfully processed PassedTests Status for Pull Request Id: ", id));
+                    WriteToLogFile(string.Format("    Successfully processed PassedTests Status for Pull Request Id: {0}", id));
                 }
 
             }
@@ -246,7 +246,7 @@ namespace APSIM.PerformanceTests.Collector
                             }
                             catch (Exception ex)
                             {
-                                WriteToLogFile(string.Format("     ERROR Posting Apsim File: {0}, Pull Request Id {1}, dated {2}: {3}", apsimFile.FileName, pullId, runDate,  ex.Message.ToString()));
+                                WriteToLogFile(string.Format("    ERROR Posting Apsim File: {0}, Pull Request Id {1}, dated {2}: {3}", apsimFile.FileName, pullId, runDate,  ex.Message.ToString()));
                             }
 
                         }
@@ -288,7 +288,8 @@ namespace APSIM.PerformanceTests.Collector
 
                     bool hasData = false;
                     if (elemList[i].HasChildNodes) { hasData = true; }
-                    if (elemList[i].ParentNode.Name != "DataStore") { hasData = false; }
+                    //modLMC - 15/11/2017 - this is not longer required (after discussion with Dean, need to include all)
+                    //if (elemList[i].ParentNode.Name != "DataStore") { hasData = false; }
                     if (hasData == true)
                     {
                         for (int n = 0; n < elemList[i].ChildNodes.Count; n++)

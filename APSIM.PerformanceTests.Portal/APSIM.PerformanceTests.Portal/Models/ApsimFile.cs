@@ -16,8 +16,9 @@ namespace APSIM.PerformanceTests.Portal.Models
         public System.DateTime RunDate { get; set; }
         public Nullable<bool> StatsAccepted { get; set; }
         public string SubmitDetails { get; set; }
-        public int AcceptedPullRequestId { get; set; }
-        public System.DateTime AcceptedRunDate { get; set; }
+
+        public Nullable<int> AcceptedPullRequestId { get; set; }
+        public Nullable<System.DateTime> AcceptedRunDate { get; set; }
 
     }
 

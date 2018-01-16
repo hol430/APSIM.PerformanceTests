@@ -2,15 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data.Entity;
+using System.Data;
 using System.Drawing;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Reflection;
 
 
 namespace APSIM.PerformanceTests.Portal
@@ -19,7 +17,47 @@ namespace APSIM.PerformanceTests.Portal
     {
         #region Constants and variables
         private List<vApsimFile> ApsimFileList;
+        private List<vSimFile> SimFilesList;
+
+        private DataTable ApsimFileDT;
+        private DataTable SimFilesDT;
+
+        System.Web.UI.WebControls.Image sortImage_ApsimFileList = new System.Web.UI.WebControls.Image();
+        System.Web.UI.WebControls.Image sortImage_SimFilesList = new System.Web.UI.WebControls.Image();
+
+        public string SortDireaction_ApsimFileList
+        {
+            get
+            {
+                if (ViewState["SortDireaction_ApsimFileList"] == null)
+                    return string.Empty;
+                else
+                    return ViewState["SortDireaction_ApsimFileList"].ToString();
+            }
+            set
+            {
+                ViewState["SortDireaction_ApsimFileList"] = value;
+            }
+        }
+        private string _sortDirection_ApsimFileList;
+
+        public string SortDireaction_SimFilesList
+        {
+            get
+            {
+                if (ViewState["SortDireaction_SimFilesList"] == null)
+                    return string.Empty;
+                else
+                    return ViewState["SortDireaction_SimFilesList"].ToString();
+            }
+            set
+            {
+                ViewState["SortDireaction_SimFilesList"] = value;
+            }
+        }
+        private string _sortDirection_SimFilesList;
         #endregion
+
 
         #region Page and Control Events
 
@@ -31,15 +69,18 @@ namespace APSIM.PerformanceTests.Portal
 
                 if (Request.QueryString["PULLREQUEST"] != null)
                 {
+                    
                     int pullRequestId = int.Parse(Request.QueryString["PULLREQUEST"].ToString());
+                    hfPullRequestId.Value = pullRequestId.ToString();
+
                     BindSimFilesGrid(pullRequestId);
                 }
             }
             //if the Simulation File grid has data (ie after postback, then need to make sure the scolling will work
-            if (gvSimFiles.Rows.Count > 0)
-            {
-                ClientScript.RegisterStartupScript(this.GetType(), "CreateGridHeader", "<script>CreateGridHeader('GridDataDiv_SimFiles', 'ContentPlaceHolder1_gvSimFiles', 'GridHeaderDiv_SimFiles');</script>");
-            }
+            //if (gvSimFiles.Rows.Count > 0)
+            //{
+            //    ClientScript.RegisterStartupScript(this.GetType(), "CreateGridHeader", "<script>CreateGridHeader('GridDataDiv_SimFiles', 'ContentPlaceHolder1_gvSimFiles', 'GridHeaderDiv_SimFiles');</script>");
+            //}
         }
 
         protected void btnCompare_Click(object sender, EventArgs e)
@@ -55,6 +96,18 @@ namespace APSIM.PerformanceTests.Portal
             acceptlog.SubmitDate = DateTime.ParseExact(txtSubmitDate.Text, "dd/MM/yyyy HH:mm", CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal);
 
             acceptlog.SubmitPerson = txtSubmitPerson.Text;
+
+            string fileInfo = txtFileCount.Text.Trim();
+            int posn = fileInfo.IndexOf('.');  
+            if (posn > 0)
+            {
+                acceptlog.FileCount = int.Parse(fileInfo.Substring(0, posn));
+            }
+            else
+            {
+                acceptlog.FileCount = int.Parse(txtFileCount.Text);
+            }
+
             acceptlog.LogPerson = txtName.Text;
             acceptlog.LogReason = txtDetails.Text;
             acceptlog.LogAcceptDate = DateTime.ParseExact(txtAcceptDate.Text, "dd/MM/yyyy HH:mm", CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal);
@@ -99,6 +152,19 @@ namespace APSIM.PerformanceTests.Portal
         {
         }
 
+        protected void btnDifferences_Click(object sender, EventArgs e)
+        {
+            string pullrequestId = hfPullRequestId.Value.ToString();
+            Response.Redirect(string.Format("Difference.aspx?PULLREQUEST={0}", pullrequestId));
+        }
+
+        protected void btnTests_Click(object sender, EventArgs e)
+        {
+            string pullrequestId = hfPullRequestId.Value.ToString();
+            Response.Redirect(string.Format("Tests.aspx?PULLREQUEST={0}", pullrequestId));
+        }
+
+
         protected void gvApsimFiles_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
             gvApsimFiles.PageIndex = e.NewPageIndex;
@@ -138,11 +204,31 @@ namespace APSIM.PerformanceTests.Portal
                         txtPullRequestId2.Visible = false;
                         lblDetails.Visible = true;
                         txtDetails.Visible = true;
+                        lblFileCount.Visible = true;
+                        txtFileCount.Visible = true;
+
                         txtPullRequestID.Text = gvApsimFiles.Rows[rowIndex].Cells[0].Text;
                         DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[1].Text);
                         txtSubmitDate.Text = subDate.ToString("dd/MM/yyyy HH:mm");
                         txtSubmitPerson.Text = gvApsimFiles.Rows[rowIndex].Cells[2].Text;
                         txtAcceptDate.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+
+                        int acceptedFileCount = Int32.Parse(hfAcceptedFileCount.Value.ToString());
+                        int currentFilecount = Int32.Parse(gvApsimFiles.Rows[rowIndex].Cells[5].Text);
+                        if (acceptedFileCount != currentFilecount)
+                        {
+                            txtFileCount.Text = string.Format("{0}. This does not match 'Accepted' file count of {1}.", currentFilecount.ToString(), acceptedFileCount.ToString());
+                            txtFileCount.CssClass = "FailedTests";
+                            txtFileCount.Width = Unit.Pixel(320);
+                            pnlpopup.Height = Unit.Pixel(300);
+                        }
+                        else
+                        {
+                            txtFileCount.Text = currentFilecount.ToString();
+                            //txtFileCount.CssClass = "Reset";
+                            txtFileCount.Width = Unit.Pixel(200);
+                            pnlpopup.Height = Unit.Pixel(270);
+                        }
                         this.ModalPopupExtender1.Show();
                     }
                     else if (e.CommandName == "UpdateStats")
@@ -152,11 +238,16 @@ namespace APSIM.PerformanceTests.Portal
                         txtPullRequestId2.Visible = true;
                         lblDetails.Visible = false;
                         txtDetails.Visible = false;
+                        lblFileCount.Visible = false;
+                        txtFileCount.Visible = false;
+
                         txtPullRequestID.Text = gvApsimFiles.Rows[rowIndex].Cells[0].Text;
                         DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[1].Text);
                         txtSubmitDate.Text = subDate.ToString("dd/MM/yyyy HH:mm");
                         txtSubmitPerson.Text = gvApsimFiles.Rows[rowIndex].Cells[2].Text;
                         txtAcceptDate.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+
+                        pnlpopup.Height = Unit.Pixel(260);
                         this.ModalPopupExtender1.Show();
 
                     }
@@ -165,7 +256,8 @@ namespace APSIM.PerformanceTests.Portal
                         int pullRequestId = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[0].Text);
                         DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[1].Text);
                         int acceptedPullRequestId = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[6].Text);
-                        BindSimFilesGrid(pullRequestId, subDate, acceptedPullRequestId);
+                        int passPercent = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[4].Text);
+                        BindSimFilesGrid(pullRequestId, subDate, acceptedPullRequestId, passPercent);
                     }
                 }
             }
@@ -175,12 +267,12 @@ namespace APSIM.PerformanceTests.Portal
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                //Show as green if 100% 
+                //Row.Cells[4] = PercentPassed
                 if (e.Row.Cells[4].Text.Equals("100"))
                 {
                     e.Row.ForeColor = Color.Green;
                 }
-
+                //Row.Cells[3] = StatsAccepted
                 if (e.Row.Cells[3].Text.ToLower().Equals("true"))
                 {
                     e.Row.ForeColor = Color.Green;
@@ -198,6 +290,7 @@ namespace APSIM.PerformanceTests.Portal
                         // if we are binding the 'Button' column, and the "StatsAccepted' is false, then whe can Update the Merge Status.
                         if (cellIndex == 8)
                         {
+                            //Row.Cells[3] = StatsAccepted
                             if (e.Row.Cells[3].Text.ToLower().Equals("false"))
                             {
                                 canUpdate = true;
@@ -234,6 +327,98 @@ namespace APSIM.PerformanceTests.Portal
             }
         }
 
+        protected void gvApsimFiles_Sorting(object sender, GridViewSortEventArgs e)
+        {
+            SetSortDirection("gvApsimFiles", SortDireaction_ApsimFileList);
+
+            if (ApsimFileDT == null) 
+            {
+                if (Session["ApsimFileDT"] != null)
+                {
+                    ApsimFileDT = (DataTable)Session["ApsimFileDT"];
+                }
+            }
+
+            if (ApsimFileDT != null)
+            {
+                //Sort the data.
+                ApsimFileDT.DefaultView.Sort = e.SortExpression + " " + _sortDirection_ApsimFileList;
+                gvApsimFiles.DataSource = ApsimFileDT;
+
+                gvApsimFiles.DataBind();
+                SortDireaction_ApsimFileList = _sortDirection_ApsimFileList;
+
+                int sortColumnIndex = 0;
+                foreach (DataControlFieldHeaderCell headerCell in gvApsimFiles.HeaderRow.Cells)
+                {
+                    //Make sure we are displaying the correct header for all columns
+                    switch (headerCell.ContainingField.SortExpression)
+                    {
+                        case "PullRequestId":
+                            gvApsimFiles.Columns[0].HeaderText = "Pull<br />Req. Id";
+                            break;
+                        case "RunDate":
+                            gvApsimFiles.Columns[1].HeaderText = "Run Date";
+                            break;
+                        case "SubmitDetails":
+                            gvApsimFiles.Columns[2].HeaderText = "Submit<br />Persons";
+                            break;
+                        case "StatsAccepted":
+                            gvApsimFiles.Columns[3].HeaderText = "Stats<br />Accepted";
+                            break;
+                        case "PercentPassed":
+                            gvApsimFiles.Columns[4].HeaderText = "Percent<br />Passed";
+                            break;
+                        case "Total":
+                            gvApsimFiles.Columns[5].HeaderText = "Total<br />Files";
+                            break;
+                        case "AcceptedPullRequestId":
+                            gvApsimFiles.Columns[6].HeaderText = "Accepted<br />PR Id";
+                            break;
+                        case "AcceptedRunDate":
+                            gvApsimFiles.Columns[7].HeaderText = "Accepted<br />Run Date";
+                            break;
+                    }
+                    //get the index and details for the column we are sorting
+                    if (headerCell.ContainingField.SortExpression == e.SortExpression)
+                    {
+                        sortColumnIndex = gvApsimFiles.HeaderRow.Cells.GetCellIndex(headerCell);
+                    }
+                }
+                if (_sortDirection_ApsimFileList == "ASC")
+                {
+                    gvApsimFiles.Columns[sortColumnIndex].HeaderText = gvApsimFiles.Columns[sortColumnIndex].HeaderText + "  ▲";
+                }
+                else
+                {
+                    gvApsimFiles.Columns[sortColumnIndex].HeaderText = gvApsimFiles.Columns[sortColumnIndex].HeaderText + "  ▼";
+                }
+                gvApsimFiles.DataBind();
+
+            }
+        }
+
+
+        protected void gvSimFiles_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            gvSimFiles.PageIndex = e.NewPageIndex;
+            if (SimFilesDT == null)
+            {
+                if (Session["SimFilesDT"] != null)
+                {
+                    SimFilesDT = (DataTable)Session["SimFilesDT"];
+                }
+            }
+
+            if (SimFilesDT != null)
+            {
+                //Sort the data.
+                gvSimFiles.DataSource = SimFilesDT;
+                gvSimFiles.DataBind();
+            }
+        }
+
+
         protected void gvSimFiles_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
@@ -248,12 +433,77 @@ namespace APSIM.PerformanceTests.Portal
             }
         }
 
-
         protected void gvSimFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
             int index = gvSimFiles.SelectedIndex;
             int predictedObservedtId = int.Parse(gvSimFiles.Rows[index].Cells[0].Text);
             Response.Redirect("Details.aspx?PO_Id=" + predictedObservedtId);
+        }
+
+        protected void gvSimFiles_Sorting(object sender, GridViewSortEventArgs e)
+        {
+            SetSortDirection("gvSimFiles", SortDireaction_SimFilesList);
+
+            if (SimFilesDT == null)
+            {
+                if (Session["SimFilesDT"] != null)
+                {
+                    SimFilesDT = (DataTable)Session["SimFilesDT"];
+                }
+            }
+
+            if (SimFilesDT != null)
+            {
+                //Sort the data.
+                SimFilesDT.DefaultView.Sort = e.SortExpression + " " + _sortDirection_SimFilesList;
+                gvSimFiles.DataSource = SimFilesDT;
+
+                gvSimFiles.DataBind();
+                SortDireaction_SimFilesList = _sortDirection_SimFilesList;
+
+                int sortColumnIndex = 0;
+                foreach (DataControlFieldHeaderCell headerCell in gvSimFiles.HeaderRow.Cells)
+                {
+                    //Make sure we are displaying the correct header for all columns
+                    switch (headerCell.ContainingField.SortExpression)
+                    {
+                        case "PredictedObservedID":
+                            gvSimFiles.Columns[0].HeaderText = "PO ID";
+                            break;
+                        case "FileName":
+                            gvSimFiles.Columns[1].HeaderText = "File Name";
+                            break;
+                        case "PredictedObservedTableName":
+                            gvSimFiles.Columns[2].HeaderText = "Predicted Observed<br />TableName";
+                            break;
+                        case "PassedTests":
+                            gvSimFiles.Columns[3].HeaderText = "Passed<br />Tests";
+                            break;
+                        case "FullFileName":
+                            gvSimFiles.Columns[4].HeaderText = "Full FileName";
+                            break;
+                        case "AcceptedPredictedObservedDetailsID":
+                            gvSimFiles.Columns[5].HeaderText = "Accepted<br />PO ID";
+                            break;
+                    }
+                    //get the index and details for the column we are sorting
+                    if (headerCell.ContainingField.SortExpression == e.SortExpression)
+                    {
+                        sortColumnIndex = gvSimFiles.HeaderRow.Cells.GetCellIndex(headerCell);
+                    }
+                }
+                if (_sortDirection_SimFilesList == "ASC")
+                {
+                    gvSimFiles.Columns[sortColumnIndex].HeaderText = gvSimFiles.Columns[sortColumnIndex].HeaderText + "  ▲";
+                }
+                else
+                {
+                    gvSimFiles.Columns[sortColumnIndex].HeaderText = gvSimFiles.Columns[sortColumnIndex].HeaderText + "  ▼";
+                }
+                gvSimFiles.DataBind();
+
+            }
+
         }
 
         #endregion
@@ -264,13 +514,17 @@ namespace APSIM.PerformanceTests.Portal
         private void BindApsimFilesGrid()
         {
             ApsimFileList = ApsimFilesDS.GetPullRequestsWithStatus();
-            gvApsimFiles.DataSource = ApsimFileList;
+            ApsimFileDT = Genfuncs.ToDataTable(ApsimFileList);
+
+            Session["ApsimFileDT"] = ApsimFileDT;
+            gvApsimFiles.DataSource = ApsimFileDT;
             gvApsimFiles.DataBind();
 
             AcceptStatsLog acceptedPR = AcceptStatsLogDS.GetLatestAcceptedStatsLog();
             if (acceptedPR != null)
             {
                 lblAcceptedDetails.Text = string.Format("Current Accepted Stats are for Pull Request Id {0}, submitted by {1}, accepted on {2}.", acceptedPR.PullRequestId, acceptedPR.SubmitPerson, acceptedPR.LogAcceptDate.ToString("dd-MMM-yyyy HH:MM tt"));
+                hfAcceptedFileCount.Value = acceptedPR.FileCount.ToString();
             }
         }
 
@@ -278,33 +532,32 @@ namespace APSIM.PerformanceTests.Portal
         private void BindSimFilesGrid(int pullRequestId)
         {
             lblMissing.Text = string.Empty;
+            hfPullRequestId.Value = pullRequestId.ToString();
+
             lblPullRequestId.Text = "Simulation Files for Pull Request Id: " + pullRequestId.ToString();
 
-            List<vSimFile> simFiles = ApsimFilesDS.GetSimFilesByPullRequestID(pullRequestId);
-            gvSimFiles.DataSource = simFiles;
+            btnDifferences.Visible = true;
+            btnDifferences.Text = "View Tests' Differences for Pull Request Id: " + pullRequestId.ToString();
+
+            btnTests.Visible = true;
+            btnTests.Text = "View Tests for Pull Request Id: " + pullRequestId.ToString() + " (Charts)";
+
+            SimFilesList = ApsimFilesDS.GetSimFilesByPullRequestID(pullRequestId);
+            SimFilesDT = Genfuncs.ToDataTable(SimFilesList);
+
+            Session["SimFilesDT"] = SimFilesDT;
+            gvSimFiles.DataSource = SimFilesDT;
             gvSimFiles.DataBind();
 
-            ClientScript.RegisterStartupScript(this.GetType(), "CreateGridHeader", "<script>CreateGridHeader('GridDataDiv_SimFiles', 'ContentPlaceHolder1_gvSimFiles', 'GridHeaderDiv_SimFiles');</script>");
+            //ClientScript.RegisterStartupScript(this.GetType(), "CreateGridHeader", "<script>CreateGridHeader('GridDataDiv_SimFiles', 'ContentPlaceHolder1_gvSimFiles', 'GridHeaderDiv_SimFiles');</script>");
         }
 
-
-        private void BindSimFilesGrid(int pullRequestId, DateTime runDate)
-        {
-            lblMissing.Text = string.Empty;
-            lblPullRequestId.Text = string.Format("Simulation Files for Pull Request Id: {0}, on {1}.", pullRequestId.ToString(), runDate.ToString());
-
-            List<vSimFile> simFiles = ApsimFilesDS.GetSimFilesByPullRequestIDandDate(pullRequestId, runDate);
-            gvSimFiles.DataSource = simFiles;
-            gvSimFiles.DataBind();
-
-            ClientScript.RegisterStartupScript(this.GetType(), "CreateGridHeader", "<script>CreateGridHeader('GridDataDiv_SimFiles', 'ContentPlaceHolder1_gvSimFiles', 'GridHeaderDiv_SimFiles');</script>");
-        }
-
-        private void BindSimFilesGrid(int pullRequestId, DateTime runDate, int acceptPullRequestId)
+        private void BindSimFilesGrid(int pullRequestId, DateTime runDate, int acceptPullRequestId, int PercentPassed)
         {
             //how many files are in the accepted Pull Request Set
             //what happens if they do not match
             lblMissing.Text = string.Empty;
+            hfPullRequestId.Value = pullRequestId.ToString();
             if (acceptPullRequestId > 0)
             {
                 string errorMessage = ApsimFilesDS.GetFileCountDetails(pullRequestId, acceptPullRequestId);
@@ -315,14 +568,57 @@ namespace APSIM.PerformanceTests.Portal
             }
 
             lblPullRequestId.Text = "Simulation Files for Pull Request Id: " + pullRequestId.ToString();
+            if (PercentPassed == 100)
+            {
+                btnDifferences.Visible = false;
+                btnTests.Visible = true;
+            }
+            else
+            {
+                btnDifferences.Visible = true;
+                btnDifferences.Text = "View Tests' Differences for Pull Request Id: " + pullRequestId.ToString();
 
-            List<vSimFile> simFiles = ApsimFilesDS.GetSimFilesByPullRequestIDandDate(pullRequestId, runDate);
-            gvSimFiles.DataSource = simFiles;
+                btnTests.Visible = true;
+                btnTests.Text = "View Tests for Pull Request Id: " + pullRequestId.ToString() + " (Charts)";
+            }
+
+            SimFilesList = ApsimFilesDS.GetSimFilesByPullRequestIDandDate(pullRequestId, runDate);
+            SimFilesDT = Genfuncs.ToDataTable(SimFilesList);
+
+            Session["SimFilesDT"] = SimFilesDT;
+
+            gvSimFiles.DataSource = SimFilesDT;
             gvSimFiles.DataBind();
 
-            ClientScript.RegisterStartupScript(this.GetType(), "CreateGridHeader", "<script>CreateGridHeader('GridDataDiv_SimFiles', 'ContentPlaceHolder1_gvSimFiles', 'GridHeaderDiv_SimFiles');</script>");
+            //ClientScript.RegisterStartupScript(this.GetType(), "CreateGridHeader", "<script>CreateGridHeader('GridDataDiv_SimFiles', 'ContentPlaceHolder1_gvSimFiles', 'GridHeaderDiv_SimFiles');</script>");
         }
 
+
+        protected void SetSortDirection(string gridname, string sortDirection)
+        {
+            if (sortDirection == "ASC")
+            {
+                if (gridname == "gvApsimFiles")
+                {
+                    _sortDirection_ApsimFileList = "DESC";
+                }
+                else if (gridname == "gvSimFiles")
+                {
+                    _sortDirection_SimFilesList = "DESC";
+                }
+            }
+            else
+            {
+                if (gridname == "gvApsimFiles")
+                {
+                    _sortDirection_ApsimFileList = "ASC";
+                }
+                else if (gridname == "gvSimFiles")
+                {
+                    _sortDirection_SimFilesList = "ASC";
+                }
+            }
+        }
         #endregion
 
 
@@ -357,5 +653,8 @@ namespace APSIM.PerformanceTests.Portal
             }
         }
         #endregion
+
     }
+
+
 }

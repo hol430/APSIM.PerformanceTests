@@ -28,6 +28,14 @@
     border: 1px solid black;
 }
 
+#GridDataDiv_POTestsDiffs {
+    overflow: auto; 
+    /*border: 1px solid black;*/ 
+    width: 870px; 
+    height: 400px;
+    border: 1px solid black;
+}
+
 #footer {
     position: fixed;
     bottom: 0px;
@@ -127,6 +135,10 @@
     width: 0px;
 }
 
+.RAlign {
+    text-align: right;
+}
+
 
 .PageHeaderTable {
     width:100%; 
@@ -179,4 +191,7 @@
 }
 .FailedTests {
     color: orangered;
+}
+.Reset {
+    color: black;
 }

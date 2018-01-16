@@ -60,8 +60,6 @@ public class ApsimFilesDS
     }
 
 
-
-
     /// <summary>
     /// Get limited details (Pull Request ID, Run Date and Is Merged status) for all Apsim Files
     /// in reverse date order
@@ -118,7 +116,7 @@ public class ApsimFilesDS
             return (from pod in context.PredictedObservedDetails
                     join af in context.ApsimFiles on  pod.ApsimFilesID equals af.ID
                     select new { pod , af } into t1
-                    group t1 by new {t1.af.PullRequestId, t1.af.RunDate, t1.af.SubmitDetails, t1.af.StatsAccepted, t1.af.AcceptedPullRequestId, t1.af.AcceptedRunDate } into grp
+                    group t1 by new {t1.af.PullRequestId, t1.af.RunDate, t1.af.SubmitDetails, t1.af.StatsAccepted } into grp
                     select new vApsimFile
                     {
                         PullRequestId = grp.FirstOrDefault().af.PullRequestId,
