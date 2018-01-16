@@ -28,41 +28,38 @@ namespace APSIM.PerformanceTests.Service.Controllers
         [HttpGet]
         public IHttpActionResult GetAcceptedStatsStatusAndUpdateGithub(int id)
         {
-            try
+            Utilities.WriteToLogFile("-----------------------------------");
+            double PercentPassed = 0;
+            bool passed = false;
+
+            string connectStr = Utilities.GetConnectionString();
+            using (SqlConnection sqlCon = new SqlConnection(connectStr))
             {
-                string connectStr = Utilities.GetConnectionString();
-                Utilities.WriteToLogFile("-----------------------------------");
-
-                bool passed = false;
-                using (SqlConnection con = new SqlConnection(connectStr))
+                sqlCon.Open();
+                try
                 {
-                    double PercentPassed = 0;
-
                     string strSQL = "SELECT  100 * COUNT(CASE WHEN [PassedTests] = 100 THEN 1 ELSE NULL END) / COUNT(CASE WHEN [PassedTests] IS NOT NULL  THEN 1 ELSE 0 END) as PercentPassed "
                                   + " FROM  [dbo].[ApsimFiles] AS a "
                                   + "    INNER JOIN[dbo].[PredictedObservedDetails] AS p ON a.ID = p.ApsimFilesID "
                                   + "  WHERE a.[PullRequestId] = @PullRequestId ";
-                    using (SqlCommand command = new SqlCommand(strSQL, con))
+                    using (SqlCommand commandES = new SqlCommand(strSQL, sqlCon))
                     {
-                        command.CommandType = CommandType.Text;
-                        command.Parameters.AddWithValue("@PullRequestId", id);
-                        con.Open();
-                        object obj = command.ExecuteScalar();
+                        commandES.CommandType = CommandType.Text;
+                        commandES.Parameters.AddWithValue("@PullRequestId", id);
+                        object obj = commandES.ExecuteScalar();
                         PercentPassed = double.Parse(obj.ToString());
-                        con.Close();
                     }
                     if (PercentPassed == 100)
                     {
                         passed = true;
                     }
                 }
+                catch (Exception ex)
+                {
+                    Utilities.WriteToLogFile(string.Format("ERROR:  Pull Request Id {0}, Unable to determine Passed/Failed status: {1}", id.ToString(), ex.Message.ToString())); ;
+                }
                 CallGitHubWithPassFail(id, passed);
                 Utilities.WriteToLogFile(string.Format("   Pull Request Id {0}, PassedTestsStatus verified and Github updated.", id.ToString())); ;
-            }
-
-            catch (Exception ex)
-            {
-                Utilities.WriteToLogFile(string.Format("ERROR:  Pull Request Id {0}, Unable to determine Passed/Failed status: {1}", id.ToString(), ex.Message.ToString())); ;
             }
             return Ok();
         }

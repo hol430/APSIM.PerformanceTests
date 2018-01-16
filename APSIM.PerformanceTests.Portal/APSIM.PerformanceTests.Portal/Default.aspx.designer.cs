@@ -22,6 +22,24 @@ namespace APSIM.PerformanceTests.Portal {
         protected global::System.Web.UI.WebControls.Label Label1;
         
         /// <summary>
+        /// hfPullRequestId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfPullRequestId;
+        
+        /// <summary>
+        /// hfAcceptedFileCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfAcceptedFileCount;
+        
+        /// <summary>
         /// gvApsimFiles control.
         /// </summary>
         /// <remarks>
@@ -38,6 +56,24 @@ namespace APSIM.PerformanceTests.Portal {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblAcceptedDetails;
+        
+        /// <summary>
+        /// btnDifferences control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnDifferences;
+        
+        /// <summary>
+        /// btnTests control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnTests;
         
         /// <summary>
         /// upSimFiles control.
@@ -164,6 +200,24 @@ namespace APSIM.PerformanceTests.Portal {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtSubmitPerson;
+        
+        /// <summary>
+        /// lblFileCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblFileCount;
+        
+        /// <summary>
+        /// txtFileCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtFileCount;
         
         /// <summary>
         /// Label7 control.

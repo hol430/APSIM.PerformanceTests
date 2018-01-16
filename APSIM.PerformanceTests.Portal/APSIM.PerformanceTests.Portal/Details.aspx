@@ -22,32 +22,50 @@
                 <asp:Label ID="lblPOTableName" runat="server" CssClass="SectionTitles" Text="lblPOTableName"></asp:Label>
             </td>
         </tr>
-    </table>
-    <table>
         <tr>
-            <td><br />
-                <asp:Label ID="lblTests" runat="server" CssClass="ScreenText" Text="Predicted Observed Tests:"></asp:Label>
-                <div id="GridHeaderDiv_POTests">
-                </div>
-                <div id="GridDataDiv_POTests" onscroll="OnScrollFunction_POTests()" >
-                    <asp:GridView ID="gvPOTests" runat="server" AutoGenerateColumns="false" CssClass="GridViewStyle" 
-                        OnRowDataBound="gvPOTests_RowDataBound" >
-                        <HeaderStyle CssClass="GridViewHeaderStyle" />
-                        <Columns>
-                            <asp:BoundField DataField="Variable" HeaderText="Variable" HeaderStyle-Width="200px" ItemStyle-Width="80px" />
-                            <asp:BoundField DataField="Test" HeaderText="Test" HeaderStyle-Width="70px" ItemStyle-Width="70px"  />
-                            <asp:BoundField DataField="Accepted" HtmlEncode="false" HeaderText="Accepted" HeaderStyle-Width="120px" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="80px"  />
-                            <asp:BoundField DataField="Current" HtmlEncode="false" HeaderText="Current" HeaderStyle-Width="120px" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="80px"/>
-                            <asp:BoundField DataField="Difference" HeaderText="Difference" HeaderStyle-Width="100px" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="80px"  />
-                            <asp:BoundField DataField="PassedTest" HtmlEncode="False" HeaderText="Passed<br />Test" HeaderStyle-Width="70px" ItemStyle-Width="70px"  />
-                            <asp:BoundField DataField="IsImprovement" HtmlEncode="False" HeaderText="Is<br />Improvement" HeaderStyle-Width="100px" ItemStyle-Width="80px"  />
-                        </Columns>
-                    </asp:GridView>
-                </div>
-                <br />
-            </td>
+            <td colspan="2"></td>
         </tr>
     </table>
+    <asp:UpdatePanel ID="UpdatePanel3" runat="server">
+        <ContentTemplate>
+
+            <table style="width: 100%">
+                <tr>
+                    <td style="width: 800px;">
+                        <asp:Label ID="lblTests" runat="server" CssClass="ScreenText" Text="Predicted Observed Tests:"></asp:Label>
+                    </td>
+                    <td style="width: auto">
+                        <asp:Label ID="Label3" runat="server" CssClass="ScreenLabel" Text="Filter"></asp:Label>
+                        <asp:TextBox ID="txtSearch_POTests" CssClass="ScreenText" runat="server" AutoPostBack="true" OnTextChanged="txtSearch_POTests_TextChanged" ></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <asp:GridView ID="gvPOTests" runat="server" AutoGenerateColumns="false" PageSize="20" AllowPaging="true" AllowSorting="true" 
+                            DataKeyNames="Variable, Test"  
+                            CssClass="Grid2" AlternatingRowStyle-CssClass="alt" PagerStyle-CssClass="pgr"        
+                            OnPageIndexChanging="gvPOTests_PageIndexChanging"
+                            OnRowDataBound="gvPOTests_RowDataBound"
+                            OnSorting="gvPOTests_Sorting" >
+                            <Columns>
+                                <asp:BoundField DataField="Variable" HeaderText="Variable" HeaderStyle-Width="300px" SortExpression="Variable" />
+                                <asp:BoundField DataField="Test" HeaderText="Test" HeaderStyle-Width="100px" SortExpression="Test" />
+                                <asp:BoundField DataField="Accepted" HtmlEncode="false" HeaderText="Accepted" HeaderStyle-Width="120px" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:0.000000}" SortExpression="Accepted" />
+                                <asp:BoundField DataField="Current" HtmlEncode="false" HeaderText="Current" HeaderStyle-Width="120px" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:0.000000}" SortExpression="Current" />
+                                <asp:BoundField DataField="Difference" HeaderText="Difference" HeaderStyle-Width="120px" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:0.000000}"  SortExpression="Difference" />
+                                <asp:BoundField DataField="DifferencePercent" HtmlEncode="false" HeaderText="Difference<br />Percent" ItemStyle-HorizontalAlign="Right" HeaderStyle-Width="120px" DataFormatString="{0:0.000000}%" SortExpression="DifferencePercent" />
+                                <asp:BoundField DataField="PassedTest" HtmlEncode="False" HeaderText="Passed<br />Test" HeaderStyle-Width="70px" SortExpression="PassedTest"  />
+                                <asp:BoundField DataField="IsImprovement" HtmlEncode="False" HeaderText="Is<br />Improvement" HeaderStyle-Width="100px" SortExpression="IsImprovement" />
+                            </Columns>
+                        </asp:GridView>
+                        <br />
+                    </td>
+                </tr>
+            </table>
+
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
     <table style="width: 95%; padding-top: 15px; background-color: lightgray; border: 1px, solid, darkgray; " >
         <tr>
             <td>
@@ -57,7 +75,7 @@
             </td>
         </tr>
     </table>
-    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server" UpdateMode="Conditional">
         <ContentTemplate>
             <table style="padding-top: 15px; " >
                 <tr>
@@ -75,10 +93,8 @@
             </table>
         </ContentTemplate>
     </asp:UpdatePanel>
-
-    <asp:UpdatePanel ID="UpdatePanel2" runat="server" >
+    <asp:UpdatePanel ID="UpdatePanel4" runat="server" UpdateMode="Conditional">
         <ContentTemplate>
-
             <br />
             <asp:Label ID="lblError" runat="server" Text="lblError" Visible="false" ></asp:Label>
             <asp:Chart ID="chartPODetails" runat="server" Height="500px" Width="900px" >
@@ -104,31 +120,61 @@
                     <asp:Title Name="yAxisTitle" Text="Predicted Values" Docking="Left" Font="Microsoft Sans Serif, 11pt, style=Bold" ></asp:Title>
                 </Titles>
             </asp:Chart>
-            <br />
-
-            <asp:Label ID="lblValues" runat="server" CssClass="ScreenText" Text="Current and Accepted values for Variable:" ></asp:Label>
-            <!-- *** Begin Header Table *** -->
-            <div id="GridHeaderDiv_POValues">
-            </div>
-            <!-- *** End Header Table *** -->
-            <div id="GridDataDiv_POValues" onscroll="OnScrollFunction_POValues()" >
-                <asp:GridView ID="gvPOValues" runat="server" AutoGenerateColumns="false" CssClass="GridViewStyle_POValues"
-                    OnRowDataBound="gvPOValues_RowDataBound"  >
-                    <HeaderStyle CssClass="GridViewHeaderStyle_POValues" />
-					<Columns>
-                        <asp:BoundField DataField="SimulationName" HeaderStyle-Width="200px"  HeaderText="&nbsp;Simulation Name" ItemStyle-Width="200px" />
-                        <asp:BoundField DataField="CurrentPredictedValue" HtmlEncode="False" HeaderStyle-Width="100px" HeaderText="Current<br />Predicted<br />Value" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="100px"  />
-                        <asp:BoundField DataField="CurrentObservedValue" HtmlEncode="False" HeaderText ="Current<br />Observed<br />Value" HeaderStyle-Width="100px" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="100px" />
-                        <asp:BoundField DataField="AcceptedPredictedValue" HtmlEncode="False" HeaderText ="Accepted<br />Predicted<br />Value" HeaderStyle-Width="100px" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="100px" />
-                        <asp:BoundField DataField="AcceptedObservedValue" HtmlEncode="False" HeaderText ="Accepted<br />Observed<br />Value"  HeaderStyle-Width="100px" ItemStyle-HorizontalAlign="Right" ItemStyle-Width="100px" />
-                        <asp:BoundField DataField="TableName" HeaderText ="Table Name"  HeaderStyle-Width="120px" ItemStyle-Width="120px" />
-                        <asp:BoundField DataField="MatchNames" HeaderText ="Match Names"  HeaderStyle-Width="100px" ItemStyle-Width="100px" />
-                        <asp:BoundField DataField="MatchValues"  HeaderText ="Match Values"  HeaderStyle-Width="200px" ItemStyle-Width="200px" />
-                    </Columns>
-
-                </asp:GridView>
-            </div>
-
         </ContentTemplate>
     </asp:UpdatePanel>
+
+    <asp:UpdatePanel ID="UpdatePanel2" runat="server" UpdateMode="Conditional" >
+        <ContentTemplate>
+        <br />
+            <table style="width: 100%">
+                <tr>
+                    <td style="width: 450px;">
+                        <asp:Label ID="lblValues" runat="server" CssClass="ScreenText" Text="Current and Accepted values for Variable:" ></asp:Label>
+                    </td>
+                    <td style="width: auto">
+                        <asp:Label ID="Label6" runat="server" CssClass="ScreenLabel" Text="Page Size"></asp:Label>
+                        <asp:DropDownList ID="ddlPageSize" runat="server" AutoPostBack="True" 
+                            OnSelectedIndexChanged="ddlPageSize_SelectedIndexChanged" >
+                            <asp:ListItem Text="50" Value="50" ></asp:ListItem>
+                            <asp:ListItem Selected="True" Text="100" Value="100" ></asp:ListItem>
+                            <asp:ListItem Text="150" Value="150" ></asp:ListItem>
+                            <asp:ListItem Text="200" Value="200" ></asp:ListItem>
+                        </asp:DropDownList>
+                        &nbsp;&nbsp;
+                    </td>
+                    <td style="width: auto">
+                        <asp:Label ID="Label5" runat="server" CssClass="ScreenLabel" Text="Filter"></asp:Label>
+                        <asp:TextBox ID="txtSearch_POValues" CssClass="ScreenText" runat="server" AutoPostBack="true" OnTextChanged="txtSearch_POValues_TextChanged" ></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <asp:GridView ID="gvPOValues" runat="server" AutoGenerateColumns="false" AllowPaging="true" AllowSorting="true" 
+                            DataKeyNames="ID"  
+                            CssClass="Grid2" AlternatingRowStyle-CssClass="alt" PagerStyle-CssClass="pgr"
+                            OnPageIndexChanging="gvPOValues_PageIndexChanging"
+                            OnRowDataBound="gvPOValues_RowDataBound"
+                            OnSorting="gvPOValues_Sorting"  >
+                            <Columns>
+                                <asp:BoundField DataField="SimulationName" HeaderStyle-Width="200px"  HeaderText="Simulation Name" SortExpression="SimulationName" />
+                                <asp:BoundField DataField="CurrentPredictedValue" HtmlEncode="False" HeaderText ="Current<br />Predicted<br />Value" HeaderStyle-Width="100px" 
+                                    DataFormatString="{0:0.000000}" ItemStyle-HorizontalAlign="Right" SortExpression="CurrentPredictedValue" />
+                                <asp:BoundField DataField="CurrentObservedValue" HtmlEncode="False" HeaderText ="Current<br />Observed<br />Value" HeaderStyle-Width="100px" 
+                                    DataFormatString="{0:0.000000}" ItemStyle-HorizontalAlign="Right" SortExpression="CurrentObservedValue" />
+                                <asp:BoundField DataField="AcceptedPredictedValue" HtmlEncode="False" HeaderText ="Accepted<br />Predicted<br />Value" HeaderStyle-Width="100px" 
+                                    DataFormatString="{0:0.000000}" ItemStyle-HorizontalAlign="Right" SortExpression="AcceptedPredictedValue"  />
+                                <asp:BoundField DataField="AcceptedObservedValue" HtmlEncode="False" HeaderText ="Accepted<br />Observed<br />Value" HeaderStyle-Width="100px" 
+                                    DataFormatString="{0:0.000000}" ItemStyle-HorizontalAlign="Right" SortExpression="AcceptedObservedValue" />
+                                <asp:BoundField DataField="TableName" HeaderText ="Table Name"  HeaderStyle-Width="120px" SortExpression="TableName" />
+                                <asp:BoundField DataField="MatchNames" HeaderText ="Match Names"  HeaderStyle-Width="100px" SortExpression="MatchNames" />
+                                <asp:BoundField DataField="MatchValues" HeaderText ="Match Values"  HeaderStyle-Width="100px" SortExpression="MatchValues" />
+                                <asp:BoundField DataField="ID" HeaderText ="ID"  HeaderStyle-Width="200px" Visible="false" />
+                            </Columns>
+                        </asp:GridView>
+                    </td>
+                </tr>
+            </table>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
 </asp:Content>

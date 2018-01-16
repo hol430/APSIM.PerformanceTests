@@ -1,10 +1,9 @@
-﻿using System;
+﻿using APSIM.PerformanceTests.Portal.Models;
+using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Data;
 using System.Linq;
-using System.Web;
-using APSIM.PerformanceTests.Portal.Models;
-using System.Data.SqlClient;
 
 
 public class PredictedObservedDS
@@ -128,39 +127,20 @@ public class PredictedObservedDS
     /// <param name="predictedObservedId"></param>
     /// <param name="variable"></param>
     /// <returns></returns>
-    public static List<vSimulationPredictedObserved> GetByPredictedObservedIdAndVariable(int predictedObservedId, string variable)
-    {
-        //TODO:  Convert this to Indexed View in Sql Server
-        using (ApsimDBContext context = new ApsimDBContext())
-        {
-            SqlParameter param1 = new SqlParameter("@PredictedObservedId", predictedObservedId);
-            SqlParameter param2 = new SqlParameter("@ValueName", variable);
+    //public static List<vSimulationPredictedObserved> GetByPredictedObservedIdAndVariable(int predictedObservedId, string variable)
+    //{
+    //    //TODO:  Convert this to Indexed View in Sql Server
+    //    using (ApsimDBContext context = new ApsimDBContext())
+    //    {
+    //        SqlParameter param1 = new SqlParameter("@PredictedObservedId", predictedObservedId);
+    //        SqlParameter param2 = new SqlParameter("@ValueName", variable);
 
-            var results = context.Database
-                                 .SqlQuery<vSimulationPredictedObserved>("usp_GetByPredictedObservedIdAndVariable @PredictedObservedId, @ValueName", 
-                                                                         param1, param2).ToList();
-
-            //var results = (from pov in context.PredictedObservedValues
-            //               join pod in context.PredictedObservedDetails on pov.PredictedObservedDetailsID equals pod.ID
-            //               join s in context.Simulations on pov.SimulationsID equals s.ID
-            //               where pov.PredictedObservedDetailsID == predictedObservedId && pov.ValueName == variable
-            //               select new vSimulationPredictedObserved()
-            //               {
-            //                   TableName = pod.TableName,
-            //                   SimulationName = s.Name,
-            //                   MatchNames = (pov.MatchName + " " + pov.MatchName2 + " " + pov.MatchName3).Trim(),
-            //                   MatchValues = (pov.MatchValue + " " + pov.MatchValue2 + " " + pov.MatchValue3).Trim(),
-            //                   ValueName = pov.ValueName,
-            //                   PredictedValue = ((pov.PredictedValue.HasValue) ? (double?)Math.Round((double)pov.PredictedValue, 3) : 0),
-            //                   ObservedValue = ((pov.ObservedValue.HasValue) ? (double?)Math.Round((double)pov.ObservedValue, 3) : 0),
-            //                   Difference = Math.Round(((pov.PredictedValue.HasValue) ? (double)pov.PredictedValue : 0) - ((pov.ObservedValue.HasValue) ? (double)pov.ObservedValue : 0), 3)
-            //               })
-            //               .Distinct()
-            //               .ToList();
-
-            return results;
-        }
-    }
+    //        var results = context.Database
+    //                             .SqlQuery<vSimulationPredictedObserved>("usp_GetByPredictedObservedIdAndVariable @PredictedObservedId, @ValueName", 
+    //                                                                     param1, param2).ToList();
+    //        return results;
+    //    }
+    //}
 
     /// <summary>
     /// This takes two PredictedObservedDetails ID's, and returns a comparison of the values for both sets of PredictedObservedValues. 
@@ -170,33 +150,23 @@ public class PredictedObservedDS
     /// <param name="currentPoID"></param>
     /// <param name="acceptedPoId"></param>
     /// <returns></returns>
-    public static List<vCurrentAndAccepted> GetCurrentAcceptedValues(string variable, int currentPoID, int acceptedPoId)
-    {
-        //var results = new List<vCurrentAndAccepted>();
-        //List <vSimulationPredictedObserved> PODetails = GetByPredictedObservedIdAndVariable(currentPoID, variable);
-        //List<vSimulationPredictedObserved> PODetails2 = GetByPredictedObservedIdAndVariable(acceptedPoId, variable);
-        //    results = (from PO1 in PODetails
-        //            join PO2 in PODetails2
-        //            on new { PO1.TableName, PO1.SimulationName, PO1.ValueName, PO1.MatchNames, PO1.MatchValues }
-        //            equals new { PO2.TableName, PO2.SimulationName, PO2.ValueName, PO2.MatchNames, PO2.MatchValues }
-        //            select new vCurrentAndAccepted
-        //            {
-        //                TableName = PO1.TableName,
-        //                SimulationName = PO1.SimulationName,
-        //                MatchNames = PO1.MatchNames,
-        //                MatchValues = PO1.MatchValues,
-        //                ValueName = PO1.ValueName,
-        //                CurrentPredictedValue = (double?)Math.Round((double)PO1.PredictedValue, 3),
-        //                CurrentObservedValue = ((PO1.ObservedValue.HasValue) ? (double?)Math.Round((double)PO1.ObservedValue, 3) : 0),
-        //                CurrentDifference = ((PO1.Difference.HasValue) ? (double?)Math.Round((double)PO1.Difference, 3) : 0),
-        //                AcceptedPredictedValue = (double?)Math.Round((double)PO2.PredictedValue, 3),
-        //                AcceptedObservedValue = ((PO2.ObservedValue.HasValue) ? (double?)Math.Round((double)PO2.ObservedValue, 3) : 0),
-        //                AcceptedDifference = ((PO2.Difference.HasValue) ? (double?)Math.Round((double)PO2.Difference, 3) : 0),
-        //                DifferenceDifference = ((PO1.Difference.HasValue && PO2.Difference.HasValue) ? (double?)Math.Round((double)PO1.Difference - (double)PO2.Difference, 3) : 0)
-        //            })
-        //            .Distinct()
-        //            .ToList();
+    //public static List<vCurrentAndAccepted> GetCurrentAcceptedValues(string variable, int currentPoID, int acceptedPoId)
+    //{
+    //    using (ApsimDBContext context = new ApsimDBContext())
+    //    {
+    //        SqlParameter param1 = new SqlParameter("@CurrentPredictedObservedId", currentPoID);
+    //        SqlParameter param2 = new SqlParameter("@AcceptedPredictedObservedId", acceptedPoId);
+    //        SqlParameter param3 = new SqlParameter("@ValueName", variable);
 
+    //        var results = context.Database
+    //                        .SqlQuery<vCurrentAndAccepted>("usp_GetCurrentAcceptedValues @CurrentPredictedObservedId, @AcceptedPredictedObservedId, @ValueName", 
+    //                                                        param1, param2, param3).ToList();
+    //        return results;
+    //    }
+    //}
+
+    public static List<vCurrentAndAccepted> GetCurrentAcceptedValuesWithNulls(string variable, int currentPoID, int acceptedPoId)
+    {
         using (ApsimDBContext context = new ApsimDBContext())
         {
             SqlParameter param1 = new SqlParameter("@CurrentPredictedObservedId", currentPoID);
@@ -204,8 +174,49 @@ public class PredictedObservedDS
             SqlParameter param3 = new SqlParameter("@ValueName", variable);
 
             var results = context.Database
-                            .SqlQuery<vCurrentAndAccepted>("usp_GetCurrentAcceptedValues @CurrentPredictedObservedId, @AcceptedPredictedObservedId, @ValueName", 
-                                                            param1, param2, param3).ToList();
+                            .SqlQuery<vCurrentAndAccepted>("usp_GetCurrentAcceptedValuesWithNulls @CurrentPredictedObservedId, @AcceptedPredictedObservedId, @ValueName",
+                                                            param1, param2, param3)
+                            .Select(v => new vCurrentAndAccepted
+                            {
+                                ID = v.ID,
+                                TableName = v.TableName,
+                                SimulationName = v.SimulationName,
+                                MatchNames = v.MatchNames,
+                                MatchValues = v.MatchNames,
+                                CurrentPredictedValue = (double?)v.CurrentPredictedValue,
+                                CurrentObservedValue = (double?)v.CurrentObservedValue,
+                                AcceptedPredictedValue = (double?)v.AcceptedPredictedValue,
+                                AcceptedObservedValue = (double?)v.AcceptedObservedValue
+                            })
+                            .ToList();
+            return results;
+        }
+    }
+
+    public static List<vSimulationPredictedObserved> GetCurrentAcceptedSimulationValues(int currentPoID, int acceptedPoId)
+    {
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            SqlParameter param1 = new SqlParameter("@CurrentPredictedObservedId", currentPoID);
+            SqlParameter param2 = new SqlParameter("@AcceptedPredictedObservedId", acceptedPoId);
+
+            var results = context.Database
+                            .SqlQuery<vSimulationPredictedObserved>("usp_GetCurrentAcceptedSimulationValues @CurrentPredictedObservedId, @AcceptedPredictedObservedId",
+                                                            param1, param2)
+                            .Select(v => new vSimulationPredictedObserved
+                            {
+                                ID = v.ID,
+                                MatchNames = v.MatchNames,
+                                MatchValues = v.MatchNames,
+                                ValueName = v.ValueName,
+                                CurrentPredictedValue = (double?)v.CurrentPredictedValue,
+                                CurrentObservedValue = (double?)v.CurrentObservedValue,
+                                AcceptedPredictedValue = (double?)v.AcceptedPredictedValue,
+                                AcceptedObservedValue = (double?)v.AcceptedObservedValue,
+                                SimulationName = v.SimulationName,
+                                SimulationsID = (int)v.ID
+                            })
+                            .ToList();
             return results;
         }
     }
@@ -214,20 +225,7 @@ public class PredictedObservedDS
     /// This is used tor retrieve the Tests details for a specifice Predicted Observed Id and variable.
     /// </summary>
     /// <param name="currentPoID"></param>
-    /// <returns></returns>
-    public static List<PredictedObservedTest> GetCurrentAcceptedTests(int currentPoID)
-    {
-        using (ApsimDBContext context = new ApsimDBContext())
-        {
-            //modLMC - 24/08/2017 - only retrieve reduced set of stats data (n, R2, RMSE, NSE and RSR) as per email from Dean.
-            return context.PredictedObservedTests
-                .Where(v => v.PredictedObservedDetailsID == currentPoID )
-                .Distinct()
-                .OrderBy(v => v.ID)
-                .ToList();
-        }
-    }
-
+    /// <returns>List<PredictedObservedTest></returns>
     public static List<PredictedObservedTest> GetCurrentAcceptedTestsSubset(int currentPoID)
     {
         List<string> testList = new List<string>();
@@ -243,10 +241,42 @@ public class PredictedObservedDS
             return context.PredictedObservedTests
                 .Where(v => testList.Contains(v.Test) && v.PredictedObservedDetailsID == currentPoID)
                 .Distinct()
-                .OrderBy(v => v.ID)
+                .OrderBy(v => v.PassedTest)
+                .ThenByDescending(v => v.DifferencePercent)
+                .ThenBy(v => v.SortOrder)
+                .ThenBy(v => v.Test)
                 .ToList();
         }
     }
+
+    public static List<vPredictedObservedTests> GetCurrentAcceptedTestsDiffsSubset(int pullRequestId)
+    {
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            SqlParameter param1 = new SqlParameter("@PullRequestId", pullRequestId);
+
+            var results = context.Database
+                            .SqlQuery<vPredictedObservedTests>("usp_GetPredictedObservedTestswithDifferences @PullRequestId", param1)
+                            .ToList();
+            return results;
+        }
+    }
+
+
+
+    public static List<vPredictedObservedTests> GetCurrentAcceptedTests(int pullRequestId)
+    {
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            SqlParameter param1 = new SqlParameter("@PullRequestId", pullRequestId);
+
+            var results = context.Database
+                            .SqlQuery<vPredictedObservedTests>("usp_GetPredictedObservedTests @PullRequestId", param1)
+                            .ToList();
+            return results;
+        }
+    }
+
 
     /// <summary>
     /// This is used tor retrieve the Tests details for a specifice Predicted Observed Id and variable.
@@ -254,16 +284,29 @@ public class PredictedObservedDS
     /// <param name="variable"></param>
     /// <param name="currentPoID"></param>
     /// <returns></returns>
-    public static List<PredictedObservedTest> GetCurrentAcceptedTests(string variable, int currentPoID)
+    public static List<PredictedObservedTest> GetPredictedObservedTest(int currentPoID, string variable)
     {
         using (ApsimDBContext context = new ApsimDBContext())
         {
-            return (from pot in context.PredictedObservedTests
-                    where pot.PredictedObservedDetailsID == currentPoID && pot.Variable == variable
-                    select pot)
-                .OrderBy(v => v.Variable)
+            return context.PredictedObservedTests
+                .Where(v => v.PredictedObservedDetailsID == currentPoID && v.Variable == variable)
+                .OrderBy(v => v.SortOrder)
                 .ThenBy(v => v.Test)
                 .ToList();
+        }
+    }
+
+    public static List<vPredictedObservedTestsFormatted> GetPredictedObservedTestFormatted(int currentPoID, string variable)
+    {
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            SqlParameter param1 = new SqlParameter("@PredictedObservedId", currentPoID);
+            SqlParameter param2 = new SqlParameter("@Variable", variable);
+
+            var results = context.Database
+                            .SqlQuery<vPredictedObservedTestsFormatted>("usp_GetPredictedObservedTestsFormatted @PredictedObservedId, @Variable", param1, param2)
+                            .ToList();
+            return results;
         }
     }
 
