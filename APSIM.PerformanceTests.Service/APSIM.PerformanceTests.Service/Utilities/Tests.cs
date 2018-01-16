@@ -26,7 +26,7 @@ namespace APSIM.PerformanceTests.Service
                 List<string> statNames = (new MathUtilities.RegrStats()).GetType().GetFields().Select(f => f.Name).ToList(); // use reflection, get names of stats available
                 List<string> columnNames;
 
-                Utilities.WriteToLogFile("    DoValidationTest: get the column names");
+                Utilities.WriteToLogFile("    1/8. DoValidationTest: get the column names");
                 columnNames = POtable.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList(); //get list of column names
                 columnNames = columnNames.Where(c => c.Contains("Observed")).ToList(); //filter names that are not pred/obs pairs
                 for (int i = 0; i < columnNames.Count; i++)
@@ -41,7 +41,7 @@ namespace APSIM.PerformanceTests.Service
                 string xstr, ystr;
                 Double xres, yres;
 
-                Utilities.WriteToLogFile("    DoValidationTest: get the predicted observed values and calc regression stats");
+                Utilities.WriteToLogFile("    2/8. DoValidationTest: get the predicted observed values and calc regression stats");
                 for (int c = 0; c < columnNames.Count; c++) //on each P/O column pair
                 {
                     x.Clear();
@@ -63,13 +63,13 @@ namespace APSIM.PerformanceTests.Service
                 }
 
                 //remove any null stats which can occur from non-numeric columns such as dates
-                Utilities.WriteToLogFile("    DoValidationTest: remove any null stats which can occur from non-numeric columns such as dates");
+                Utilities.WriteToLogFile("    3/8. DoValidationTest: remove any null stats which can occur from non-numeric columns such as dates");
                 List<MathUtilities.RegrStats> list = new List<MathUtilities.RegrStats>(stats);
                 list.RemoveAll(l => l == null);
                 stats = list.ToArray();
 
                 //remove entries from column names
-                Utilities.WriteToLogFile("    DoValidationTest: remove entries from column names");
+                Utilities.WriteToLogFile("    4/8. DoValidationTest: remove entries from column names");
                 for (int i = columnNames.Count() - 1; i >= 0; i--)
                 {
                     bool found = false;
@@ -91,56 +91,61 @@ namespace APSIM.PerformanceTests.Service
 
                 string variable, test, statValue;
                 //Loop through stats and put them into a datatable
-                Utilities.WriteToLogFile("    DoValidationTest: Loop through stats and put them into a datatable ");
+                Utilities.WriteToLogFile("    5/8. DoValidationTest: Loop through stats and put them into a datatable ");
 
                 int rowIndex = 0;
                 for (int i = 0; i < stats.Count(); i++)
                 {
-                    for (int j = 1; j < statNames.Count; j++) //start at 1; we don't want Name field.
+                    //for (int j = 1; j < statNames.Count; j++) //start at 1; we don't want Name field.
+                    for (int j = 0; j < statNames.Count; j++) //need to ensure we don't do 'Name'
                     {
-                        variable = stats[i].Name;
                         test = statNames[j];
-                        statValue = stats[i].GetType().GetField(statNames[j]).GetValue(stats[i]).ToString();
-                        helperStr = "Variable: " + variable + ", Test: " + test + ", Value: " + statValue;
-
-                        //CurrentTable.Rows.Add(PO_Name, stats[i].Name, statNames[j], null, current, null, null);
-                        tRow = currentTable.NewRow();
-                        tRow["Variable"] = variable;
-                        tRow["Test"] = test;
-
-                        hasValue = true;
-                        try
+                        if (test != "Name")
                         {
-                            current = Math.Round(Convert.ToDouble(statValue), 6);
-                            if (double.IsNaN(current) == true) { hasValue = false; }
-                            if (double.IsInfinity(current) == true) { hasValue = false; }
-                            if (hasValue == true)
+                            variable = stats[i].Name;
+                            statValue = stats[i].GetType().GetField(statNames[j]).GetValue(stats[i]).ToString();
+                            helperStr = "Variable: " + variable + ", Test: " + test + ", Value: " + statValue;
+
+                            //CurrentTable.Rows.Add(PO_Name, stats[i].Name, statNames[j], null, current, null, null);
+                            tRow = currentTable.NewRow();
+                            tRow["Variable"] = variable;
+                            tRow["Test"] = test;
+
+                            hasValue = true;
+                            try
                             {
-                                tRow["Current"] = current;
-                                //currentTable.Rows[rowIndex]["Current"] = current;
+                                current = Math.Round(Convert.ToDouble(statValue), 6);
+                                if (double.IsNaN(current) == true) { hasValue = false; }
+                                if (double.IsInfinity(current) == true) { hasValue = false; }
+                                if (hasValue == true)
+                                {
+                                    tRow["Current"] = current;
+                                    //currentTable.Rows[rowIndex]["Current"] = current;
+                                }
                             }
-                        }
-                        catch (Exception)
-                        {
-                            Utilities.WriteToLogFile("    ERROR in DoValidationTest: Unable to convert:" + helperStr);
-                        }
+                            catch (Exception)
+                            {
+                                Utilities.WriteToLogFile("    ERROR in DoValidationTest: Unable to convert:" + helperStr);
+                            }
 
-                        currentTable.Rows.Add(tRow);
-                        rowIndex++;
+                            currentTable.Rows.Add(tRow);
+                            rowIndex++;
+                        }
                     }
                 }
                 helperStr = string.Empty;
-                Utilities.WriteToLogFile("    DoValidationTest: Loop through stats and put them into a datatable - Completed");
+                Utilities.WriteToLogFile("    6/8. DoValidationTest: Loop through stats and put them into a datatable - Completed");
 
                 //Now merge this with out Accepted Table
                 //Now add the comparison columns and determine values
-                Utilities.WriteToLogFile("    DoValidationTest: MergeAndCompareAcceptedAgainstCurrent ");
+                Utilities.WriteToLogFile("    7/8. DoValidationTest: MergeAndCompareAcceptedAgainstCurrent ");
                 MergeAndCompareAcceptedAgainstCurrent(ref currentTable, acceptedStats);
 
                 //Need to ensure that the order of the columns in the Datatable matches our table type
-                Utilities.WriteToLogFile("    DoValidationTest: OrderCurrentTableforTableType ");
+                Utilities.WriteToLogFile("    8/8. DoValidationTest: OrderCurrentTableforTableType ");
                 OrderCurrentTableforTableType(ref currentTable);
 
+                Utilities.WriteToLogFile("         DoValidationTest: complete");
             }
             catch (Exception ex)
             {
@@ -155,6 +160,7 @@ namespace APSIM.PerformanceTests.Service
             try
             {
                 //Now merge this with out Accepted Table
+                Utilities.WriteToLogFile("      1/4. MergeAndCompareAcceptedAgainstCurrent: get the column names");
                 if (acceptedStats.Rows.Count > 0)
                 {
                     foreach (DataRow rowCurrent in currentTable.Rows)
@@ -172,9 +178,47 @@ namespace APSIM.PerformanceTests.Service
                             rowCurrent["AcceptedPredictedObservedTestsID"] = rowAccepted[0]["AcceptedPredictedObservedTestsID"];
                         }
                     }
+
+
+                    Boolean rowsAdded = false;
+                    Utilities.WriteToLogFile("      2/4. MergeAndCompareAcceptedAgainstCurrent: check 'Accepted' not in 'Current'");
+                    //Need to check that there are no 'accepted' values that are not included in 'current stats'
+                    foreach (DataRow rowAccepted in acceptedStats.Rows)
+                    {
+                        DataRow[] rowCurrent = currentTable.Select("Variable = '" + rowAccepted["Variable"] + "' AND Test = '" + rowAccepted["Test"] + "'");
+
+
+                        //if the row doesn't exist in the current datatable, then need to add it.
+                        if (rowCurrent.Count() == 0)
+                        {
+                            DataRow newRow = currentTable.NewRow();
+                            newRow["Variable"] = rowAccepted["Variable"];
+                            newRow["Test"] = rowAccepted["Test"];
+                            newRow["Current"] = DBNull.Value;
+                            newRow["Accepted"] = rowAccepted["Accepted"];
+                            newRow["AcceptedPredictedObservedTestsID"] = rowAccepted["AcceptedPredictedObservedTestsID"];
+                            currentTable.Rows.Add(newRow);
+
+                            rowsAdded = true;
+                        }
+                    }
+                    if (rowsAdded == true)
+                    {
+                        currentTable.AcceptChanges();
+
+                        //TODO:  Need to re-sort the table
+                        DataView dv = currentTable.DefaultView;
+                        dv.Sort = "Variable, Test";
+                        DataTable newTable = dv.ToTable();
+                        currentTable = newTable;
+                    }
                 }
 
+
+
+                bool convertOK;
                 string sigIdent = "0";   //false   (1 = true)
+                Utilities.WriteToLogFile("      3/4. MergeAndCompareAcceptedAgainstCurrent: evaluate difference'");
                 foreach (DataRow row in currentTable.Rows)
                 {
                     //If we are starting from scratch, then set the Accepted the same as the Current.
@@ -188,34 +232,53 @@ namespace APSIM.PerformanceTests.Service
 
                     if (row["Accepted"] != DBNull.Value && row["Current"] != DBNull.Value)
                     {
-                        double currentValue = Convert.ToDouble(row["Current"]);
-                        double acceptedValue = Convert.ToDouble(row["Accepted"]);
 
-                        row["Difference"] = currentValue - acceptedValue;
-                        row["PassedTest"] = Math.Abs(Convert.ToDouble(row["Difference"])) > Math.Abs(Convert.ToDouble(row["Accepted"])) * 0.01 ? sigIdent : "1";
+                        double currentValue, acceptedValue, diffValue;
+                        convertOK = Double.TryParse(row["Current"].ToString(), out currentValue);
+                        convertOK = Double.TryParse(row["Accepted"].ToString(), out acceptedValue);
+                        diffValue = currentValue - acceptedValue;
+
+                        row["Difference"] = diffValue;
+
+                        //only do this for 'n'
+                        if (row["Test"].ToString() == "n" && diffValue > 0)
+                        {
+                            row["PassedTest"] = false;
+                        }
+                        else
+                        {
+                            //row["PassedTest"] = Math.Abs(Convert.ToDouble(row["Difference"])) > Math.Abs(Convert.ToDouble(row["Accepted"])) * 0.01 ? sigIdent : "1";
+                            row["PassedTest"] = Math.Abs(diffValue) > Math.Abs(acceptedValue) * 0.01 ? sigIdent : "1";
+                        }
 
                         bool isImprovement = false;
                         switch (row["Test"].ToString())
                         {
                             case "R2":  //if the current is GREATER than accepted (ie difference is POSITIVE) then is an improvement
-                                if (currentValue < acceptedValue) isImprovement = true;
+                                //if (row["Variable"].ToString() == "GrainWt")
+                                //{
+                                //    row["Variable"] = "GrainWt";
+                                //}
+                                if (currentValue > acceptedValue) { isImprovement = true; }
                                 break;
 
                             case "RMSE":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
-                                if (currentValue > acceptedValue) isImprovement = true;
+                                if (currentValue < acceptedValue) { isImprovement = true; }
                                 break;
 
                             case "NSE":  //if the current value is closer to ZERO than the accepted , then it is an improvement
-                                if (Math.Abs(currentValue) < Math.Abs(acceptedValue)) isImprovement = true;
+                                //if (Math.Abs(currentValue) < Math.Abs(acceptedValue)) { isImprovement = true; }
+                                //modLMC - 15/11/2017 - change to this rule - after discussion with Dean (request from Hamish).
+                                if (currentValue > acceptedValue) { isImprovement = true; }
                                 break;
 
                             case "RSR":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
-                                if (currentValue < acceptedValue) isImprovement = true;
+                                if (currentValue < acceptedValue) { isImprovement = true; }
                                 break;
                         }
                         if (isImprovement == true)
                         {
-                            row["PassedTest"] = true;
+                            row["PassedTest"] = "1";  //TRUE   (0 = false)
                         }
                         //Always update this
                         row["IsImprovement"] = isImprovement;
@@ -232,6 +295,7 @@ namespace APSIM.PerformanceTests.Service
                         row["PassedTest"] = sigIdent;
                     }
                 }
+                Utilities.WriteToLogFile("      4/4. MergeAndCompareAcceptedAgainstCurrent: complete'");
             }
             catch (Exception ex)
             {
@@ -247,6 +311,7 @@ namespace APSIM.PerformanceTests.Service
 
             try
             {
+                Utilities.WriteToLogFile("       1/4. CalculateStatsOnPredictedObservedValues:  Start processing");
                 MathUtilities.RegrStats[] stats;
                 List<string> statNames = (new MathUtilities.RegrStats()).GetType().GetFields().Select(f => f.Name).ToList(); // use reflection, get names of stats available
 
@@ -265,13 +330,16 @@ namespace APSIM.PerformanceTests.Service
                 foreach (DataRow row in POtable.Rows) //on each P/O column pair
                 {
                     valueName = row["ValueName"].ToString();
-                    if ((valueName != holdValueName) && (x.Count != 0 || y.Count != 0))
+                    if (valueName != holdValueName)
                     {
-                        stats[c] = MathUtilities.CalcRegressionStats(holdValueName, y, x);
+                        if (x.Count != 0 || y.Count != 0)
+                        {
+                            stats[c] = MathUtilities.CalcRegressionStats(holdValueName, y, x);
+                            c += 1;
+                        }
                         holdValueName = valueName;
                         x.Clear();
                         y.Clear();
-                        c += 1;
                     }
 
                     Double xres, yres;
@@ -283,6 +351,7 @@ namespace APSIM.PerformanceTests.Service
                         y.Add(yres);
                     }
                 }
+                Utilities.WriteToLogFile("       2/4. CalculateStatsOnPredictedObservedValues:  CalcRegressionStats");
                 if (x.Count != 0 || y.Count != 0)
                 {
                     stats[c] = MathUtilities.CalcRegressionStats(holdValueName, y, x);
@@ -313,31 +382,52 @@ namespace APSIM.PerformanceTests.Service
                 double current;
                 DataRow tRow;
                 bool hasValue;
+                string variable, test, statValue, helperStr;
 
+                Utilities.WriteToLogFile("       3/4. CalculateStatsOnPredictedObservedValues:  Loop through stats and put them into a datatable");
                 //Loop through stats and put them into a datatable
                 int rowIndex = 0;
                 for (int i = 0; i < stats.Count(); i++)
                 {
-                    for (int j = 1; j < statNames.Count; j++) //start at 1; we don't want Name field.
+                    //for (int j = 1; j < statNames.Count; j++) //start at 1; we don't want Name field.
+                    for (int j = 0; j < statNames.Count; j++) //need to ensure wthat we dont do 'Name' 
                     {
-                        current = Math.Round(Convert.ToDouble(stats[i].GetType().GetField(statNames[j]).GetValue(stats[i])), 6);
+                        //current = Math.Round(Convert.ToDouble(stats[i].GetType().GetField(statNames[j]).GetValue(stats[i])), 6);
                         //CurrentTable.Rows.Add(PO_Name, stats[i].Name, statNames[j], null, current, null, null);
-                        tRow = currentTable.NewRow();
-                        tRow["Variable"] = stats[i].Name;
-                        tRow["Test"] = statNames[j];
-
-                        hasValue = true;
-                        if (double.IsNaN(current) == true) { hasValue = false; }
-                        if (double.IsInfinity(current) == true) { hasValue = false; }
-                        if (hasValue == true)
+                        test = statNames[j];
+                        if (test != "Name")
                         {
-                            tRow["Current"] = current;
-                            //currentTable.Rows[rowIndex]["Current"] = current;
+                            variable = stats[i].Name;
+                            statValue = stats[i].GetType().GetField(statNames[j]).GetValue(stats[i]).ToString();
+                            helperStr = "Variable: " + variable + ", Test: " + test + ", Value: " + statValue;
+
+                            //CurrentTable.Rows.Add(PO_Name, stats[i].Name, statNames[j], null, current, null, null);
+                            tRow = currentTable.NewRow();
+                            tRow["Variable"] = variable;
+                            tRow["Test"] = test;
+
+                            hasValue = true;
+                            try
+                            {
+                                current = Math.Round(Convert.ToDouble(statValue), 6);
+                                if (double.IsNaN(current) == true) { hasValue = false; }
+                                if (double.IsInfinity(current) == true) { hasValue = false; }
+                                if (hasValue == true)
+                                {
+                                    tRow["Current"] = current;
+                                    //currentTable.Rows[rowIndex]["Current"] = current;
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                Utilities.WriteToLogFile("    ERROR in DoValidationTest: Unable to convert:" + helperStr);
+                            }
+                            currentTable.Rows.Add(tRow);
+                            rowIndex++;
                         }
-                        currentTable.Rows.Add(tRow);
-                        rowIndex++;
                     }
                 }
+                Utilities.WriteToLogFile("       4/4. CalculateStatsOnPredictedObservedValues:  completed");
             }
             catch (Exception ex)
             {
@@ -353,8 +443,9 @@ namespace APSIM.PerformanceTests.Service
             try
             {
                 //This is to ensure we have included the records where accepted stats exist, but current ones don't
-                acceptedStats.Columns.Add("Matched", typeof(string));
+                //acceptedStats.Columns.Add("Matched", typeof(string));
 
+                Utilities.WriteToLogFile("       1/4. MergeTestsStatsAndCompare: started ");
                 //Now merge this with out Accepted Table
                 if (acceptedStats.Rows.Count > 0)
                 {
@@ -365,36 +456,48 @@ namespace APSIM.PerformanceTests.Service
                         if (rowAccepted.Count() == 0)
                         {
                             rowCurrent["Accepted"] = DBNull.Value;
-                            //rowCurrent["AcceptedPredictedObservedTestsID"] = DBNull.Value; ;
                         }
                         else
                         {
                             rowCurrent["Accepted"] = rowAccepted[0]["Current"];
-                            //rowCurrent["AcceptedPredictedObservedTestsID"] = rowAccepted[0]["ID"];
-
-                            //Need to know if something was in accepted, but is not in current
-                            rowAccepted[0]["Matched"] = "true";
                         }
-
                     }
+
+                    bool rowsAdded = false;
+                    Utilities.WriteToLogFile("       2/4. MergeTestsStatsAndCompare: check for 'accepted' values not included in 'current stats' ");
+                    //Need to check that there are no 'accepted' values that are not included in 'current stats'
+                    foreach (DataRow rowAccepted in acceptedStats.Rows)
+                    {
+                        DataRow[] rowCurrent = dtTests.Select("Variable = '" + rowAccepted["Variable"] + "' AND Test = '" + rowAccepted["Test"] + "'");
+
+                        //if the row doesn't exist in the current datatable, then need to add it.
+                        if (rowCurrent.Count() == 0)
+                        {
+                            DataRow newRow = dtTests.NewRow();
+                            newRow["Variable"] = rowAccepted["Variable"];
+                            newRow["Test"] = rowAccepted["Test"];
+                            newRow["Current"] = DBNull.Value;
+                            newRow["Accepted"] = rowAccepted["Accepted"];
+                            dtTests.Rows.Add(newRow);
+                            rowsAdded = true;
+                        }
+                        dtTests.AcceptChanges();
+                    }
+                    if (rowsAdded == true)
+                    {
+                        dtTests.AcceptChanges();
+
+                        //TODO:  Need to re-sort the table
+                        DataView dv = dtTests.DefaultView;
+                        dv.Sort = "Variable, Test";
+                        DataTable newTable = dv.ToTable();
+                        dtTests = newTable;
+                    }
+
                 }
 
-                //NOT SURE IF THIS IS REQUIRED OR NOT
-                //DataRow newRow;
-                //foreach (DataRow acceptedRow in acceptedStats.Rows)
-                //{
-                //    //Should be either null or true
-                //    if ((string)acceptedRow["Matched"] != "true")
-                //    {
-                //        newRow = dtTests.NewRow();
-                //        newRow["Variable"] = acceptedRow["Variable"];
-                //        newRow["Test"] = acceptedRow["Test"];
-                //        newRow["Accepted"] = acceptedRow["Current"];
-                //        //newRow["AcceptedPredictedObservedTestsID"] = acceptedRow["Current"];
-                //        dtTests.Rows.Add(newRow);
-                //    }
-                //}
-
+                Utilities.WriteToLogFile("       3/4. MergeTestsStatsAndCompare: evaluate and compare ");
+                bool convertOK;
                 string sigIdent = "0";   //false   (1 = true)
                 foreach (DataRow row in dtTests.Rows)
                 {
@@ -409,34 +512,52 @@ namespace APSIM.PerformanceTests.Service
 
                     if (row["Accepted"] != DBNull.Value && row["Current"] != DBNull.Value)
                     {
-                        double currentValue = Convert.ToDouble(row["Current"]);
-                        double acceptedValue = Convert.ToDouble(row["Accepted"]);
 
-                        row["Difference"] = currentValue - acceptedValue;
-                        row["PassedTest"] = Math.Abs(Convert.ToDouble(row["Difference"])) > Math.Abs(Convert.ToDouble(row["Accepted"])) * 0.01 ? sigIdent : "1";
+                        double currentValue, acceptedValue, diffValue;
+                        convertOK = Double.TryParse(row["Current"].ToString(), out currentValue);
+                        convertOK = Double.TryParse(row["Accepted"].ToString(), out acceptedValue);
+                        diffValue = currentValue - acceptedValue;
+
+                        row["Difference"] = diffValue;
+
+                        //only do this for 'n'
+                        if (row["Test"].ToString() == "n" && diffValue > 0)
+                        {
+                            row["PassedTest"] = false;
+                        }
+                        else
+                        {
+                            row["PassedTest"] = Math.Abs(diffValue) > Math.Abs(acceptedValue) * 0.01 ? sigIdent : "1";
+                        }
 
                         bool isImprovement = false;
                         switch (row["Test"].ToString())
                         {
                             case "R2":  //if the current is GREATER than accepted (ie difference is POSITIVE) then is an improvement
-                                if (currentValue < acceptedValue) isImprovement = true;
+                                //if (row["Variable"].ToString() == "GrainWt")
+                                //{
+                                //    row["Variable"] = "GrainWt";
+                                //}
+                                if (currentValue > acceptedValue) { isImprovement = true; }
                                 break;
 
                             case "RMSE":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
-                                if (currentValue > acceptedValue) isImprovement = true;
+                                if (currentValue < acceptedValue) { isImprovement = true; }
                                 break;
 
                             case "NSE":  //if the current value is closer to ZERO than the accepted , then it is an improvement
-                                if (Math.Abs(currentValue) < Math.Abs(acceptedValue)) isImprovement = true;
+                                //if (Math.Abs(currentValue) < Math.Abs(acceptedValue)) { isImprovement = true; }
+                                //modLMC - 15/11/2017 - change to this rule - after discussion with Dean (request from Hamish).
+                                if (currentValue > acceptedValue) { isImprovement = true; }
                                 break;
 
                             case "RSR":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
-                                if (currentValue < acceptedValue) isImprovement = true;
+                                if (currentValue < acceptedValue) { isImprovement = true; }
                                 break;
                         }
                         if (isImprovement == true)
                         {
-                            row["PassedTest"] = true;
+                            row["PassedTest"] = "1";   //TRUE   (0 = false)
                         }
                         //Always update this
                         row["IsImprovement"] = isImprovement;
@@ -453,6 +574,7 @@ namespace APSIM.PerformanceTests.Service
                         row["PassedTest"] = sigIdent;
                     }
                 }
+                Utilities.WriteToLogFile("       4/4. MergeTestsStatsAndCompare: completed ");
             }
             catch (Exception ex)
             {

@@ -272,6 +272,7 @@ namespace APSIM.PerformanceTests.Service
             if (StatsType == "Accept")
             {
                 acceptLog.StatsPullRequestId = 0;
+                acceptLog.FileCount = 0;
             }
 
             //need to authenticate the process
@@ -283,7 +284,7 @@ namespace APSIM.PerformanceTests.Service
 
                 try
                 {
-                    string strSQL = "INSERT INTO AcceptStatsLogs (PullRequestId, SubmitPerson, SubmitDate, LogPerson, LogReason, LogStatus, LogAcceptDate, StatsPullRequestId) "
+                    string strSQL = "INSERT INTO AcceptStatsLogs (PullRequestId, SubmitPerson, SubmitDate, FileCount, LogPerson, LogReason, LogStatus, LogAcceptDate, StatsPullRequestId) "
                                     + " Values ( @PullRequestId, @SubmitPerson, @SubmitDate, @LogPerson, @LogReason, @LogStatus, @LogAcceptDate, @StatsPullRequestId )";
                     using (SqlCommand commandENQ = new SqlCommand(strSQL, sqlCon))
                     {
@@ -291,6 +292,7 @@ namespace APSIM.PerformanceTests.Service
                         commandENQ.Parameters.AddWithValue("@PullRequestId", acceptLog.PullRequestId);
                         commandENQ.Parameters.AddWithValue("@SubmitPerson", acceptLog.SubmitPerson);
                         commandENQ.Parameters.AddWithValue("@SubmitDate", acceptLog.SubmitDate);
+                        commandENQ.Parameters.AddWithValue("@FileCount", acceptLog.FileCount);
                         commandENQ.Parameters.AddWithValue("@LogPerson", acceptLog.LogPerson);
                         commandENQ.Parameters.AddWithValue("@LogReason", acceptLog.LogReason);
                         commandENQ.Parameters.AddWithValue("@LogStatus", acceptLog.LogStatus);

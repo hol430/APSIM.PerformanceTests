@@ -7,11 +7,11 @@ namespace APSIM.PerformanceTests.Portal.Models
 {
     public class vCurrentAndAccepted
     {
+        public int ID { get; set; }
         public string TableName { get; set; }
         public string SimulationName { get; set; }
         public string MatchNames { get; set; }
         public string MatchValues { get; set; }
-        public string ValueName { get; set; }
 
         public Nullable<double> CurrentPredictedValue { get; set; }
         public Nullable<double> CurrentObservedValue { get; set; }
@@ -21,4 +21,5 @@ namespace APSIM.PerformanceTests.Portal.Models
         public Nullable<double> AcceptedDifference { get; set; }
         public Nullable<double> DifferenceDifference { get; set; }
     }
+
 }

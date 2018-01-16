@@ -12,6 +12,8 @@ using APSIM.PerformanceTests.Models;
 using System.Threading.Tasks;
 using System.Text;
 using APSIM.Shared.Utilities;
+using Newtonsoft.Json;
+
 
 
 namespace APSIM.PerformanceTests.Service.Controllers
@@ -36,6 +38,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 {
                     commandER.CommandType = CommandType.Text;
                     SqlDataReader reader = commandER.ExecuteReader();
+                    //string response = Comms.SendQuery(commandER, "reader");
                     while (reader.Read())
                     {
                         ApsimFile apsim = new ApsimFile
@@ -412,10 +415,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                                             tvtpPara.TypeName = "dbo.PredictedObservedDataTableType";
                                         }
 
-                                            ErrMessageHelper = "PredictedObservedDetails Id " + predictedObservedID + ", ValueName: " + valueName;
-                                            commandENQ.ExecuteNonQuery();
-                                            Utilities.WriteToLogFile(string.Format("       PredictedObserved Data for {0} import completed successfully!", valueName));
-                                        }
+                                        ErrMessageHelper = "PredictedObservedDetails Id " + predictedObservedID + ", ValueName: " + valueName;
+                                        commandENQ.ExecuteNonQuery();
+                                        Utilities.WriteToLogFile(string.Format("       PredictedObserved Data for {0} import completed successfully!", valueName));
+                                    }
                                 }
                                 catch (Exception ex)
                                 {

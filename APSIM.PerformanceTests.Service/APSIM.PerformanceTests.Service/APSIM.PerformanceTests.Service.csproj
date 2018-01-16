@@ -24,6 +24,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -95,7 +96,10 @@
     <Compile Include="Controllers\AcceptStatsController.cs" />
     <Compile Include="Controllers\UpdateStatsController.cs" />
     <Compile Include="Models\AcceptStatsLog.cs" />
+    <Compile Include="Utilities\Command.cs" />
+    <Compile Include="Utilities\Comms.cs" />
     <Compile Include="Utilities\DBFunctions.cs" />
+    <Compile Include="Utilities\Parameter.cs" />
     <Compile Include="Utilities\Tests.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -107,6 +111,7 @@
   <ItemGroup>
     <Content Include="packages.config" />
     <None Include="Properties\PublishProfiles\ApsimInfo_PerformanceTest_Service.pubxml" />
+    <None Include="Properties\PublishProfiles\CustomProfile.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

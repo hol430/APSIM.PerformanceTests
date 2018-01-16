@@ -288,7 +288,8 @@ namespace APSIM.PerformanceTests.Collector
 
                     bool hasData = false;
                     if (elemList[i].HasChildNodes) { hasData = true; }
-                    if (elemList[i].ParentNode.Name != "DataStore") { hasData = false; }
+                    //modLMC - 15/11/2017 - this is not longer required (after discussion with Dean, need to include all)
+                    //if (elemList[i].ParentNode.Name != "DataStore") { hasData = false; }
                     if (hasData == true)
                     {
                         for (int n = 0; n < elemList[i].ChildNodes.Count; n++)

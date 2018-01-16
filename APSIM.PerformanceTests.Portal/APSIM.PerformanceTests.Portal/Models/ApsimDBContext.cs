@@ -15,7 +15,6 @@ namespace APSIM.PerformanceTests.Portal.Models
         {
         }
 
-    
         //these are in the database
         public virtual DbSet<AcceptStatsLog> AcceptStatsLogs { get; set; }
         public virtual DbSet<ApsimFile> ApsimFiles { get; set; }
@@ -40,7 +39,6 @@ namespace APSIM.PerformanceTests.Portal.Models
             {
                 connectionString = File.ReadAllText(file) + ";Database=\"APSIM.PerformanceTests\"";
                 return connectionString;
-
             }
             catch (Exception ex)
             {
