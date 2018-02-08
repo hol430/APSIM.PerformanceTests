@@ -30,7 +30,11 @@ namespace APSIM.PerformanceTests.Portal.Models
         /// <returns></returns>
         public static string GetConnectionString()
         {
+            //for the apsim server (www.apsim.info)
             string file = @"D:\Websites\dbConnect.txt";
+
+            //for the csiro server
+            //string file = @"E:\Sites\APSIM-Sites\dbConnect.txt";
             string connectionString = string.Empty;
 #if DEBUG
             file = @"C:\Dev\PerformanceTests\dbConnect.txt";

@@ -139,19 +139,26 @@ namespace APSIM.PerformanceTests.Collector
         /// <param name="apsimInstance"></param>
         static async Task PostApsimRun(ApsimFile apsimInstance)
         {
-            string apsimFileName = apsimInstance.FileName;
+            WriteToLogFile(string.Format("    Calling httpClient with ApsimFile {0}", apsimInstance.FileName));
+            string apsimFileName = string.Empty;
             try
             {
+                apsimFileName = apsimInstance.FileName;
                 HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/apsimfiles", apsimInstance);
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToLogFile(string.Format("    Successfully Posted Apsim File Information {0}", apsimFileName));
+                    WriteToLogFile(string.Format("    Successfully posted ApsimFile {0}", apsimFileName));
+                }
+                else
+                {
+                    WriteToLogFile(string.Format("    ERROR posting ApsimFile {0}: {1}", apsimFileName, response.StatusCode.ToString()));
                 }
             }
             catch (Exception ex)
             {
-                WriteToLogFile(string.Format("    ERROR posting Apsim File {0} to Web API: {2} ", apsimFileName, ex.Message.ToString()));
+                WriteToLogFile(string.Format("    ERROR posting Apsim File {0} to Web API: {1} ", apsimFileName, ex.Message.ToString()));
+                throw new Exception(ex.Message.ToString());
             }
         }
 
@@ -380,7 +387,36 @@ namespace APSIM.PerformanceTests.Collector
                      throw new Exception(string.Format("ERROR Database file {0} does not exist", dbName));
                 }
 
-                string ColumnName;
+                string ColumnName, ObservedName;
+                bool removeCols = false;
+
+
+                //modLMC - 31-Jan-2018 - (as instructed by Dean) if the Predicted column is defined as String, then remove both Predicted & Observed
+                for (int i = POdata.Columns.Count - 1; i >= 0; i--)
+                {
+                    ColumnName = POdata.Columns[i].ColumnName.Trim();
+                    if (ColumnName.StartsWith("Predicted"))
+                    {
+                        //if datatype is not numeric need to remove it, and its corresponding observed column
+                        removeCols = false;
+                        if (POdata.Columns[i].DataType == typeof(DateTime)) { removeCols = true; }
+                        if (POdata.Columns[i].DataType == typeof(System.String)) { removeCols = true; }
+
+                        if (removeCols == true)
+                        {
+                            WriteToLogFile(String.Format("        NOTE: {0}.{1} dropped as not in correct Format, was of Type {2} is not the correct; it should be a numeric column", POdata.TableName, ColumnName, POdata.Columns[i].DataType));
+                            POdata.Columns.RemoveAt(i);
+                            ObservedName = ColumnName.Replace("Predicted", "Observed");
+                            int cIndex = POdata.Columns[ObservedName].Ordinal;
+                            if (cIndex > 0)
+                            {
+                                POdata.Columns.RemoveAt(cIndex);
+                                WriteToLogFile(String.Format("        NOTE: {0}.{1} was also dropped as {2} was not defined as a numeric column", POdata.TableName, ObservedName, ColumnName));
+                                i--;
+                            }
+                        }
+                    }
+                }
 
                 //need to ensure that we can convert test/string/char columns to real for all Predicted and Observed Columns
                 //need to work backwards, just in case we need to delete any columns
@@ -393,7 +429,7 @@ namespace APSIM.PerformanceTests.Collector
                         {
                             POdata.Columns.RemoveAt(i);
                         }
-                        else if (POdata.Columns[i].DataType != typeof(System.Double))
+                        else if ((POdata.Columns[i].DataType != typeof(System.Double)) && (POdata.Columns[i].DataType != typeof(System.Int64)))
                         {
                             try
                             {
@@ -496,7 +532,7 @@ namespace APSIM.PerformanceTests.Collector
                 //Console.WriteLine(message);
 
                 //Need to make sure we are in the same directory as this application 
-                string fileName = getDirectoryPath("PerformanceTestsLog.txt");
+                string fileName = getDirectoryPath("PerformanceCollector.txt");
                 StreamWriter sw;
 
                 if (!File.Exists(fileName))
