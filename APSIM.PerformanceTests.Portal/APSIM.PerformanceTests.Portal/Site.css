@@ -135,6 +135,13 @@
     width: 0px;
 }
 
+
+.dropDown {
+    border-radius: 4px;
+    border: 1px solid #AAAAAA;
+    padding: 5px 10px 5px 5px;
+}
+
 .RAlign {
     text-align: right;
 }

@@ -8,6 +8,14 @@ namespace APSIM.PerformanceTests.Service
 {
     public class Utilities
     {
+        //this is for apsim.info
+        private static string filePath = @"D:\Websites\";
+        private static string filePathLog = @"D:\Websites\APSIM.PerformanceTests.Service\";
+
+        //this is for csiro.apsim.au
+        //private static string filePath = @"E:\Sites\APSIM-Sites\";            
+        //private static string filePathLog = @"E:\Sites\APSIM-Sites\Logs";   
+
         public static string GetModifiedFileName(string fileName)
         {
             string returnStr;
@@ -26,12 +34,14 @@ namespace APSIM.PerformanceTests.Service
         public static string GetConnectionString()
         {
             string connectionString = string.Empty;
-            string file = @"D:\Websites\dbConnect.txt";
+            //string connectStr = @"D:\Websites\dbConnect.txt";                //this is for apsim.info
+            //string connectStr = @"E:\Sites\APSIM-Sites\dbConnect.txt";            //this is for csiro.apsim.au
 #if DEBUG
-            file = @"C:\Dev\PerformanceTests\dbConnect.txt";
+            filePath = @"C:\Dev\PerformanceTests\";
 #endif
             try
             {
+                string file = filePath + "dbConnect.txt";
                 connectionString = File.ReadAllText(file) + ";Database=\"APSIM.PerformanceTests\"";
                 return connectionString;
 
@@ -46,12 +56,14 @@ namespace APSIM.PerformanceTests.Service
         public static string GetGitHubToken()
         {
             string tokenString = string.Empty;
-            string file = @"D:\Websites\GitHubToken.txt";
+            //string tokenFile = @"D:\Websites\GitHubToken.txt";  //this is for apsim.info
+            //string tokenFile = @"E:\Sites\APSIM-Sites\GitHubToken.txt";            //this is for csiro.apsim.au
 #if DEBUG
-            file =@"C:\Dev\PerformanceTests\GitHubToken.txt";
+            filePath = @"C:\Dev\PerformanceTests\";
 #endif
             try
             {
+                string file = filePath + "GitHubToken.txt";
                 tokenString = File.ReadAllText(file);
             }
             catch (Exception ex)
@@ -64,12 +76,14 @@ namespace APSIM.PerformanceTests.Service
         public static string GetStatsAcceptedToken()
         {
             string tokenString = string.Empty;
-            string file = @"D:\Websites\PerformanceTestsStatsAcceptedToken.txt";
+            //string acceptStatsFile = @"D:\Websites\PerformanceTestsStatsAcceptedToken.txt";  //this is for apsim.info
+            //string acceptStatsFile = @"E:\Sites\APSIM-Sites\PerformanceTestsStatsAcceptedToken.txt";            //this is for csiro.apsim.au
 #if DEBUG
-            file = @"C:\Dev\PerformanceTests\PerformanceTestsStatsAcceptedToken.txt";
+            filePath = @"C:\Dev\PerformanceTests\";
 #endif
             try
             {
+                string file = filePath + "PerformanceTestsStatsAcceptedToken.txt";
                 tokenString = File.ReadAllText(file);
             }
             catch (Exception ex)
@@ -91,19 +105,21 @@ namespace APSIM.PerformanceTests.Service
 
                     //Need to make sure we are in the same directory as this application 
                     //string fileName = getDirectoryPath("PerformanceTestsLog.txt");
-                    string fileName = @"D:\Websites\APSIM.PerformanceTests.Service\PerformanceServiceLog.txt";
+                    //string fileName = @"D:\Websites\APSIM.PerformanceTests.Service\PerformanceServiceLog.txt";   //this is for apsim.info
+                    //string fileName = @"E:\Sites\APSIM-Sites\Logs\PerformanceServiceLog.txt";            //this is for csiro.apsim.au
 #if DEBUG
-                    fileName = @"C:\Dev\PerformanceTests\PerformanceServiceLog.txt";
+                    filePathLog = @"C:\Dev\PerformanceTests\";
 #endif
                     StreamWriter sw;
 
-                    if (!File.Exists(fileName))
+                    string file = filePathLog + "PerformanceServiceLog.txt";
+                    if (!File.Exists(file))
                     {
-                        sw = new StreamWriter(fileName);
+                        sw = new StreamWriter(file);
                     }
                     else
                     {
-                        sw = File.AppendText(fileName);
+                        sw = File.AppendText(file);
                     }
                     string logLine = String.Format("{0}: {1}", System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm"), message);
                     sw.WriteLine(logLine);

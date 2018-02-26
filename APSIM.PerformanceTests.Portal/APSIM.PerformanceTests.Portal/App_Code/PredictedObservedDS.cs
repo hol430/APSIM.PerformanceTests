@@ -120,7 +120,44 @@ public class PredictedObservedDS
         }
     }
 
+    public static List<vVariable> GetDistinctTableNames(string fileName)
+    {
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            return (from pod in context.PredictedObservedDetails
+                    join af in context.ApsimFiles on pod.ApsimFilesID equals af.ID
+                    where af.FileName == fileName
+                    select new vVariable
+                    {
+                        Name = pod.TableName,
+                        Value = pod.TableName
+                    })
+                .Distinct()
+                .OrderBy(v => v.Name)
+                .ToList();
+        }
+    }
 
+    
+    public static List<vVariable> GetDistinctVariableNames(string fileName, string tablename)
+    {
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            return (from af in context.ApsimFiles
+                    join pod in context.PredictedObservedDetails on af.ID equals pod.ApsimFilesID
+                    join pov in context.PredictedObservedValues on pod.ID equals pov.PredictedObservedDetailsID
+                    where af.FileName == fileName
+                        && pod.TableName == tablename
+                    select new vVariable
+                    {
+                        Name = pov.ValueName,
+                        Value = pov.ValueName
+                    })
+                .Distinct()
+                .OrderBy(v => v.Name)
+                .ToList();
+        }
+    }
     /// <summary>
     /// Returns the PredictedObservedValues and corresponding Simulation details for a specific PredictedObserved Table and variable
     /// </summary>
@@ -322,5 +359,6 @@ public class PredictedObservedDS
             return results;
         }
     }
+
 
 }

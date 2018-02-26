@@ -1,5 +1,6 @@
 ﻿using APSIM.PerformanceTests.Models;
 using APSIM.Shared.Utilities;
+using Newtonsoft.Json;
 using Octokit;
 using System;
 using System.Collections.Generic;
@@ -46,8 +47,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     {
                         commandES.CommandType = CommandType.Text;
                         commandES.Parameters.AddWithValue("@PullRequestId", id);
-                        object obj = commandES.ExecuteScalar();
-                        PercentPassed = double.Parse(obj.ToString());
+                        //object obj = commandES.ExecuteScalar();
+                        //PercentPassed = double.Parse(obj.ToString());
+                        string response = Comms.SendQuery(commandES, "scalar");
+                        PercentPassed = JsonConvert.DeserializeObject<double>(response);
                     }
                     if (PercentPassed == 100)
                     {
@@ -106,7 +109,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 stateFormatted = "Pass";
             }
 
-            string urlStr = string.Format("http://www.apsim.info/APSIM.PerformanceTests.Portal/Default.aspx?PULLREQUEST={0}", pullRequestID);
+            string urlStr = string.Format("https://apsim.csiro.au/APSIM.PerformanceTests/Default.aspx?PULLREQUEST={0}", pullRequestID);
 
             string body = "{" + Environment.NewLine +
                           "  \"state\": \"" + state + "\"," + Environment.NewLine +

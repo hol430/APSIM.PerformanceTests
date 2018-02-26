@@ -59,7 +59,7 @@
                             <Columns>
                                 <asp:BoundField DataField="Variable" HeaderText="Variable" HeaderStyle-Width="300px" SortExpression="Variable" />
                                 <asp:BoundField DataField="Test" HeaderText="Test" HeaderStyle-Width="100px" SortExpression="Test" />
-                                <asp:BoundField DataField="Accepted" HtmlEncode="false" HeaderText="Accepted" HeaderStyle-Width="120px" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:0.000000}" SortExpression="Accepted" />
+                                <asp:BoundField DataField="Accepted" HtmlEncode="false" HeaderText="Accepted" HeaderStyle-Width="120px" ItemStyle-HorizontalAlign="Right" SortExpression="Accepted" />
                                 <asp:BoundField DataField="Current" HtmlEncode="false" HeaderText="Current" HeaderStyle-Width="120px" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:0.000000}" SortExpression="Current" />
                                 <asp:BoundField DataField="Difference" HeaderText="Difference" HeaderStyle-Width="120px" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:0.000000}"  SortExpression="Difference" />
                                 <asp:BoundField DataField="DifferencePercent" HtmlEncode="false" HeaderText="Difference<br />Percent" ItemStyle-HorizontalAlign="Right" HeaderStyle-Width="120px" DataFormatString="{0:0.000000}%" SortExpression="DifferencePercent" />

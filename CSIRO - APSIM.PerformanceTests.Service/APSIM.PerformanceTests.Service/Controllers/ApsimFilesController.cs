@@ -1,4 +1,6 @@
-﻿using System;
+﻿using APSIM.Shared.Utilities;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -11,8 +13,6 @@ using System.Web.Http.Description;
 using APSIM.PerformanceTests.Models;
 using System.Threading.Tasks;
 using System.Text;
-using APSIM.Shared.Utilities;
-using Newtonsoft.Json;
 
 
 
@@ -37,33 +37,51 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 using (SqlCommand commandER = new SqlCommand(strSQL, sqlCon))
                 {
                     commandER.CommandType = CommandType.Text;
-                    SqlDataReader reader = commandER.ExecuteReader();
-                    //string response = Comms.SendQuery(commandER, "reader");
-                    while (reader.Read())
+
+                    //SqlDataReader reader = commandER.ExecuteReader();
+                    //while (reader.Read())
+                    //{
+                    //    ApsimFile apsim = new ApsimFile
+                    //    {
+                    //        ID = reader.GetInt32(0),
+                    //        PullRequestId = reader.GetInt32(1),
+                    //        FileName = reader.GetString(2),
+                    //        FullFileName = reader.GetString(3),
+                    //        RunDate = reader.GetDateTime(4),
+                    //        StatsAccepted = reader.GetBoolean(5),
+                    //        IsMerged = reader.GetBoolean(6),
+                    //        SubmitDetails = reader.GetString(7)
+                    //    };
+                    //    if (reader.IsDBNull(8))
+                    //{
+                    //    apsim.AcceptedPullRequestId = 0;
+                    //}
+                    //else
+                    //{
+                    //    apsim.AcceptedPullRequestId = reader.GetInt32(8);
+                    //}
+                    //reader.Close();
+
+                    string response = Comms.SendQuery(commandER, "reader");
+                    var jsonObject = JsonConvert.DeserializeObject(response);
+
+                    DataTable dt = JsonConvert.DeserializeObject<DataTable>(jsonObject.ToString());
+                    foreach (DataRow row in dt.Rows)
                     {
                         ApsimFile apsim = new ApsimFile
                         {
-                            ID = reader.GetInt32(0),
-                            PullRequestId = reader.GetInt32(1),
-                            FileName = reader.GetString(2),
-                            FullFileName = reader.GetString(3),
-                            RunDate = reader.GetDateTime(4),
-                            StatsAccepted = reader.GetBoolean(5),
-                            IsMerged = reader.GetBoolean(6),
-                            SubmitDetails = reader.GetString(7)
+                            ID = Convert.ToInt32(row[0].ToString()),
+                            PullRequestId = Convert.ToInt32(row[1].ToString()),
+                            FileName = row[2].ToString(),
+                            FullFileName = row[3].ToString(),
+                            RunDate = Convert.ToDateTime(row[4].ToString()),
+                            StatsAccepted = Convert.ToBoolean(row[5].ToString()),
+                            IsMerged = Convert.ToBoolean(row[6].ToString()),
+                            SubmitDetails = row[7].ToString(),
+                            AcceptedPullRequestId = Convert.ToInt32(row[8].ToString())
                         };
-                        if (reader.IsDBNull(8))
-                        {
-                            apsim.AcceptedPullRequestId = 0;
-                        }
-                        else
-                        {
-                            apsim.AcceptedPullRequestId = reader.GetInt32(8);
-                        }
-
                         apsimFiles.Add(apsim);
                     }
-                    reader.Close();
                 }
             }
             return apsimFiles;
@@ -90,33 +108,53 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 {
                     commandER.CommandType = CommandType.Text;
                     commandER.Parameters.AddWithValue("@PullRequestId", id);
-                    SqlDataReader reader = commandER.ExecuteReader();
-                    while (reader.Read())
+                    //SqlDataReader reader = commandER.ExecuteReader();
+                    //while (reader.Read())
+                    //{
+                    //    ApsimFile apsim = new ApsimFile
+                    //    {
+                    //        ID = reader.GetInt32(0),
+                    //        PullRequestId = reader.GetInt32(1),
+                    //        FileName = reader.GetString(2),
+                    //        FullFileName = reader.GetString(3),
+                    //        RunDate = reader.GetDateTime(4),
+                    //        StatsAccepted = reader.GetBoolean(5),
+                    //        IsMerged = reader.GetBoolean(6),
+                    //        SubmitDetails = reader.GetString(7)
+                    //    };
+
+                    //    if (reader.IsDBNull(8))
+                    //    {
+                    //        apsim.AcceptedPullRequestId = 0;
+                    //    }
+                    //    else
+                    //    {
+                    //        apsim.AcceptedPullRequestId = reader.GetInt32(8);
+                    //    }
+
+                    //    apsimFiles.Add(apsim);
+                    //}
+                    //reader.Close();
+                    string response = Comms.SendQuery(commandER, "reader");
+                    var jsonObject = JsonConvert.DeserializeObject(response);
+
+                    DataTable dt = JsonConvert.DeserializeObject<DataTable>(jsonObject.ToString());
+                    foreach (DataRow row in dt.Rows)
                     {
                         ApsimFile apsim = new ApsimFile
                         {
-                            ID = reader.GetInt32(0),
-                            PullRequestId = reader.GetInt32(1),
-                            FileName = reader.GetString(2),
-                            FullFileName = reader.GetString(3),
-                            RunDate = reader.GetDateTime(4),
-                            StatsAccepted = reader.GetBoolean(5),
-                            IsMerged = reader.GetBoolean(6),
-                            SubmitDetails = reader.GetString(7)
+                            ID = Convert.ToInt32(row[0].ToString()),
+                            PullRequestId = Convert.ToInt32(row[1].ToString()),
+                            FileName = row[2].ToString(),
+                            FullFileName = row[3].ToString(),
+                            RunDate = Convert.ToDateTime(row[4].ToString()),
+                            StatsAccepted = Convert.ToBoolean(row[5].ToString()),
+                            IsMerged = Convert.ToBoolean(row[6].ToString()),
+                            SubmitDetails = row[7].ToString(),
+                            AcceptedPullRequestId = Convert.ToInt32(row[8].ToString())
                         };
-
-                        if (reader.IsDBNull(8))
-                        {
-                            apsim.AcceptedPullRequestId = 0;
-                        }
-                        else
-                        {
-                            apsim.AcceptedPullRequestId = reader.GetInt32(8);
-                        }
-
                         apsimFiles.Add(apsim);
                     }
-                    reader.Close();
                 }
             }
             return apsimFiles;
@@ -195,7 +233,9 @@ namespace APSIM.PerformanceTests.Service.Controllers
                             commandES.Parameters.AddWithValue("@PullRequestId", apsimfile.PullRequestId);
                             commandES.Parameters.AddWithValue("@RunDate", apsimfile.RunDate);
 
-                            pullRequestCount = (int)commandES.ExecuteScalar();
+                            //pullRequestCount = (int)commandES.ExecuteScalar();
+                            string response = Comms.SendQuery(commandES, "scalar");
+                            pullRequestCount = JsonConvert.DeserializeObject<int>(response);
                         }
                     }
                     catch (Exception ex)
@@ -216,7 +256,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
                                 commandENQ.Parameters.AddWithValue("@PullRequestID", apsimfile.PullRequestId);
                                 commandENQ.Parameters.AddWithValue("@RunDate", apsimfile.RunDate);
 
-                                commandENQ.ExecuteNonQuery();
+                                //commandENQ.ExecuteNonQuery();
+                                Comms.SendQuery(commandENQ, "stored");
                             }
                             Utilities.WriteToLogFile("    Removed original Pull Request Data.");
                         }
@@ -253,7 +294,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                             //this should return the IDENTITY value for this record (which is required for the next update)
                             ErrMessageHelper = "Filename: " + apsimfile.FileName;
 
-                            ApsimID = (int)commandES.ExecuteScalar();
+                            //ApsimID = (int)commandES.ExecuteScalar();
+                            string response = Comms.SendQuery(commandES, "scalar");
+                            ApsimID = JsonConvert.DeserializeObject<int>(response);
+
                             ErrMessageHelper = "Filename: " + apsimfile.FileName + "- ApsimID: " + ApsimID;
                             Utilities.WriteToLogFile(string.Format("    Filename {0} inserted into ApsimFiles successfully!", apsimfile.FileName));
                         }
@@ -275,14 +319,15 @@ namespace APSIM.PerformanceTests.Service.Controllers
                             {
                                 commandENQ.CommandType = CommandType.StoredProcedure;
                                 commandENQ.Parameters.AddWithValue("@ApsimID", ApsimID);
-
-                                SqlParameter tvpParam = commandENQ.Parameters.AddWithValue("@Simulations", apsimfile.Simulations);
-                                tvpParam.SqlDbType = SqlDbType.Structured;
-                                tvpParam.TypeName = "dbo.SimulationDataTableType";
+                                commandENQ.Parameters.AddWithValue("@Simulations", apsimfile.Simulations);
+                                //SqlParameter tvpParam = commandENQ.Parameters.AddWithValue("@Simulations", apsimfile.Simulations);
+                                //tvpParam.SqlDbType = SqlDbType.Structured;
+                                //tvpParam.TypeName = "dbo.SimulationDataTableType";
 
                                 ErrMessageHelper = "- Simualtion Data for " + apsimfile.FileName;
 
-                                commandENQ.ExecuteNonQuery();
+                                //commandENQ.ExecuteNonQuery();
+                                Comms.SendQuerySP(commandENQ, "storedTableType", "@Simulations", apsimfile.Simulations, "dbo.SimulationDataTableType");
                                 Utilities.WriteToLogFile(string.Format("    Filename {0} Simulation Data imported successfully!", apsimfile.FileName));
                             }
                         }
@@ -325,7 +370,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                                 //this should return the IDENTITY value for this record (which is required for the next update)
                                 ErrMessageHelper = "PredictedObservedDetails for " + poDetail.DatabaseTableName;
 
-                                predictedObservedID = (int)commandES.ExecuteScalar();
+                                //predictedObservedID = (int)commandES.ExecuteScalar();
+                                string response = Comms.SendQuery(commandES, "scalar");
+                                predictedObservedID = JsonConvert.DeserializeObject<int>(response);
+
                                 ErrMessageHelper = "PredictedObservedDetails for " + poDetail.DatabaseTableName + "(ID: " + predictedObservedID + ")";
                                 Utilities.WriteToLogFile(string.Format("    Filename {0} PredictedObserved Table Details {1}, (Id: {2}) imported successfully!", apsimfile.FileName, poDetail.DatabaseTableName, predictedObservedID));
                             }
@@ -407,24 +455,31 @@ namespace APSIM.PerformanceTests.Service.Controllers
                                                 commandENQ.Parameters.AddWithValue("@MatchName", poDetail.FieldNameUsedForMatch);
                                             }
 
-                                            SqlParameter tvtpPara = commandENQ.Parameters.AddWithValue("@PredictedOabservedData", selectedData);
-                                            tvtpPara.SqlDbType = SqlDbType.Structured;
+                                            commandENQ.Parameters.AddWithValue("@PredictedOabservedData", selectedData);
+                                            //SqlParameter tvtpPara = commandENQ.Parameters.AddWithValue("@PredictedOabservedData", selectedData);
+                                            //tvtpPara.SqlDbType = SqlDbType.Structured;
+                                            string tabletypeName = string.Empty;
 
                                             if (poDetail.FieldName3UsedForMatch.Length > 0)
                                             {
-                                                tvtpPara.TypeName = "dbo.PredictedObservedDataThreeTableType";
+                                                tabletypeName = "dbo.PredictedObservedDataThreeTableType";
                                             }
                                             else if (poDetail.FieldName2UsedForMatch.Length > 0)
                                             {
-                                                tvtpPara.TypeName = "dbo.PredictedObservedDataTwoTableType";
+                                                tabletypeName = "dbo.PredictedObservedDataTwoTableType";
                                             }
                                             else
                                             {
-                                                tvtpPara.TypeName = "dbo.PredictedObservedDataTableType";
+                                                tabletypeName = "dbo.PredictedObservedDataTableType";
                                             }
 
+
                                             ErrMessageHelper = "PredictedObservedDetails Id " + predictedObservedID + ", ValueName: " + valueName;
-                                            commandENQ.ExecuteNonQuery();
+                                            //commandENQ.ExecuteNonQuery();
+                                            //Comms.SendQuery(commandENQ, "stored");
+                                            Comms.SendQuerySP(commandENQ, "storedTableType", "@PredictedOabservedData", selectedData, tabletypeName);
+
+
                                             Utilities.WriteToLogFile(string.Format("       PredictedObserved Data for {0} import completed successfully!", valueName));
                                         }
                                     }
@@ -495,28 +550,50 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     commandER.CommandType = CommandType.Text;
                     commandER.Parameters.AddWithValue("@PullRequestId", currentApsim.PullRequestId);
 
-                    SqlDataReader sdReader = commandER.ExecuteReader();
-                    while (sdReader.Read())
+                    //SqlDataReader sdReader = commandER.ExecuteReader();
+                    //while (sdReader.Read())
+                    //{
+                    //    acceptedApsim.ID = sdReader.GetInt32(0);
+                    //    acceptedApsim.PullRequestId = sdReader.GetInt32(1);
+                    //    acceptedApsim.FileName = sdReader.GetString(2);
+                    //    acceptedApsim.FullFileName = sdReader.GetString(3);
+                    //    acceptedApsim.RunDate = sdReader.GetDateTime(4);
+                    //    acceptedApsim.StatsAccepted = sdReader.GetBoolean(5);
+                    //    acceptedApsim.IsMerged = sdReader.GetBoolean(6);
+                    //    acceptedApsim.SubmitDetails = sdReader.GetString(7);
+                    //    if (sdReader.IsDBNull(8))
+                    //    {
+                    //        acceptedApsim.AcceptedPullRequestId = 0;
+                    //    }
+                    //    else
+                    //    {
+                    //        acceptedApsim.AcceptedPullRequestId = sdReader.GetInt32(8);
+                    //    }
+                    //}
+                    //sdReader.Close();
+                    string response = Comms.SendQuery(commandER, "reader");
+                    var jsonObject = JsonConvert.DeserializeObject(response);
+
+                    DataTable dt = JsonConvert.DeserializeObject<DataTable>(jsonObject.ToString());
+                    foreach (DataRow row in dt.Rows)
                     {
-                        acceptedApsim.ID = sdReader.GetInt32(0);
-                        acceptedApsim.PullRequestId = sdReader.GetInt32(1);
-                        acceptedApsim.FileName = sdReader.GetString(2);
-                        acceptedApsim.FullFileName = sdReader.GetString(3);
-                        acceptedApsim.RunDate = sdReader.GetDateTime(4);
-                        acceptedApsim.StatsAccepted = sdReader.GetBoolean(5);
-                        acceptedApsim.IsMerged = sdReader.GetBoolean(6);
-                        acceptedApsim.SubmitDetails = sdReader.GetString(7);
-                        if (sdReader.IsDBNull(8))
+                        acceptedApsim.ID = Convert.ToInt32(row[0].ToString());
+                        acceptedApsim.PullRequestId = Convert.ToInt32(row[1].ToString());
+                        acceptedApsim.FileName = row[2].ToString();
+                        acceptedApsim.FullFileName = row[3].ToString();
+                        acceptedApsim.RunDate = Convert.ToDateTime(row[4].ToString());
+                        acceptedApsim.StatsAccepted = Convert.ToBoolean(row[5].ToString());
+                        acceptedApsim.IsMerged = Convert.ToBoolean(row[6].ToString());
+                        acceptedApsim.SubmitDetails = row[7].ToString();
+                        if (row[8] == DBNull.Value)
                         {
                             acceptedApsim.AcceptedPullRequestId = 0;
                         }
                         else
                         {
-                            acceptedApsim.AcceptedPullRequestId = sdReader.GetInt32(8);
+                            acceptedApsim.AcceptedPullRequestId = Convert.ToInt32(row[8].ToString());
                         }
                     }
-                    sdReader.Close();
-
                 }
 
                 if (acceptedApsim.PullRequestId > 0)
@@ -554,7 +631,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     commandENQ.CommandTimeout = 0;
                     commandENQ.Parameters.AddWithValue("@PullRequestID", pullRequestId);
 
-                    commandENQ.ExecuteNonQuery();
+                    //commandENQ.ExecuteNonQuery();
+                    Comms.SendQuery(commandENQ, "stored");
                 }
             }
             catch (Exception ex)
@@ -581,7 +659,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     commandENQ.Parameters.AddWithValue("@PullRequestID", pullRequestId);
                     commandENQ.Parameters.AddWithValue("@RunDate", runDate);
 
-                    commandENQ.ExecuteNonQuery();
+                    //commandENQ.ExecuteNonQuery();
+                    Comms.SendQuery(commandENQ, "stored");
                 }
             }
             catch (Exception ex)

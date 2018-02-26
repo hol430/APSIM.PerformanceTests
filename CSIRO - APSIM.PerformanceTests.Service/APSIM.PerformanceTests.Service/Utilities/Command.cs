@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 
 
 namespace APSIM.PerformanceTests.Service
@@ -11,6 +12,9 @@ namespace APSIM.PerformanceTests.Service
         public string command;
         public string type;
         public Dictionary<string, string> parameters;
+        public string spName;
+        public string paramName;
+        public string spData;
 
         public Command()
         {

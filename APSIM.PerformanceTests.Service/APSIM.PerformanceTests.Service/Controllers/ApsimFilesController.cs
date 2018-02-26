@@ -38,7 +38,6 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 {
                     commandER.CommandType = CommandType.Text;
                     SqlDataReader reader = commandER.ExecuteReader();
-                    //string response = Comms.SendQuery(commandER, "reader");
                     while (reader.Read())
                     {
                         ApsimFile apsim = new ApsimFile
@@ -181,15 +180,15 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 //to delete everything associated with it before we save the new set of data
                 //--------------------------------------------------------------------------------------
                 int pullRequestCount = 0;
-                using (SqlConnection sqlCon = new SqlConnection(connectStr))
+                using (SqlConnection sqlConnect = new SqlConnection(connectStr))
                 {
-                    sqlCon.Open();
+                    sqlConnect.Open();
                     Utilities.WriteToLogFile("    Checking for existing Pull Requests Details.");
 
                     try
                     {
                         strSQL = "SELECT COUNT(ID) FROM ApsimFiles WHERE PullRequestId = @PullRequestId AND RunDate != @RunDate";
-                        using (SqlCommand commandES = new SqlCommand(strSQL, sqlCon))
+                        using (SqlCommand commandES = new SqlCommand(strSQL, sqlConnect))
                         {
                             commandES.CommandType = CommandType.Text;
                             commandES.Parameters.AddWithValue("@PullRequestId", apsimfile.PullRequestId);
@@ -208,7 +207,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         try
                         {
                             Utilities.WriteToLogFile("    Removing existing Pull Requests Details.");
-                            using (SqlCommand commandENQ = new SqlCommand("usp_DeleteByPullRequestIdButNotRunDate", sqlCon))
+                            using (SqlCommand commandENQ = new SqlCommand("usp_DeleteByPullRequestIdButNotRunDate", sqlConnect))
                             {
                                 // Configure the command and parameter.
                                 commandENQ.CommandType = CommandType.StoredProcedure;
@@ -225,13 +224,20 @@ namespace APSIM.PerformanceTests.Service.Controllers
                             Utilities.WriteToLogFile("    ERROR:  Error Removing original Pull Request Data: " + ex.Message.ToString());
                         }
                     }
+                    sqlConnect.Close();
+                }
 
+
+                using (SqlConnection sqlCon = new SqlConnection(connectStr))
+                {
                     //--------------------------------------------------------------------------------------
                     //Add the ApsimFile Record first, so that we can get back the IDENTITY (ID) value
                     //--------------------------------------------------------------------------------------
                     //using (SqlConnection con = new SqlConnection(connectStr))
                     //{
                     Utilities.WriteToLogFile("    Inserting ApsimFiles details.");
+                    sqlCon.Open();
+
                     try
                     {
                         strSQL = "INSERT INTO ApsimFiles (PullRequestId, FileName, FullFileName, RunDate, StatsAccepted, IsMerged, SubmitDetails) "

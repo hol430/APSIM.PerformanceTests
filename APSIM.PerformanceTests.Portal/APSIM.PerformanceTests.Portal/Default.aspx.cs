@@ -689,14 +689,28 @@ namespace APSIM.PerformanceTests.Portal
             else if (updateType == "Update")
             {
                 response = httpClient.PostAsJsonAsync("api/updateStats", apsimLog).Result;
+                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                {
+                }
+
+                //This will check the status of the updates above, and notify Git
+                response = httpClient.GetAsync("api/acceptstats/" + apsimLog.PullRequestId.ToString()).Result;
             }
 
             response.EnsureSuccessStatusCode();
             if (response.IsSuccessStatusCode)
             {
             }
+
+
+
         }
+
+ 
+
         #endregion
+
 
     }
 

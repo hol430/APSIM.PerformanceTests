@@ -18,30 +18,43 @@ namespace APSIM.PerformanceTests.Collector
 {
     class Program
     {
-        static HttpClient httpClient = new HttpClient();
+        static HttpClient httpClient_apsim = new HttpClient();
+        static HttpClient httpClient_csiro = new HttpClient();
 
         static int Main(string[] args)
         {
-            string serviceUrl = ConfigurationManager.AppSettings["serviceAddress"].ToString() + "APSIM.PerformanceTests.Service/";
-            httpClient.BaseAddress = new Uri(serviceUrl);
-#if DEBUG
-            httpClient.BaseAddress = new Uri("http://localhost:53187/");
-#endif
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-
-            //initially set to true
-            int retValue = 1;
-            //Console.Title = typeof(Program).Name;
-            string pullCmd = string.Empty;
-            int pullId = 0;
-            string submitDetails = string.Empty;
-            DateTime runDate;
-            string[] commandNames = new string[] { "AddToDatabase", "Check" };  //can add to this over time
-
+            int retValue = 1;       //this is true
             try
             {
+
+                //this is for www.apsim.info.au
+                string serviceUrl_apsim = ConfigurationManager.AppSettings["serviceAddress_apsim"].ToString() + "APSIM.PerformanceTests.Service/";
+                httpClient_apsim.BaseAddress = new Uri(serviceUrl_apsim);
+    #if DEBUG
+                httpClient_apsim.BaseAddress = new Uri("http://localhost:53187/");
+    #endif
+                httpClient_apsim.DefaultRequestHeaders.Accept.Clear();
+                httpClient_apsim.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+
+                //this is for www.csiro.apsim.au
+    //            string serviceUrl_csiro = ConfigurationManager.AppSettings["serviceAddress_csiro"].ToString() + "APSIM.PerformanceTests.Service/";
+    //            httpClient_csiro.BaseAddress = new Uri(serviceUrl_csiro);
+    //#if DEBUG
+    //            httpClient_csiro.BaseAddress = new Uri("http://localhost:53187/");
+    //#endif
+    //            httpClient_csiro.DefaultRequestHeaders.Accept.Clear();
+    //            httpClient_csiro.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+
+                //initially set to true
+                //Console.Title = typeof(Program).Name;
+                string pullCmd = string.Empty;
+                int pullId = 0;
+                string submitDetails = string.Empty;
+                DateTime runDate;
+                string[] commandNames = new string[] { "AddToDatabase", "Check" };  //can add to this over time
+
 
                 //Test that something has been passed
                 if (args.Length == 0)
@@ -144,7 +157,9 @@ namespace APSIM.PerformanceTests.Collector
             try
             {
                 apsimFileName = apsimInstance.FileName;
-                HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/apsimfiles", apsimInstance);
+
+                //this will call the service on www..apsim.info.au
+                HttpResponseMessage response = await httpClient_apsim.PostAsJsonAsync("api/apsimfiles", apsimInstance);
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {
@@ -154,6 +169,18 @@ namespace APSIM.PerformanceTests.Collector
                 {
                     WriteToLogFile(string.Format("    ERROR posting ApsimFile {0}: {1}", apsimFileName, response.StatusCode.ToString()));
                 }
+
+                //this will call the service on www.csiro.apsim.au
+                //HttpResponseMessage response_csiro = await httpClient_csiro.PostAsJsonAsync("api/apsimfiles", apsimInstance);
+                //response_csiro.EnsureSuccessStatusCode();
+                //if (response_csiro.IsSuccessStatusCode)
+                //{
+                //    WriteToLogFile(string.Format("    (csiro) Successfully posted ApsimFile {0}", apsimFileName));
+                //}
+                //else
+                //{
+                //    WriteToLogFile(string.Format("    (csiro) ERROR posting ApsimFile {0}: {1}", apsimFileName, response_csiro.StatusCode.ToString()));
+                //}
             }
             catch (Exception ex)
             {
@@ -167,7 +194,7 @@ namespace APSIM.PerformanceTests.Collector
         {
             try
             {
-                HttpResponseMessage response = await httpClient.GetAsync("api/acceptstats/" + id);
+                HttpResponseMessage response = await httpClient_apsim.GetAsync("api/acceptstats/" + id);
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {
@@ -179,6 +206,20 @@ namespace APSIM.PerformanceTests.Collector
             {
                 WriteToLogFile(string.Format("  ERROR:  Unable to process PassedTests Status for Pull Request Id {0}: {1}", id, ex.Message.ToString()));
             }
+            //try
+            //{
+            //    HttpResponseMessage response = await httpClient_csiro.GetAsync("api/acceptstats/" + id);
+            //    response.EnsureSuccessStatusCode();
+            //    if (response.IsSuccessStatusCode)
+            //    {
+            //        WriteToLogFile(string.Format("    Successfully processed PassedTests Status for Pull Request Id: {0}", id));
+            //    }
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    WriteToLogFile(string.Format("  (csiro)  ERROR:  Unable to process PassedTests Status for Pull Request Id {0}: {1}", id, ex.Message.ToString()));
+            //}
         }
 
 
@@ -387,37 +428,91 @@ namespace APSIM.PerformanceTests.Collector
                      throw new Exception(string.Format("ERROR Database file {0} does not exist", dbName));
                 }
 
-                string ColumnName, ObservedName;
-                bool removeCols = false;
-
+                string ColumnName, ObservedName, PredictedName;
+                bool removeCols = false, colRemoved = false;
+                int cIndex;
 
                 //modLMC - 31-Jan-2018 - (as instructed by Dean) if the Predicted column is defined as String, then remove both Predicted & Observed
                 for (int i = POdata.Columns.Count - 1; i >= 0; i--)
                 {
                     ColumnName = POdata.Columns[i].ColumnName.Trim();
-                    if (ColumnName.StartsWith("Predicted"))
+                    //modLMC - 20/02/2018 - as per phone conversation with Dean, remove any columns with CheckpointID
+                    if (ColumnName.IndexOf("CheckpointID")  >= 0)
+                    {
+                        //Remove any columns called CheckpointID
+                        POdata.Columns.RemoveAt(i);
+                        //WriteToLogFile(String.Format("        NOTE: {0}.{1} was dropped.");
+                        //i--;
+                    }
+                    else if (ColumnName.StartsWith("Predicted"))
                     {
                         //if datatype is not numeric need to remove it, and its corresponding observed column
-                        removeCols = false;
-                        if (POdata.Columns[i].DataType == typeof(DateTime)) { removeCols = true; }
-                        if (POdata.Columns[i].DataType == typeof(System.String)) { removeCols = true; }
+                        colRemoved = false;
 
-                        if (removeCols == true)
+                        //check if the "Observed" Column exists, if it doesn't, then delete the Predicted
+                        ObservedName = ColumnName.Replace("Predicted", "Observed");
+                        try
                         {
-                            WriteToLogFile(String.Format("        NOTE: {0}.{1} dropped as not in correct Format, was of Type {2} is not the correct; it should be a numeric column", POdata.TableName, ColumnName, POdata.Columns[i].DataType));
+                            cIndex = POdata.Columns[ObservedName].Ordinal;
+                        }
+                        catch (System.NullReferenceException)
+                        {
                             POdata.Columns.RemoveAt(i);
-                            ObservedName = ColumnName.Replace("Predicted", "Observed");
-                            int cIndex = POdata.Columns[ObservedName].Ordinal;
-                            if (cIndex > 0)
+                            WriteToLogFile(String.Format("        NOTE: {0}.{1} was dropped the Observed column {2} does not exist.", POdata.TableName, ColumnName, ObservedName));
+                            colRemoved = true;
+                            //i--;
+                        }
+
+                        if (colRemoved == false)
+                        {
+                            removeCols = false;
+                            if (POdata.Columns[i].DataType == typeof(DateTime)) { removeCols = true; }
+                            if (POdata.Columns[i].DataType == typeof(System.String)) { removeCols = true; }
+                            if (removeCols == true)
                             {
-                                POdata.Columns.RemoveAt(cIndex);
-                                WriteToLogFile(String.Format("        NOTE: {0}.{1} was also dropped as {2} was not defined as a numeric column", POdata.TableName, ObservedName, ColumnName));
-                                i--;
+                                WriteToLogFile(String.Format("        NOTE: {0}.{1} dropped as not in correct Format, was of Type {2} is not the correct; it should be a numeric column", POdata.TableName, ColumnName, POdata.Columns[i].DataType));
+                                POdata.Columns.RemoveAt(i);
+                                ObservedName = ColumnName.Replace("Predicted", "Observed");
+                                try
+                                {
+                                    cIndex = POdata.Columns[ObservedName].Ordinal;
+                                    if (cIndex > 0)
+                                    {
+                                        POdata.Columns.RemoveAt(cIndex);
+                                        WriteToLogFile(String.Format("        NOTE: {0}.{1} was also dropped as {2} was not defined as a numeric column", POdata.TableName, ObservedName, ColumnName));
+                                        if (i >= POdata.Columns.Count)
+                                        {
+                                            //make sure we don't go out of bounds with the columns
+                                            i = POdata.Columns.Count;
+                                        }
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                }
                             }
                         }
+
                     }
+                    else if (ColumnName.StartsWith("Observed"))
+                    {
+                        //check if the "Predicted" Column exists, if it doesn't, then delete the Predicted
+                        PredictedName = ColumnName.Replace("Observed", "Predicted");
+                        try
+                        {
+                            cIndex = POdata.Columns[PredictedName].Ordinal;
+                        }
+                        catch (System.NullReferenceException)
+                        {
+                            POdata.Columns.RemoveAt(i);
+                            WriteToLogFile(String.Format("        NOTE: {0}.{1} was dropped the Predicted column {2} does not exist.", POdata.TableName, ColumnName, PredictedName));
+                            //i--;
+                        }
+                    }
+
                 }
 
+                POdata.AcceptChanges();
                 //need to ensure that we can convert test/string/char columns to real for all Predicted and Observed Columns
                 //need to work backwards, just in case we need to delete any columns
                 for (int i = POdata.Columns.Count-1; i >= 0 ; i--)

@@ -60,8 +60,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Net.Http" />
@@ -102,6 +102,8 @@
     <Content Include="Gridstyle.css" />
     <Content Include="Images\grid-alt.png" />
     <Content Include="packages.config" />
+    <Content Include="RenameVariable.aspx" />
+    <Content Include="RenameTable.aspx" />
     <Content Include="Site.Master" />
     <None Include="Properties\PublishProfiles\ApsimInfoPerformanceTests_Portal.pubxml" />
     <None Include="Properties\PublishProfiles\CsiroApsim_PerformanceTests_Portal.pubxml" />
@@ -149,6 +151,7 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Models\PORename.cs" />
     <Compile Include="PODetails.aspx.cs">
       <DependentUpon>PODetails.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -182,6 +185,20 @@
     <Compile Include="Models\vSimFile.cs" />
     <Compile Include="Models\vVariable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RenameVariable.aspx.cs">
+      <DependentUpon>RenameVariable.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="RenameVariable.aspx.designer.cs">
+      <DependentUpon>RenameVariable.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="RenameTable.aspx.cs">
+      <DependentUpon>RenameTable.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="RenameTable.aspx.designer.cs">
+      <DependentUpon>RenameTable.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

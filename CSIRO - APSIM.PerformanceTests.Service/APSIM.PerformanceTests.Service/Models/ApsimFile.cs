@@ -15,6 +15,7 @@ namespace APSIM.PerformanceTests.Models
         public bool IsMerged { get; set; }
         public string SubmitDetails { get; set; }
         public int AcceptedPullRequestId { get; set; }
+        public DateTime AcceptedRunDate { get; set; }
 
 
         public DataTable Simulations { get; set; }

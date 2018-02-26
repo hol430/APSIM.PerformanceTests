@@ -120,7 +120,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Utilities.WriteToLogFile(string.Format("ERROR:  Unable to update {0}: {2}", HelperMessage, ex.Message.ToString())); ;
+                    Utilities.WriteToLogFile(string.Format("ERROR:  Unable to update {0}: {1}", HelperMessage, ex.Message.ToString())); ;
                 }
             }
         }

@@ -95,7 +95,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
             Task<PullRequest> pullRequestTask = github.PullRequest.Get("APSIMInitiative", "ApsimX", pullRequestID);
             pullRequestTask.Wait();
             PullRequest pullRequest = pullRequestTask.Result;
-            Uri statusURL = pullRequest.StatusesUrl;
+            Uri statusURL = new System.Uri(pullRequest.StatusesUrl);
 
             string header = "Authorization: token " + token;
             string state = "failure";
