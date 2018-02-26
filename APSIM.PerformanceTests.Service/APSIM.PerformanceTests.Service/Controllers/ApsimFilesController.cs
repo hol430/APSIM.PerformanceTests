@@ -581,6 +581,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
             {
                 using (SqlCommand commandENQ = new SqlCommand("usp_DeleteByPullRequestIdButNotRunDate", sqlCon))
                 {
+
                     // Configure the command and parameter.
                     commandENQ.CommandType = CommandType.StoredProcedure;
                     commandENQ.CommandTimeout = 0;

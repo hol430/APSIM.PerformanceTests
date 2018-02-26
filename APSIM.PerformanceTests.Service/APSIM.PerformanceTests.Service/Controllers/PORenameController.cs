@@ -50,19 +50,19 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         }
                         else if (renameObj.Type == "VariableRename")
                         {
-                            using (SqlCommand commandENQ = new SqlCommand("usp_UpdatePredictedObservedVariableName", sqlCon))
-                            {
-                                //Now update the database with the test results
-                                // Configure the command and parameter.
-                                commandENQ.CommandType = CommandType.StoredProcedure;
-                                commandENQ.Parameters.AddWithValue("@FileName", renameObj.FileName);
-                                commandENQ.Parameters.AddWithValue("@TableName", renameObj.TableName);
-                                commandENQ.Parameters.AddWithValue("@VariableName", renameObj.VariableName);
-                                commandENQ.Parameters.AddWithValue("@NewVariableName", renameObj.NewVariableName);
+                            //using (SqlCommand commandENQ = new SqlCommand("usp_UpdatePredictedObservedVariableName", sqlCon))
+                            //{
+                            //    //Now update the database with the test results
+                            //    // Configure the command and parameter.
+                            //    commandENQ.CommandType = CommandType.StoredProcedure;
+                            //    commandENQ.Parameters.AddWithValue("@FileName", renameObj.FileName);
+                            //    commandENQ.Parameters.AddWithValue("@TableName", renameObj.TableName);
+                            //    commandENQ.Parameters.AddWithValue("@VariableName", renameObj.VariableName);
+                            //    commandENQ.Parameters.AddWithValue("@NewVariableName", renameObj.NewVariableName);
 
-                                commandENQ.ExecuteNonQuery();
-                            }
-                            Utilities.WriteToLogFile("    " + errHelper + "  competed successfully!");
+                            //    commandENQ.ExecuteNonQuery();
+                            //}
+                            //Utilities.WriteToLogFile("    " + errHelper + "  competed successfully!");
 
                         }
                     }
