@@ -57,7 +57,7 @@ namespace APSIM.PerformanceTests.Portal
                 rename.TableName = ddlTableName.SelectedItem.Text;
                 rename.NewTableName = txtNewTableName.Text;
 
-                RenamePredictedObservedTable(rename);
+                WebAP_Interactions.RenamePredictedObservedTable(rename);
             }
             catch (Exception ex)
             {
@@ -114,32 +114,6 @@ namespace APSIM.PerformanceTests.Portal
         #endregion
 
 
-        #region WebAPI Interaction
-
-
-        private void RenamePredictedObservedTable(PORename objRename)
-        {
-            HttpClient httpClient = new HttpClient();
-
-            string serviceUrl = ConfigurationManager.AppSettings["serviceAddress"].ToString() + "APSIM.PerformanceTests.Service/";
-            httpClient.BaseAddress = new Uri(serviceUrl);
-            //httpClient.BaseAddress = new Uri("http://www.apsim.info/APSIM.PerformanceTests.Service/");
-#if DEBUG
-            httpClient.BaseAddress = new Uri("http://localhost:53187/");
-#endif
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-            HttpResponseMessage response = new HttpResponseMessage();
-            response = httpClient.PostAsJsonAsync("api/PORename", objRename).Result;
-            response.EnsureSuccessStatusCode();
-            if (response.IsSuccessStatusCode)
-            {
-            }
-
-        }
-
-        #endregion
 
     }
 }

@@ -18,42 +18,21 @@ namespace APSIM.PerformanceTests.Collector
 {
     class Program
     {
-        static HttpClient httpClient_apsim = new HttpClient();
-        static HttpClient httpClient_csiro = new HttpClient();
+        static HttpClient httpClient = new HttpClient();
+        static string LogFileName = "CsiroApsim";
 
         static int Main(string[] args)
         {
-            int retValue = 1;       //this is true
+            int retValue = 0;       //this is true
             try
             {
-
-                //this is for www.apsim.info.au
-                string serviceUrl_apsim = ConfigurationManager.AppSettings["serviceAddress_apsim"].ToString() + "APSIM.PerformanceTests.Service/";
-                httpClient_apsim.BaseAddress = new Uri(serviceUrl_apsim);
-    #if DEBUG
-                httpClient_apsim.BaseAddress = new Uri("http://localhost:53187/");
-    #endif
-                httpClient_apsim.DefaultRequestHeaders.Accept.Clear();
-                httpClient_apsim.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-
-                //this is for www.csiro.apsim.au
-    //            string serviceUrl_csiro = ConfigurationManager.AppSettings["serviceAddress_csiro"].ToString() + "APSIM.PerformanceTests.Service/";
-    //            httpClient_csiro.BaseAddress = new Uri(serviceUrl_csiro);
-    //#if DEBUG
-    //            httpClient_csiro.BaseAddress = new Uri("http://localhost:53187/");
-    //#endif
-    //            httpClient_csiro.DefaultRequestHeaders.Accept.Clear();
-    //            httpClient_csiro.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-
                 //initially set to true
                 //Console.Title = typeof(Program).Name;
                 string pullCmd = string.Empty;
                 int pullId = 0;
                 string submitDetails = string.Empty;
                 DateTime runDate;
-                string[] commandNames = new string[] { "AddToDatabase", "Check" };  //can add to this over time
+                string[] commandNames = new string[] { "AddToDatabase", "AddToDatabaseCSIRO", "Check" };  //can add to this over time
 
 
                 //Test that something has been passed
@@ -84,6 +63,25 @@ namespace APSIM.PerformanceTests.Collector
                     runDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 0);
                     runDate = runDate.AddDays(-1);
 #endif
+
+                    if (pullCmd == "AddToDatabaseCSIRO")
+                    {
+                        RetrieveHttpClientDetails("CsiroApsim");
+                        LogFileName = "CsiroApsim";
+                        pullCmd = "AddToDatabase";
+                    }
+                    else if (pullCmd == "AddToDatabaseAPSIM")
+                    {
+                        RetrieveHttpClientDetails("ApsimInfo");
+                        LogFileName = "ApsimInfo";
+                        pullCmd = "AddToDatabase";
+                    }
+                    else
+                    {
+                        RetrieveHttpClientDetails("CsiroApsim");
+                        LogFileName = "CsiroApsim";
+                    }
+
                     WriteToLogFile("  ");
                     WriteToLogFile("==========================================================");
                     WriteToLogFile(string.Format("Pull Request ID {0}, date {1}, command type: {2} ", pullId.ToString(), runDate.ToString("dd-MM-yyyy HH:mm"), pullCmd));
@@ -94,19 +92,48 @@ namespace APSIM.PerformanceTests.Collector
                     //(GET) Get a single record back
                     //GetApsimFileByPullRequestID(httpclient, 2).Wait();
 
+
+
                     if (pullCmd == "AddToDatabase")
                     {
                         RetrieveData(pullId, runDate, submitDetails);
+                        pullCmd = "AddToDatabase";
                     }
                     //Console.ReadKey();      //this will pause the screen so that we can see the output in the console window
                 }
             }
             catch (Exception ex)
             {
-                retValue = 0;  // unhandled exception - set this to false
+                retValue = 1;  // unhandled exception - set this to false
                 WriteToLogFile("ERROR: " + ex.Message.ToString());
             }
             return retValue;
+        }
+
+        private static void RetrieveHttpClientDetails(string type)
+        {
+            string serviceUrl = string.Empty; ;
+
+            if (type == "CsiroApsim")
+            {
+                serviceUrl = ConfigurationManager.AppSettings["serviceAddress_csiro"].ToString() + "APSIM.PerformanceTests.Service/";
+            }
+            else if (type == "ApsimApsim")
+            {
+                serviceUrl = ConfigurationManager.AppSettings["serviceAddress_apsim"].ToString() + "APSIM.PerformanceTests.Service/";
+            }
+            else
+            {
+                serviceUrl = ConfigurationManager.AppSettings["serviceAddress_csiro"].ToString() + "APSIM.PerformanceTests.Service/";
+            }
+            //this is for www.apsim.info.au
+            httpClient.BaseAddress = new Uri(serviceUrl);
+#if DEBUG
+            httpClient.BaseAddress = new Uri("http://localhost:53187/");
+#endif
+
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         /// <summary>
@@ -152,40 +179,43 @@ namespace APSIM.PerformanceTests.Collector
         /// <param name="apsimInstance"></param>
         static async Task PostApsimRun(ApsimFile apsimInstance)
         {
-            WriteToLogFile(string.Format("    Calling httpClient with ApsimFile {0}", apsimInstance.FileName));
-            string apsimFileName = string.Empty;
-            try
+            bool tryAgain = true;
+            int i = 0;
+            while ((tryAgain == true) && (i < 2))
             {
+                i++;
+                WriteToLogFile(string.Format("    Calling httpClient with ApsimFile {0}", apsimInstance.FileName));
+                string apsimFileName = string.Empty;
                 apsimFileName = apsimInstance.FileName;
-
-                //this will call the service on www..apsim.info.au
-                HttpResponseMessage response = await httpClient_apsim.PostAsJsonAsync("api/apsimfiles", apsimInstance);
-                response.EnsureSuccessStatusCode();
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    WriteToLogFile(string.Format("    Successfully posted ApsimFile {0}", apsimFileName));
-                }
-                else
-                {
-                    WriteToLogFile(string.Format("    ERROR posting ApsimFile {0}: {1}", apsimFileName, response.StatusCode.ToString()));
+                    //this will call the service on www..apsim.info.au
+                    HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/apsimfiles", apsimInstance);
+                    response.EnsureSuccessStatusCode();
+                    if (response.IsSuccessStatusCode)
+                    {
+                        WriteToLogFile(string.Format("    Successfully posted ApsimFile {0}", apsimFileName));
+                    }
+                    else
+                    {
+                        WriteToLogFile(string.Format("    ERROR posting ApsimFile {0}: {1}", apsimFileName, response.StatusCode.ToString()));
+                    }
+                    tryAgain = false;
                 }
 
-                //this will call the service on www.csiro.apsim.au
-                //HttpResponseMessage response_csiro = await httpClient_csiro.PostAsJsonAsync("api/apsimfiles", apsimInstance);
-                //response_csiro.EnsureSuccessStatusCode();
-                //if (response_csiro.IsSuccessStatusCode)
-                //{
-                //    WriteToLogFile(string.Format("    (csiro) Successfully posted ApsimFile {0}", apsimFileName));
-                //}
-                //else
-                //{
-                //    WriteToLogFile(string.Format("    (csiro) ERROR posting ApsimFile {0}: {1}", apsimFileName, response_csiro.StatusCode.ToString()));
-                //}
-            }
-            catch (Exception ex)
-            {
-                WriteToLogFile(string.Format("    ERROR posting Apsim File {0} to Web API: {1} ", apsimFileName, ex.Message.ToString()));
-                throw new Exception(ex.Message.ToString());
+                catch (Exception ex)
+                {
+                    WriteToLogFile(string.Format("    ERROR posting Apsim File {0} to Web API: {1} ", apsimFileName, ex.Message.ToString()));
+                    if (ex.Message.ToString().Trim().ToLower() == "a task was canceled.")
+                    {
+                        tryAgain = true;
+                    }
+                    else
+                    {
+                        tryAgain = false;
+                        throw new Exception(ex.Message.ToString());
+                    }
+                }
             }
         }
 
@@ -194,7 +224,7 @@ namespace APSIM.PerformanceTests.Collector
         {
             try
             {
-                HttpResponseMessage response = await httpClient_apsim.GetAsync("api/acceptstats/" + id);
+                HttpResponseMessage response = await httpClient.GetAsync("api/acceptstats/" + id);
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {
@@ -206,24 +236,9 @@ namespace APSIM.PerformanceTests.Collector
             {
                 WriteToLogFile(string.Format("  ERROR:  Unable to process PassedTests Status for Pull Request Id {0}: {1}", id, ex.Message.ToString()));
             }
-            //try
-            //{
-            //    HttpResponseMessage response = await httpClient_csiro.GetAsync("api/acceptstats/" + id);
-            //    response.EnsureSuccessStatusCode();
-            //    if (response.IsSuccessStatusCode)
-            //    {
-            //        WriteToLogFile(string.Format("    Successfully processed PassedTests Status for Pull Request Id: {0}", id));
-            //    }
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    WriteToLogFile(string.Format("  (csiro)  ERROR:  Unable to process PassedTests Status for Pull Request Id {0}: {1}", id, ex.Message.ToString()));
-            //}
         }
 
-
-
+        
         private static bool HelpRequired(string param)
         {
             return param == "-h" || param == "--help" || param == "/?";
@@ -253,10 +268,13 @@ namespace APSIM.PerformanceTests.Collector
             //"C:/Jenkins/workspace/1. GitHub pull request/ApsimX/Tests/C:/Jenkins/workspace/1. GitHub pull request/ApsimX/Prototypes/";
 
             //need to allow for "Tests" and "ProtoTypes" directory
-            //searchDir = @"C:/ApsimWork/Tests/;C:/ApsimWork/Prototypes/";
             //searchDir = @"C:/Users/cla473/Dropbox/APSIMInitiative/ApsimX/Tests/;C:/Users/cla473/Dropbox/APSIMInitiative/ApsimX/Prototypes/;";
 
             string searchDir = ConfigurationManager.AppSettings["searchDirectory"].ToString();
+#if DEBUG
+            searchDir = @"C:/ApsimWork/Tests/;C:/ApsimWork/Prototypes/";
+#endif
+
             string[] filePaths = searchDir.Split(';');
             
             foreach (string filePath in filePaths)
@@ -306,8 +324,16 @@ namespace APSIM.PerformanceTests.Collector
 
                 }
             }
+
+#if DEBUG
+            //We don't need to call Gitub if we are in debug mode (and running local)
+            //LogFileName = "CsiroApsim";
+#endif
             //Call the Service to check the status of the Pull Request, (and subsequently call/update GitHub)
-            UpdatePullRequestsPassedTestsStatus(pullId).Wait();
+            //if (LogFileName != "CsiroApsim")
+            //{
+                UpdatePullRequestsPassedTestsStatus(pullId).Wait();
+            //}
         }
 
         /// <summary>
@@ -625,9 +651,17 @@ namespace APSIM.PerformanceTests.Collector
             {
                 //this is just a temporary measure so that I can see what is happening
                 //Console.WriteLine(message);
+                if (message.ToString().Trim().IndexOf("ERROR") > 0)
+                {
+                    Console.WriteLine(message.ToString().Trim());
+                }
 
                 //Need to make sure we are in the same directory as this application 
                 string fileName = getDirectoryPath("PerformanceCollector.txt");
+                //if (LogFileName == "CsiroApsim")
+                //{
+                //    fileName = getDirectoryPath("PerformanceCollectorCSIRO.txt");
+                //}
                 StreamWriter sw;
 
                 if (!File.Exists(fileName))

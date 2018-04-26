@@ -58,7 +58,7 @@
         </tr>
         <tr>
             <td>
-                <asp:Button ID="btnDifferences" runat="server" Text="Pull Request Tests - Differences" Visible="false" OnClick="btnDifferences_Click"/>
+<%--                <asp:Button ID="btnDifferences" runat="server" Text="Pull Request Tests - Differences" Visible="false" OnClick="btnDifferences_Click"/>--%>
                 <asp:Button ID="btnTestsCharts" runat="server" Text="Pull Request Tests - Graphical Results" Visible="false" OnClick="btnTestsCharts_Click"/>
                 <asp:Button ID="btnTestsGrids" runat="server" Text="Pull Request Tests - Tabulated Results" Visible="false" OnClick="btnTestsGrids_Click"/>
             </td>

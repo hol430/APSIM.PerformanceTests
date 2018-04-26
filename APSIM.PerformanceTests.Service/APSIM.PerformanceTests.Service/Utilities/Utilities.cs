@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -9,12 +10,18 @@ namespace APSIM.PerformanceTests.Service
     public class Utilities
     {
         //this is for apsim.info
-        private static string filePath = @"D:\Websites\";
-        private static string filePathLog = @"D:\Websites\APSIM.PerformanceTests.Service\";
+        //private static string filePath = @"D:\Websites\";
+        //private static string filePathLog = @"D:\Websites\APSIM.PerformanceTests.Service\";
 
         //this is for csiro.apsim.au
-        //private static string filePath = @"E:\Sites\APSIM-Sites\";            
-        //private static string filePathLog = @"E:\Sites\APSIM-Sites\Logs";   
+        // private static string filePath = @"E:\Sites\APSIM-Sites\";            
+        //private static string filePathLog = @"E:\Sites\APSIM-Sites\Logs";
+
+        //#if DEBUG
+        //  filePath = @"C:\Dev\PerformanceTests\";
+        //  filePathLog = @"C:\Dev\PerformanceTests\";
+        //#endif
+
 
         public static string GetModifiedFileName(string fileName)
         {
@@ -33,12 +40,10 @@ namespace APSIM.PerformanceTests.Service
 
         public static string GetConnectionString()
         {
+            string filePath = ConfigurationManager.AppSettings["filePath"].ToString();
             string connectionString = string.Empty;
             //string connectStr = @"D:\Websites\dbConnect.txt";                //this is for apsim.info
             //string connectStr = @"E:\Sites\APSIM-Sites\dbConnect.txt";            //this is for csiro.apsim.au
-#if DEBUG
-            filePath = @"C:\Dev\PerformanceTests\";
-#endif
             try
             {
                 string file = filePath + "dbConnect.txt";
@@ -55,12 +60,10 @@ namespace APSIM.PerformanceTests.Service
 
         public static string GetGitHubToken()
         {
+            string filePath = ConfigurationManager.AppSettings["filePath"].ToString();
             string tokenString = string.Empty;
             //string tokenFile = @"D:\Websites\GitHubToken.txt";  //this is for apsim.info
             //string tokenFile = @"E:\Sites\APSIM-Sites\GitHubToken.txt";            //this is for csiro.apsim.au
-#if DEBUG
-            filePath = @"C:\Dev\PerformanceTests\";
-#endif
             try
             {
                 string file = filePath + "GitHubToken.txt";
@@ -75,12 +78,10 @@ namespace APSIM.PerformanceTests.Service
 
         public static string GetStatsAcceptedToken()
         {
+            string filePath = ConfigurationManager.AppSettings["filePath"].ToString();
             string tokenString = string.Empty;
             //string acceptStatsFile = @"D:\Websites\PerformanceTestsStatsAcceptedToken.txt";  //this is for apsim.info
             //string acceptStatsFile = @"E:\Sites\APSIM-Sites\PerformanceTestsStatsAcceptedToken.txt";            //this is for csiro.apsim.au
-#if DEBUG
-            filePath = @"C:\Dev\PerformanceTests\";
-#endif
             try
             {
                 string file = filePath + "PerformanceTestsStatsAcceptedToken.txt";
@@ -100,6 +101,7 @@ namespace APSIM.PerformanceTests.Service
             {
                 try
                 {
+                    string filePathLog = ConfigurationManager.AppSettings["LogFilePath"].ToString();
                     //this is just a temporary measure so that I can see what is happening
                     //Console.WriteLine(message);
 
@@ -107,9 +109,7 @@ namespace APSIM.PerformanceTests.Service
                     //string fileName = getDirectoryPath("PerformanceTestsLog.txt");
                     //string fileName = @"D:\Websites\APSIM.PerformanceTests.Service\PerformanceServiceLog.txt";   //this is for apsim.info
                     //string fileName = @"E:\Sites\APSIM-Sites\Logs\PerformanceServiceLog.txt";            //this is for csiro.apsim.au
-#if DEBUG
-                    filePathLog = @"C:\Dev\PerformanceTests\";
-#endif
+
                     StreamWriter sw;
 
                     string file = filePathLog + "PerformanceServiceLog.txt";

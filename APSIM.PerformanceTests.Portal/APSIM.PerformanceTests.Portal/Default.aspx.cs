@@ -159,11 +159,11 @@ namespace APSIM.PerformanceTests.Portal
 
             if (doAcceptStats == true)
             {
-                UpdatePullRequestStats("Accept", acceptlog);
+                WebAP_Interactions.UpdatePullRequestStats("Accept", acceptlog);
             }
             else if (doUpdateStats == true)
             {
-                UpdatePullRequestStats("Update", acceptlog);
+                WebAP_Interactions.UpdatePullRequestStats("Update", acceptlog);
             }
 
             Response.Redirect(Request.RawUrl);
@@ -575,8 +575,8 @@ namespace APSIM.PerformanceTests.Portal
 
             lblPullRequestId.Text = "Simulation Files for Pull Request Id: " + pullRequestId.ToString();
 
-            btnDifferences.Visible = true;
-            btnDifferences.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Differences " ;
+            //btnDifferences.Visible = true;
+            //btnDifferences.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Differences " ;
 
             btnTestsCharts.Visible = true;
             btnTestsCharts.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Graphical Results";
@@ -611,14 +611,14 @@ namespace APSIM.PerformanceTests.Portal
             lblPullRequestId.Text = "Simulation Files for Pull Request Id: " + pullRequestId.ToString();
             if (PercentPassed == 100)
             {
-                btnDifferences.Visible = false;
+                //btnDifferences.Visible = false;
                 btnTestsCharts.Visible = true;
                 btnTestsGrids.Visible = true;
             }
             else
             {
-                btnDifferences.Visible = true;
-                btnDifferences.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Differences ";
+                //btnDifferences.Visible = true;
+                //btnDifferences.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Differences ";
 
                 btnTestsCharts.Visible = true;
                 btnTestsCharts.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Graphical Results";
@@ -665,54 +665,5 @@ namespace APSIM.PerformanceTests.Portal
         }
         #endregion
 
-
-        #region WebAPI Interaction
-
-        private void UpdatePullRequestStats(string updateType, AcceptStatsLog apsimLog)
-        {
-            HttpClient httpClient = new HttpClient();
-
-            string serviceUrl = ConfigurationManager.AppSettings["serviceAddress"].ToString() + "APSIM.PerformanceTests.Service/";
-            httpClient.BaseAddress = new Uri(serviceUrl);
-            //httpClient.BaseAddress = new Uri("http://www.apsim.info/APSIM.PerformanceTests.Service/");
-#if DEBUG
-            httpClient.BaseAddress = new Uri("http://localhost:53187/");
-#endif
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-            HttpResponseMessage response = new HttpResponseMessage();
-            if (updateType == "Accept")
-            {
-                response = httpClient.PostAsJsonAsync("api/acceptStats", apsimLog).Result;
-            }
-            else if (updateType == "Update")
-            {
-                response = httpClient.PostAsJsonAsync("api/updateStats", apsimLog).Result;
-                response.EnsureSuccessStatusCode();
-                if (response.IsSuccessStatusCode)
-                {
-                }
-
-                //This will check the status of the updates above, and notify Git
-                response = httpClient.GetAsync("api/acceptstats/" + apsimLog.PullRequestId.ToString()).Result;
-            }
-
-            response.EnsureSuccessStatusCode();
-            if (response.IsSuccessStatusCode)
-            {
-            }
-
-
-
-        }
-
- 
-
-        #endregion
-
-
     }
-
-
 }

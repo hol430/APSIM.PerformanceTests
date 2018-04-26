@@ -298,14 +298,14 @@ namespace APSIM.PerformanceTests.Portal
                 if (e.Row.Cells[colTest].Text.Trim().ToLower() == "n")
                 {
                     e.Row.Cells[colAccepted].Text = string.Format("{0:0}", e.Row.Cells[colAccepted].Text);
-                    e.Row.Cells[colCurrent].Text = string.Format("{0:0}", e.Row.Cells[colAccepted].Text);
-                    e.Row.Cells[colDifference].Text = string.Format("{0:0}", e.Row.Cells[colAccepted].Text);
+                    e.Row.Cells[colCurrent].Text = string.Format("{0:0}", e.Row.Cells[colCurrent].Text);
+                    e.Row.Cells[colDifference].Text = string.Format("{0:0}", e.Row.Cells[colDifference].Text);
                 }
                 else
                 {
                     e.Row.Cells[colAccepted].Text = string.Format("{0:0.000000}", e.Row.Cells[colAccepted].Text);
-                    e.Row.Cells[colCurrent].Text = string.Format("{0:0.000000}", e.Row.Cells[colAccepted].Text);
-                    e.Row.Cells[colDifference].Text = string.Format("{0:0.000000}", e.Row.Cells[colAccepted].Text);
+                    e.Row.Cells[colCurrent].Text = string.Format("{0:0.000000}", e.Row.Cells[colCurrent].Text);
+                    e.Row.Cells[colDifference].Text = string.Format("{0:0.000000}", e.Row.Cells[colDifference].Text);
                 }
             }
         }

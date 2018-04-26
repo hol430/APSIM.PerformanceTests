@@ -4,7 +4,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.IO;
 using System.Web;
-
+using System.Configuration;
 
 namespace APSIM.PerformanceTests.Portal.Models
 {
@@ -30,15 +30,15 @@ namespace APSIM.PerformanceTests.Portal.Models
         /// <returns></returns>
         public static string GetConnectionString()
         {
-            //for the apsim server (www.apsim.info)
-            string file = @"D:\Websites\dbConnect.txt";
 
-            //for the csiro server
-            //string file = @"E:\Sites\APSIM-Sites\dbConnect.txt";
+            string file = ConfigurationManager.AppSettings["connectStr"].ToString() + "dbConnect.txt";
+
+            //string file = @"D:\Websites\dbConnect.txt";  //for the apsim server (www.apsim.info)
+            //string file = @"E:\Sites\APSIM-Sites\dbConnect.txt";      //for the csiro server
             string connectionString = string.Empty;
-#if DEBUG
-            file = @"C:\Dev\PerformanceTests\dbConnect.txt";
-#endif
+//#if DEBUG
+//            file = @"C:\Dev\PerformanceTests\dbConnect.txt";
+//#endif
             try
             {
                 connectionString = File.ReadAllText(file) + ";Database=\"APSIM.PerformanceTests\"";

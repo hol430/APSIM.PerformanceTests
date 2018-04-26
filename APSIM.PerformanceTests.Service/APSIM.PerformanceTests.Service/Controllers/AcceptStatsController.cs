@@ -106,7 +106,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 stateFormatted = "Pass";
             }
 
-            string urlStr = string.Format("http://www.apsim.info/APSIM.PerformanceTests.Portal/Default.aspx?PULLREQUEST={0}", pullRequestID);
+            string urlStr = string.Format("https://apsim.csiro.au/APSIM.PerformanceTests/Default.aspx?PULLREQUEST={0}", pullRequestID);
 
             string body = "{" + Environment.NewLine +
                           "  \"state\": \"" + state + "\"," + Environment.NewLine +
