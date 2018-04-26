@@ -3,8 +3,7 @@ using System.Data.SqlClient;
 using System.Net;
 using System.IO;
 
-
-namespace APSIM.PerformanceTests.Service
+namespace PipeClient
 {
     public static class Comms
     {

@@ -38,7 +38,6 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 {
                     commandER.CommandType = CommandType.Text;
                     SqlDataReader reader = commandER.ExecuteReader();
-                    //string response = Comms.SendQuery(commandER, "reader");
                     while (reader.Read())
                     {
                         ApsimFile apsim = new ApsimFile
@@ -165,14 +164,15 @@ namespace APSIM.PerformanceTests.Service.Controllers
         {
             int ApsimID = 0;
             string ErrMessageHelper = string.Empty;
+            Utilities.WriteToLogFile("  ");
+            Utilities.WriteToLogFile("==========================================================");
+            Utilities.WriteToLogFile("Post Apsim File:  Ready to process apsimfile.");
 
             try
             {
                 string connectStr = Utilities.GetConnectionString();
                 string strSQL;
 
-                Utilities.WriteToLogFile("  ");
-                Utilities.WriteToLogFile("==========================================================");
                 Utilities.WriteToLogFile(string.Format("Processing PullRequestId {0}, Apsim Filename {1}, dated {2}!", apsimfile.PullRequestId, apsimfile.FileName, apsimfile.RunDate.ToString("dd/MM/yyyy HH:mm")));
 
                 //--------------------------------------------------------------------------------------
@@ -180,15 +180,15 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 //to delete everything associated with it before we save the new set of data
                 //--------------------------------------------------------------------------------------
                 int pullRequestCount = 0;
-                using (SqlConnection sqlCon = new SqlConnection(connectStr))
+                using (SqlConnection sqlConnect = new SqlConnection(connectStr))
                 {
-                    sqlCon.Open();
+                    sqlConnect.Open();
                     Utilities.WriteToLogFile("    Checking for existing Pull Requests Details.");
 
                     try
                     {
                         strSQL = "SELECT COUNT(ID) FROM ApsimFiles WHERE PullRequestId = @PullRequestId AND RunDate != @RunDate";
-                        using (SqlCommand commandES = new SqlCommand(strSQL, sqlCon))
+                        using (SqlCommand commandES = new SqlCommand(strSQL, sqlConnect))
                         {
                             commandES.CommandType = CommandType.Text;
                             commandES.Parameters.AddWithValue("@PullRequestId", apsimfile.PullRequestId);
@@ -207,7 +207,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         try
                         {
                             Utilities.WriteToLogFile("    Removing existing Pull Requests Details.");
-                            using (SqlCommand commandENQ = new SqlCommand("usp_DeleteByPullRequestIdButNotRunDate", sqlCon))
+                            using (SqlCommand commandENQ = new SqlCommand("usp_DeleteByPullRequestIdButNotRunDate", sqlConnect))
                             {
                                 // Configure the command and parameter.
                                 commandENQ.CommandType = CommandType.StoredProcedure;
@@ -224,13 +224,20 @@ namespace APSIM.PerformanceTests.Service.Controllers
                             Utilities.WriteToLogFile("    ERROR:  Error Removing original Pull Request Data: " + ex.Message.ToString());
                         }
                     }
+                    sqlConnect.Close();
+                }
 
+
+                using (SqlConnection sqlCon = new SqlConnection(connectStr))
+                {
                     //--------------------------------------------------------------------------------------
                     //Add the ApsimFile Record first, so that we can get back the IDENTITY (ID) value
                     //--------------------------------------------------------------------------------------
                     //using (SqlConnection con = new SqlConnection(connectStr))
                     //{
-                    Utilities.WriteToLogFile("    Inserting ApsimFiles details");
+                    Utilities.WriteToLogFile("    Inserting ApsimFiles details.");
+                    sqlCon.Open();
+
                     try
                     {
                         strSQL = "INSERT INTO ApsimFiles (PullRequestId, FileName, FullFileName, RunDate, StatsAccepted, IsMerged, SubmitDetails) "
@@ -254,7 +261,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
                             ApsimID = (int)commandES.ExecuteScalar();
                             ErrMessageHelper = "Filename: " + apsimfile.FileName + "- ApsimID: " + ApsimID;
-                            Utilities.WriteToLogFile(string.Format("    Filename {0} imported successfully!", apsimfile.FileName));
+                            Utilities.WriteToLogFile(string.Format("    Filename {0} inserted into ApsimFiles successfully!", apsimfile.FileName));
                         }
                     }
                     catch (Exception ex)
@@ -376,48 +383,56 @@ namespace APSIM.PerformanceTests.Service.Controllers
                                         strSQL = "usp_PredictedObservedDataInsert";
                                     }
 
-                                    using (SqlCommand commandENQ = new SqlCommand(strSQL, sqlCon))
+                                    bool validColumn = true;
+                                    if (selectedData.Columns[PredictedColumnName].DataType == typeof(string)) { validColumn = false; }
+                                    if (selectedData.Columns[PredictedColumnName].DataType == typeof(bool)) { validColumn = false;  }
+                                    if (selectedData.Columns[PredictedColumnName].DataType == typeof(DateTime)) { validColumn = false; }
+
+                                    if (validColumn == true)
                                     {
-                                        commandENQ.CommandType = CommandType.StoredProcedure;
-                                        commandENQ.Parameters.AddWithValue("@PredictedObservedID", predictedObservedID);
-                                        commandENQ.Parameters.AddWithValue("@ApsimFilesID", ApsimID);
-                                        commandENQ.Parameters.AddWithValue("@ValueName", valueName);
+                                        using (SqlCommand commandENQ = new SqlCommand(strSQL, sqlCon))
+                                        {
+                                            commandENQ.CommandType = CommandType.StoredProcedure;
+                                            commandENQ.Parameters.AddWithValue("@PredictedObservedID", predictedObservedID);
+                                            commandENQ.Parameters.AddWithValue("@ApsimFilesID", ApsimID);
+                                            commandENQ.Parameters.AddWithValue("@ValueName", valueName);
 
-                                        if (poDetail.FieldName3UsedForMatch.Length > 0)
-                                        {
-                                            commandENQ.Parameters.AddWithValue("@MatchName", poDetail.FieldNameUsedForMatch);
-                                            commandENQ.Parameters.AddWithValue("@MatchName2", poDetail.FieldName2UsedForMatch);
-                                            commandENQ.Parameters.AddWithValue("@MatchName3", poDetail.FieldName3UsedForMatch);
-                                        }
-                                        else if (poDetail.FieldName2UsedForMatch.Length > 0)
-                                        {
-                                            commandENQ.Parameters.AddWithValue("@MatchName", poDetail.FieldNameUsedForMatch);
-                                            commandENQ.Parameters.AddWithValue("@MatchName2", poDetail.FieldName2UsedForMatch);
-                                        }
-                                        else
-                                        {
-                                            commandENQ.Parameters.AddWithValue("@MatchName", poDetail.FieldNameUsedForMatch);
-                                        }
+                                            if (poDetail.FieldName3UsedForMatch.Length > 0)
+                                            {
+                                                commandENQ.Parameters.AddWithValue("@MatchName", poDetail.FieldNameUsedForMatch);
+                                                commandENQ.Parameters.AddWithValue("@MatchName2", poDetail.FieldName2UsedForMatch);
+                                                commandENQ.Parameters.AddWithValue("@MatchName3", poDetail.FieldName3UsedForMatch);
+                                            }
+                                            else if (poDetail.FieldName2UsedForMatch.Length > 0)
+                                            {
+                                                commandENQ.Parameters.AddWithValue("@MatchName", poDetail.FieldNameUsedForMatch);
+                                                commandENQ.Parameters.AddWithValue("@MatchName2", poDetail.FieldName2UsedForMatch);
+                                            }
+                                            else
+                                            {
+                                                commandENQ.Parameters.AddWithValue("@MatchName", poDetail.FieldNameUsedForMatch);
+                                            }
 
-                                        SqlParameter tvtpPara = commandENQ.Parameters.AddWithValue("@PredictedOabservedData", selectedData);
-                                        tvtpPara.SqlDbType = SqlDbType.Structured;
+                                            SqlParameter tvtpPara = commandENQ.Parameters.AddWithValue("@PredictedOabservedData", selectedData);
+                                            tvtpPara.SqlDbType = SqlDbType.Structured;
 
-                                        if (poDetail.FieldName3UsedForMatch.Length > 0)
-                                        {
-                                            tvtpPara.TypeName = "dbo.PredictedObservedDataThreeTableType";
-                                        }
-                                        else if (poDetail.FieldName2UsedForMatch.Length > 0)
-                                        {
-                                            tvtpPara.TypeName = "dbo.PredictedObservedDataTwoTableType";
-                                        }
-                                        else
-                                        {
-                                            tvtpPara.TypeName = "dbo.PredictedObservedDataTableType";
-                                        }
+                                            if (poDetail.FieldName3UsedForMatch.Length > 0)
+                                            {
+                                                tvtpPara.TypeName = "dbo.PredictedObservedDataThreeTableType";
+                                            }
+                                            else if (poDetail.FieldName2UsedForMatch.Length > 0)
+                                            {
+                                                tvtpPara.TypeName = "dbo.PredictedObservedDataTwoTableType";
+                                            }
+                                            else
+                                            {
+                                                tvtpPara.TypeName = "dbo.PredictedObservedDataTableType";
+                                            }
 
-                                        ErrMessageHelper = "PredictedObservedDetails Id " + predictedObservedID + ", ValueName: " + valueName;
-                                        commandENQ.ExecuteNonQuery();
-                                        Utilities.WriteToLogFile(string.Format("       PredictedObserved Data for {0} import completed successfully!", valueName));
+                                            ErrMessageHelper = "PredictedObservedDetails Id " + predictedObservedID + ", ValueName: " + valueName;
+                                            commandENQ.ExecuteNonQuery();
+                                            Utilities.WriteToLogFile(string.Format("       PredictedObserved Data for {0} import completed successfully!", valueName));
+                                        }
                                     }
                                 }
                                 catch (Exception ex)
@@ -457,8 +472,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
             catch (Exception ex)
             {
-                Utilities.WriteToLogFile("    ERROR in PostApsimFile:  " + ErrMessageHelper.ToString() + " - " + ex.Message.ToString());
-                throw new Exception("    ERROR in PostApsimFile:  " + ErrMessageHelper.ToString() + " - " + ex.Message.ToString());
+                Utilities.WriteToLogFile(string.Format("    ERROR in PostApsimFile:  {0} - {1}", ErrMessageHelper.ToString(), ex.Message.ToString()));
+                throw new Exception(string.Format("    ERROR in PostApsimFile:  {0} - {1}", ErrMessageHelper.ToString(), ex.Message.ToString()));
             }
         }
 
@@ -566,6 +581,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
             {
                 using (SqlCommand commandENQ = new SqlCommand("usp_DeleteByPullRequestIdButNotRunDate", sqlCon))
                 {
+
                     // Configure the command and parameter.
                     commandENQ.CommandType = CommandType.StoredProcedure;
                     commandENQ.CommandTimeout = 0;

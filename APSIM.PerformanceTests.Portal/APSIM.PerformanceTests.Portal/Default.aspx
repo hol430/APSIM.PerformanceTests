@@ -1,9 +1,6 @@
 ﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" EnableEventValidation="false" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="APSIM.PerformanceTests.Portal.Default"
     Title="APSIM PerformanceTests" %>
 
-<%@ Register Assembly="Infragistics45.Web.v15.2, Version=15.2.20152.2273, Culture=neutral, PublicKeyToken=7dd5c3163f2cd0cb" Namespace="Infragistics.Web.UI.GridControls" TagPrefix="ig" %>
-
-
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
 
     <table style="width: 100%">
@@ -61,8 +58,9 @@
         </tr>
         <tr>
             <td>
-                <asp:Button ID="btnDifferences" runat="server" Text="View Tests Differences for Pull Request" Visible="false" OnClick="btnDifferences_Click"/>
-                <asp:Button ID="btnTests" runat="server" Text="View All Tests for Pull Request (Charts)" Visible="false" OnClick="btnTests_Click"/>
+<%--                <asp:Button ID="btnDifferences" runat="server" Text="Pull Request Tests - Differences" Visible="false" OnClick="btnDifferences_Click"/>--%>
+                <asp:Button ID="btnTestsCharts" runat="server" Text="Pull Request Tests - Graphical Results" Visible="false" OnClick="btnTestsCharts_Click"/>
+                <asp:Button ID="btnTestsGrids" runat="server" Text="Pull Request Tests - Tabulated Results" Visible="false" OnClick="btnTestsGrids_Click"/>
             </td>
         </tr>
     </table>

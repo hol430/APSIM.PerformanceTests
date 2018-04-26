@@ -120,7 +120,44 @@ public class PredictedObservedDS
         }
     }
 
+    public static List<vVariable> GetDistinctTableNames(string fileName)
+    {
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            return (from pod in context.PredictedObservedDetails
+                    join af in context.ApsimFiles on pod.ApsimFilesID equals af.ID
+                    where af.FileName == fileName
+                    select new vVariable
+                    {
+                        Name = pod.TableName,
+                        Value = pod.TableName
+                    })
+                .Distinct()
+                .OrderBy(v => v.Name)
+                .ToList();
+        }
+    }
 
+    
+    public static List<vVariable> GetDistinctVariableNames(string fileName, string tablename)
+    {
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            return (from af in context.ApsimFiles
+                    join pod in context.PredictedObservedDetails on af.ID equals pod.ApsimFilesID
+                    join pov in context.PredictedObservedValues on pod.ID equals pov.PredictedObservedDetailsID
+                    where af.FileName == fileName
+                        && pod.TableName == tablename
+                    select new vVariable
+                    {
+                        Name = pov.ValueName,
+                        Value = pov.ValueName
+                    })
+                .Distinct()
+                .OrderBy(v => v.Name)
+                .ToList();
+        }
+    }
     /// <summary>
     /// Returns the PredictedObservedValues and corresponding Simulation details for a specific PredictedObserved Table and variable
     /// </summary>
@@ -201,22 +238,21 @@ public class PredictedObservedDS
             SqlParameter param2 = new SqlParameter("@AcceptedPredictedObservedId", acceptedPoId);
 
             var results = context.Database
-                            .SqlQuery<vSimulationPredictedObserved>("usp_GetCurrentAcceptedSimulationValues @CurrentPredictedObservedId, @AcceptedPredictedObservedId",
-                                                            param1, param2)
-                            .Select(v => new vSimulationPredictedObserved
-                            {
-                                ID = v.ID,
-                                MatchNames = v.MatchNames,
-                                MatchValues = v.MatchNames,
-                                ValueName = v.ValueName,
-                                CurrentPredictedValue = (double?)v.CurrentPredictedValue,
-                                CurrentObservedValue = (double?)v.CurrentObservedValue,
-                                AcceptedPredictedValue = (double?)v.AcceptedPredictedValue,
-                                AcceptedObservedValue = (double?)v.AcceptedObservedValue,
-                                SimulationName = v.SimulationName,
-                                SimulationsID = (int)v.ID
-                            })
-                            .ToList();
+                .SqlQuery<vSimulationPredictedObserved>("usp_GetCurrentAcceptedSimulationValues @CurrentPredictedObservedId, @AcceptedPredictedObservedId", param1, param2)
+                .Select(v => new vSimulationPredictedObserved
+                {
+                    ID = v.ID,
+                    MatchNames = v.MatchNames,
+                    MatchValues = v.MatchNames,
+                    ValueName = v.ValueName,
+                    CurrentPredictedValue = (double?)v.CurrentPredictedValue,
+                    CurrentObservedValue = (double?)v.CurrentObservedValue,
+                    AcceptedPredictedValue = (double?)v.AcceptedPredictedValue,
+                    AcceptedObservedValue = (double?)v.AcceptedObservedValue,
+                    SimulationName = v.SimulationName,
+                    SimulationsID = (int)v.ID
+                })
+                .ToList();
             return results;
         }
     }
@@ -238,8 +274,9 @@ public class PredictedObservedDS
         using (ApsimDBContext context = new ApsimDBContext())
         {
             //modLMC - 24/08/2017 - only retrieve reduced set of stats data (n, R2, RMSE, NSE and RSR) as per email from Dean.
+            //modLMC - 31/01/2018 - modified to exclude records where both Current and Accepted are null (fudge until 'Service' is udpated to not add them).
             return context.PredictedObservedTests
-                .Where(v => testList.Contains(v.Test) && v.PredictedObservedDetailsID == currentPoID)
+                .Where(v => testList.Contains(v.Test) && v.PredictedObservedDetailsID == currentPoID && !(v.Current == null && v.Accepted == null))
                 .Distinct()
                 .OrderBy(v => v.PassedTest)
                 .ThenByDescending(v => v.DifferencePercent)
@@ -269,9 +306,22 @@ public class PredictedObservedDS
         using (ApsimDBContext context = new ApsimDBContext())
         {
             SqlParameter param1 = new SqlParameter("@PullRequestId", pullRequestId);
-
+            //[Test] IN ('n', 'R2', 'RMSE', 'NSE', 'RSR')
             var results = context.Database
                             .SqlQuery<vPredictedObservedTests>("usp_GetPredictedObservedTests @PullRequestId", param1)
+                            .ToList();
+            return results;
+        }
+    }
+
+    public static List<vPredictedObservedTests> GetCurrentAcceptedTestsFiltered(int pullRequestId)
+    {
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            SqlParameter param1 = new SqlParameter("@PullRequestId", pullRequestId);
+            //[Test] IN ('RMSE', 'NSE', 'Bias', 'RSR')
+            var results = context.Database
+                            .SqlQuery<vPredictedObservedTests>("usp_GetPredictedObservedTestsFiltered @PullRequestId", param1)
                             .ToList();
             return results;
         }
@@ -309,5 +359,6 @@ public class PredictedObservedDS
             return results;
         }
     }
+
 
 }

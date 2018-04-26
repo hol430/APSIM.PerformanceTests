@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -8,6 +9,20 @@ namespace APSIM.PerformanceTests.Service
 {
     public class Utilities
     {
+        //this is for apsim.info
+        //private static string filePath = @"D:\Websites\";
+        //private static string filePathLog = @"D:\Websites\APSIM.PerformanceTests.Service\";
+
+        //this is for csiro.apsim.au
+        // private static string filePath = @"E:\Sites\APSIM-Sites\";            
+        //private static string filePathLog = @"E:\Sites\APSIM-Sites\Logs";
+
+        //#if DEBUG
+        //  filePath = @"C:\Dev\PerformanceTests\";
+        //  filePathLog = @"C:\Dev\PerformanceTests\";
+        //#endif
+
+
         public static string GetModifiedFileName(string fileName)
         {
             string returnStr;
@@ -25,13 +40,13 @@ namespace APSIM.PerformanceTests.Service
 
         public static string GetConnectionString()
         {
+            string filePath = ConfigurationManager.AppSettings["filePath"].ToString();
             string connectionString = string.Empty;
-            string file = @"D:\Websites\dbConnect.txt";
-#if DEBUG
-            file = @"C:\Dev\PerformanceTests\dbConnect.txt";
-#endif
+            //string connectStr = @"D:\Websites\dbConnect.txt";                //this is for apsim.info
+            //string connectStr = @"E:\Sites\APSIM-Sites\dbConnect.txt";            //this is for csiro.apsim.au
             try
             {
+                string file = filePath + "dbConnect.txt";
                 connectionString = File.ReadAllText(file) + ";Database=\"APSIM.PerformanceTests\"";
                 return connectionString;
 
@@ -45,13 +60,13 @@ namespace APSIM.PerformanceTests.Service
 
         public static string GetGitHubToken()
         {
+            string filePath = ConfigurationManager.AppSettings["filePath"].ToString();
             string tokenString = string.Empty;
-            string file = @"D:\Websites\GitHubToken.txt";
-#if DEBUG
-            file =@"C:\Dev\PerformanceTests\GitHubToken.txt";
-#endif
+            //string tokenFile = @"D:\Websites\GitHubToken.txt";  //this is for apsim.info
+            //string tokenFile = @"E:\Sites\APSIM-Sites\GitHubToken.txt";            //this is for csiro.apsim.au
             try
             {
+                string file = filePath + "GitHubToken.txt";
                 tokenString = File.ReadAllText(file);
             }
             catch (Exception ex)
@@ -63,13 +78,13 @@ namespace APSIM.PerformanceTests.Service
 
         public static string GetStatsAcceptedToken()
         {
+            string filePath = ConfigurationManager.AppSettings["filePath"].ToString();
             string tokenString = string.Empty;
-            string file = @"D:\Websites\PerformanceTestsStatsAcceptedToken.txt";
-#if DEBUG
-            file = @"C:\Dev\PerformanceTests\PerformanceTestsStatsAcceptedToken.txt";
-#endif
+            //string acceptStatsFile = @"D:\Websites\PerformanceTestsStatsAcceptedToken.txt";  //this is for apsim.info
+            //string acceptStatsFile = @"E:\Sites\APSIM-Sites\PerformanceTestsStatsAcceptedToken.txt";            //this is for csiro.apsim.au
             try
             {
+                string file = filePath + "PerformanceTestsStatsAcceptedToken.txt";
                 tokenString = File.ReadAllText(file);
             }
             catch (Exception ex)
@@ -86,24 +101,25 @@ namespace APSIM.PerformanceTests.Service
             {
                 try
                 {
+                    string filePathLog = ConfigurationManager.AppSettings["LogFilePath"].ToString();
                     //this is just a temporary measure so that I can see what is happening
                     //Console.WriteLine(message);
 
                     //Need to make sure we are in the same directory as this application 
                     //string fileName = getDirectoryPath("PerformanceTestsLog.txt");
-                    string fileName = @"D:\Websites\APSIM.PerformanceTests.Service\PerformanceTestsLog.txt";
-#if DEBUG
-                    fileName = @"C:\Dev\PerformanceTests\PerformanceTestsLog.txt";
-#endif
+                    //string fileName = @"D:\Websites\APSIM.PerformanceTests.Service\PerformanceServiceLog.txt";   //this is for apsim.info
+                    //string fileName = @"E:\Sites\APSIM-Sites\Logs\PerformanceServiceLog.txt";            //this is for csiro.apsim.au
+
                     StreamWriter sw;
 
-                    if (!File.Exists(fileName))
+                    string file = filePathLog + "PerformanceServiceLog.txt";
+                    if (!File.Exists(file))
                     {
-                        sw = new StreamWriter(fileName);
+                        sw = new StreamWriter(file);
                     }
                     else
                     {
-                        sw = File.AppendText(fileName);
+                        sw = File.AppendText(file);
                     }
                     string logLine = String.Format("{0}: {1}", System.DateTime.Now.ToString("yyyy-MMM-dd HH:mm"), message);
                     sw.WriteLine(logLine);

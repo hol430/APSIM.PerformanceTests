@@ -16,6 +16,28 @@ namespace APSIM.PerformanceTests.Portal
     public partial class Default : System.Web.UI.Page
     {
         #region Constants and variables
+
+        //constants used for the gvApsimFiles grid
+        const int colPullRequestId = 0;
+        const int colRunDate = 1;
+        const int colSubmitDetails = 2;
+        const int colStatsAccepted = 3;
+        const int colPercentPassed = 4;
+        const int colTotal = 5;
+        const int colAcceptedPullRequestId = 6;
+        const int colAcceptedRunDate = 7;
+        const int colAcceptStats = 8;
+        const int colUpdateStats = 9;
+
+        //constants used for the gvSimFiles grid
+        const int colPredictedObservedID = 0;
+        const int colFileName = 1;
+        const int colPredictedObservedTableName = 2;
+        const int colPassedTests = 3;
+        const int colFullFileName = 4;
+        const int colAcceptedPredictedObservedDetailsID = 5;
+
+
         private List<vApsimFile> ApsimFileList;
         private List<vSimFile> SimFilesList;
 
@@ -96,7 +118,6 @@ namespace APSIM.PerformanceTests.Portal
             acceptlog.SubmitDate = DateTime.ParseExact(txtSubmitDate.Text, "dd/MM/yyyy HH:mm", CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal);
 
             acceptlog.SubmitPerson = txtSubmitPerson.Text;
-
             string fileInfo = txtFileCount.Text.Trim();
             int posn = fileInfo.IndexOf('.');  
             if (posn > 0)
@@ -138,11 +159,11 @@ namespace APSIM.PerformanceTests.Portal
 
             if (doAcceptStats == true)
             {
-                UpdatePullRequestStats("Accept", acceptlog);
+                WebAP_Interactions.UpdatePullRequestStats("Accept", acceptlog);
             }
             else if (doUpdateStats == true)
             {
-                UpdatePullRequestStats("Update", acceptlog);
+                WebAP_Interactions.UpdatePullRequestStats("Update", acceptlog);
             }
 
             Response.Redirect(Request.RawUrl);
@@ -158,10 +179,15 @@ namespace APSIM.PerformanceTests.Portal
             Response.Redirect(string.Format("Difference.aspx?PULLREQUEST={0}", pullrequestId));
         }
 
-        protected void btnTests_Click(object sender, EventArgs e)
+        protected void btnTestsCharts_Click(object sender, EventArgs e)
         {
             string pullrequestId = hfPullRequestId.Value.ToString();
-            Response.Redirect(string.Format("Tests.aspx?PULLREQUEST={0}", pullrequestId));
+            Response.Redirect(string.Format("TestsCharts.aspx?PULLREQUEST={0}", pullrequestId));
+        }
+        protected void btnTestsGrids_Click(object sender, EventArgs e)
+        {
+            string pullrequestId = hfPullRequestId.Value.ToString();
+            Response.Redirect(string.Format("TestsGrids.aspx?PULLREQUEST={0}", pullrequestId));
         }
 
 
@@ -207,14 +233,14 @@ namespace APSIM.PerformanceTests.Portal
                         lblFileCount.Visible = true;
                         txtFileCount.Visible = true;
 
-                        txtPullRequestID.Text = gvApsimFiles.Rows[rowIndex].Cells[0].Text;
-                        DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[1].Text);
+                        txtPullRequestID.Text = gvApsimFiles.Rows[rowIndex].Cells[colPullRequestId].Text;
+                        DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[colRunDate].Text);
                         txtSubmitDate.Text = subDate.ToString("dd/MM/yyyy HH:mm");
-                        txtSubmitPerson.Text = gvApsimFiles.Rows[rowIndex].Cells[2].Text;
+                        txtSubmitPerson.Text = gvApsimFiles.Rows[rowIndex].Cells[colSubmitDetails].Text;
                         txtAcceptDate.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
 
                         int acceptedFileCount = Int32.Parse(hfAcceptedFileCount.Value.ToString());
-                        int currentFilecount = Int32.Parse(gvApsimFiles.Rows[rowIndex].Cells[5].Text);
+                        int currentFilecount = Int32.Parse(gvApsimFiles.Rows[rowIndex].Cells[colTotal].Text);
                         if (acceptedFileCount != currentFilecount)
                         {
                             txtFileCount.Text = string.Format("{0}. This does not match 'Accepted' file count of {1}.", currentFilecount.ToString(), acceptedFileCount.ToString());
@@ -238,13 +264,29 @@ namespace APSIM.PerformanceTests.Portal
                         txtPullRequestId2.Visible = true;
                         lblDetails.Visible = false;
                         txtDetails.Visible = false;
-                        lblFileCount.Visible = false;
-                        txtFileCount.Visible = false;
+                        //lblFileCount.Visible = false;
+                        //txtFileCount.Visible = false;
+                        int acceptedFileCount = Int32.Parse(hfAcceptedFileCount.Value.ToString());
+                        int currentFilecount = Int32.Parse(gvApsimFiles.Rows[rowIndex].Cells[colTotal].Text);
+                        if (acceptedFileCount != currentFilecount)
+                        {
+                            txtFileCount.Text = string.Format("{0}. This does not match 'Accepted' file count of {1}.", currentFilecount.ToString(), acceptedFileCount.ToString());
+                            txtFileCount.CssClass = "FailedTests";
+                            txtFileCount.Width = Unit.Pixel(320);
+                            pnlpopup.Height = Unit.Pixel(300);
+                        }
+                        else
+                        {
+                            txtFileCount.Text = currentFilecount.ToString();
+                            //txtFileCount.CssClass = "Reset";
+                            txtFileCount.Width = Unit.Pixel(200);
+                            pnlpopup.Height = Unit.Pixel(270);
+                        }
 
-                        txtPullRequestID.Text = gvApsimFiles.Rows[rowIndex].Cells[0].Text;
-                        DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[1].Text);
+                        txtPullRequestID.Text = gvApsimFiles.Rows[rowIndex].Cells[colPullRequestId].Text;
+                        DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[colRunDate].Text);
                         txtSubmitDate.Text = subDate.ToString("dd/MM/yyyy HH:mm");
-                        txtSubmitPerson.Text = gvApsimFiles.Rows[rowIndex].Cells[2].Text;
+                        txtSubmitPerson.Text = gvApsimFiles.Rows[rowIndex].Cells[colSubmitDetails].Text;
                         txtAcceptDate.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
 
                         pnlpopup.Height = Unit.Pixel(260);
@@ -253,10 +295,10 @@ namespace APSIM.PerformanceTests.Portal
                     }
                     else if (e.CommandName == "CellSelect")
                     {
-                        int pullRequestId = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[0].Text);
-                        DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[1].Text);
-                        int acceptedPullRequestId = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[6].Text);
-                        int passPercent = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[4].Text);
+                        int pullRequestId = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[colPullRequestId].Text);
+                        DateTime subDate = DateTime.Parse(gvApsimFiles.Rows[rowIndex].Cells[colRunDate].Text);
+                        int acceptedPullRequestId = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[colAcceptedPullRequestId].Text);
+                        int passPercent = int.Parse(gvApsimFiles.Rows[rowIndex].Cells[colPercentPassed].Text);
                         BindSimFilesGrid(pullRequestId, subDate, acceptedPullRequestId, passPercent);
                     }
                 }
@@ -267,13 +309,11 @@ namespace APSIM.PerformanceTests.Portal
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                //Row.Cells[4] = PercentPassed
-                if (e.Row.Cells[4].Text.Equals("100"))
+                if (e.Row.Cells[colPercentPassed].Text.Equals("100"))
                 {
                     e.Row.ForeColor = Color.Green;
                 }
-                //Row.Cells[3] = StatsAccepted
-                if (e.Row.Cells[3].Text.ToLower().Equals("true"))
+                if (e.Row.Cells[colStatsAccepted].Text.ToLower().Equals("true"))
                 {
                     e.Row.ForeColor = Color.Green;
                     e.Row.Font.Bold = true;
@@ -290,8 +330,7 @@ namespace APSIM.PerformanceTests.Portal
                         // if we are binding the 'Button' column, and the "StatsAccepted' is false, then whe can Update the Merge Status.
                         if (cellIndex == 8)
                         {
-                            //Row.Cells[3] = StatsAccepted
-                            if (e.Row.Cells[3].Text.ToLower().Equals("false"))
+                            if (e.Row.Cells[colStatsAccepted].Text.ToLower().Equals("false"))
                             {
                                 canUpdate = true;
                                 Button db = (Button)e.Row.Cells[cellIndex].FindControl("btnAcceptStats");
@@ -355,28 +394,28 @@ namespace APSIM.PerformanceTests.Portal
                     switch (headerCell.ContainingField.SortExpression)
                     {
                         case "PullRequestId":
-                            gvApsimFiles.Columns[0].HeaderText = "Pull<br />Req. Id";
+                            gvApsimFiles.Columns[colPullRequestId].HeaderText = "Pull<br />Req. Id";
                             break;
                         case "RunDate":
-                            gvApsimFiles.Columns[1].HeaderText = "Run Date";
+                            gvApsimFiles.Columns[colRunDate].HeaderText = "Run Date";
                             break;
                         case "SubmitDetails":
-                            gvApsimFiles.Columns[2].HeaderText = "Submit<br />Persons";
+                            gvApsimFiles.Columns[colSubmitDetails].HeaderText = "Submit<br />Persons";
                             break;
                         case "StatsAccepted":
-                            gvApsimFiles.Columns[3].HeaderText = "Stats<br />Accepted";
+                            gvApsimFiles.Columns[colStatsAccepted].HeaderText = "Stats<br />Accepted";
                             break;
                         case "PercentPassed":
-                            gvApsimFiles.Columns[4].HeaderText = "Percent<br />Passed";
+                            gvApsimFiles.Columns[colPercentPassed].HeaderText = "Percent<br />Passed";
                             break;
                         case "Total":
-                            gvApsimFiles.Columns[5].HeaderText = "Total<br />Files";
+                            gvApsimFiles.Columns[colTotal].HeaderText = "Total<br />Files";
                             break;
                         case "AcceptedPullRequestId":
-                            gvApsimFiles.Columns[6].HeaderText = "Accepted<br />PR Id";
+                            gvApsimFiles.Columns[colAcceptedPullRequestId].HeaderText = "Accepted<br />PR Id";
                             break;
                         case "AcceptedRunDate":
-                            gvApsimFiles.Columns[7].HeaderText = "Accepted<br />Run Date";
+                            gvApsimFiles.Columns[colAcceptedRunDate].HeaderText = "Accepted<br />Run Date";
                             break;
                     }
                     //get the index and details for the column we are sorting
@@ -423,7 +462,7 @@ namespace APSIM.PerformanceTests.Portal
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                if (e.Row.Cells[3].Text.Equals("100"))
+                if (e.Row.Cells[colPassedTests].Text.Equals("100"))
                 {
                     e.Row.ForeColor = Color.Green;
                 }
@@ -436,8 +475,8 @@ namespace APSIM.PerformanceTests.Portal
         protected void gvSimFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
             int index = gvSimFiles.SelectedIndex;
-            int predictedObservedtId = int.Parse(gvSimFiles.Rows[index].Cells[0].Text);
-            Response.Redirect("Details.aspx?PO_Id=" + predictedObservedtId);
+            int predictedObservedtId = int.Parse(gvSimFiles.Rows[index].Cells[colPredictedObservedID].Text);
+            Response.Redirect("PODetails.aspx?PO_Id=" + predictedObservedtId);
         }
 
         protected void gvSimFiles_Sorting(object sender, GridViewSortEventArgs e)
@@ -468,22 +507,22 @@ namespace APSIM.PerformanceTests.Portal
                     switch (headerCell.ContainingField.SortExpression)
                     {
                         case "PredictedObservedID":
-                            gvSimFiles.Columns[0].HeaderText = "PO ID";
+                            gvSimFiles.Columns[colPredictedObservedID].HeaderText = "PO ID";
                             break;
                         case "FileName":
-                            gvSimFiles.Columns[1].HeaderText = "File Name";
+                            gvSimFiles.Columns[colFileName].HeaderText = "File Name";
                             break;
                         case "PredictedObservedTableName":
-                            gvSimFiles.Columns[2].HeaderText = "Predicted Observed<br />TableName";
+                            gvSimFiles.Columns[colPredictedObservedTableName].HeaderText = "Predicted Observed<br />TableName";
                             break;
                         case "PassedTests":
-                            gvSimFiles.Columns[3].HeaderText = "Passed<br />Tests";
+                            gvSimFiles.Columns[colPassedTests].HeaderText = "Passed<br />Tests";
                             break;
                         case "FullFileName":
-                            gvSimFiles.Columns[4].HeaderText = "Full FileName";
+                            gvSimFiles.Columns[colFullFileName].HeaderText = "Full FileName";
                             break;
                         case "AcceptedPredictedObservedDetailsID":
-                            gvSimFiles.Columns[5].HeaderText = "Accepted<br />PO ID";
+                            gvSimFiles.Columns[colAcceptedPredictedObservedDetailsID].HeaderText = "Accepted<br />PO ID";
                             break;
                     }
                     //get the index and details for the column we are sorting
@@ -536,11 +575,13 @@ namespace APSIM.PerformanceTests.Portal
 
             lblPullRequestId.Text = "Simulation Files for Pull Request Id: " + pullRequestId.ToString();
 
-            btnDifferences.Visible = true;
-            btnDifferences.Text = "View Tests' Differences for Pull Request Id: " + pullRequestId.ToString();
+            //btnDifferences.Visible = true;
+            //btnDifferences.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Differences " ;
 
-            btnTests.Visible = true;
-            btnTests.Text = "View Tests for Pull Request Id: " + pullRequestId.ToString() + " (Charts)";
+            btnTestsCharts.Visible = true;
+            btnTestsCharts.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Graphical Results";
+            btnTestsGrids.Visible = true;
+            btnTestsGrids.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Tabulated Results";
 
             SimFilesList = ApsimFilesDS.GetSimFilesByPullRequestID(pullRequestId);
             SimFilesDT = Genfuncs.ToDataTable(SimFilesList);
@@ -570,16 +611,19 @@ namespace APSIM.PerformanceTests.Portal
             lblPullRequestId.Text = "Simulation Files for Pull Request Id: " + pullRequestId.ToString();
             if (PercentPassed == 100)
             {
-                btnDifferences.Visible = false;
-                btnTests.Visible = true;
+                //btnDifferences.Visible = false;
+                btnTestsCharts.Visible = true;
+                btnTestsGrids.Visible = true;
             }
             else
             {
-                btnDifferences.Visible = true;
-                btnDifferences.Text = "View Tests' Differences for Pull Request Id: " + pullRequestId.ToString();
+                //btnDifferences.Visible = true;
+                //btnDifferences.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Differences ";
 
-                btnTests.Visible = true;
-                btnTests.Text = "View Tests for Pull Request Id: " + pullRequestId.ToString() + " (Charts)";
+                btnTestsCharts.Visible = true;
+                btnTestsCharts.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Graphical Results";
+                btnTestsGrids.Visible = true;
+                btnTestsGrids.Text = "Pull Request " + pullRequestId.ToString() + " Tests - Tabulated Results";
             }
 
             SimFilesList = ApsimFilesDS.GetSimFilesByPullRequestIDandDate(pullRequestId, runDate);
@@ -621,40 +665,5 @@ namespace APSIM.PerformanceTests.Portal
         }
         #endregion
 
-
-        #region WebAPI Interaction
-
-        private void UpdatePullRequestStats(string updateType, AcceptStatsLog apsimLog)
-        {
-            HttpClient httpClient = new HttpClient();
-
-            string serviceUrl = ConfigurationManager.AppSettings["serviceAddress"].ToString() + "APSIM.PerformanceTests.Service/";
-            httpClient.BaseAddress = new Uri(serviceUrl);
-            //httpClient.BaseAddress = new Uri("http://www.apsim.info/APSIM.PerformanceTests.Service/");
-#if DEBUG
-            httpClient.BaseAddress = new Uri("http://localhost:53187/");
-#endif
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-            HttpResponseMessage response = new HttpResponseMessage();
-            if (updateType == "Accept")
-            {
-                response = httpClient.PostAsJsonAsync("api/acceptStats", apsimLog).Result;
-            }
-            else if (updateType == "Update")
-            {
-                response = httpClient.PostAsJsonAsync("api/updateStats", apsimLog).Result;
-            }
-
-            response.EnsureSuccessStatusCode();
-            if (response.IsSuccessStatusCode)
-            {
-            }
-        }
-        #endregion
-
     }
-
-
 }

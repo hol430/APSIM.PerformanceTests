@@ -84,6 +84,21 @@ public class ApsimFilesDS
     //    }
     //}
 
+    public static List<vVariable> GetDistinctApsimFileNames()
+    {
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            return context.ApsimFiles
+                .Select(v => new vVariable
+                {
+                    Name = v.FileName,
+                    Value = v.FileName
+                })
+                .Distinct()
+                .OrderBy(v => v.Name)
+                .ToList();
+        }
+    }
     //public static vApsimFile GetLatestAcceptedPullRequestDetails()
     //{
     //    using (ApsimDBContext context = new ApsimDBContext())

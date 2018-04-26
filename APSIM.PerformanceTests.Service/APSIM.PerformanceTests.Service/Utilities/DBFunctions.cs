@@ -25,6 +25,7 @@ namespace APSIM.PerformanceTests.Service
         /// <returns></returns>
         public static int GetAcceptedPredictedObservedDetailsId(SqlConnection sqlCon, int acceptedPullRequestID, string currentApsimFileFileName, PredictedObservedDetails currentPODetails)
         {
+
             int acceptedPredictedObservedDetailsID = 0;
             try
             {
@@ -32,20 +33,23 @@ namespace APSIM.PerformanceTests.Service
                 + " FROM PredictedObservedDetails p INNER JOIN ApsimFiles a ON p.ApsimFilesID = a.ID "
                 + " WHERE a.PullRequestId = @pullRequestId "
                 + "    AND a.FileName = @filename "
-                + "    AND p.TableName = @tablename "
-                + "    AND p.PredictedTableName = @predictedTableName "
-                + "    AND p.ObservedTableName = @observedTableName "
-                + "    AND p.FieldNameUsedForMatch = @fieldNameUsedForMatch ";
+                + "    AND p.TableName = @tablename ";
 
-                if ((currentPODetails.FieldName2UsedForMatch != null) &&  (currentPODetails.FieldName2UsedForMatch.Length > 0))
-                {
-                    strSQL = strSQL + "    AND p.FieldName2UsedForMatch = @fieldName2UsedForMatch ";
-                }
+                //modLCM - 22/02/2018 - As per instructions from Dean, remove matching on extra columns in PO Details Table
 
-                if ((currentPODetails.FieldName3UsedForMatch != null) && (currentPODetails.FieldName3UsedForMatch.Length > 0))
-                {
-                    strSQL = strSQL + "    AND p.FieldName3UsedForMatch = @fieldName3UsedForMatch ";
-                }
+                //+ "    AND p.PredictedTableName = @predictedTableName "
+                //+ "    AND p.ObservedTableName = @observedTableName "
+                //+ "    AND p.FieldNameUsedForMatch = @fieldNameUsedForMatch ";
+
+                //if ((currentPODetails.FieldName2UsedForMatch != null) &&  (currentPODetails.FieldName2UsedForMatch.Length > 0))
+                //{
+                //    strSQL = strSQL + "    AND p.FieldName2UsedForMatch = @fieldName2UsedForMatch ";
+                //}
+
+                //if ((currentPODetails.FieldName3UsedForMatch != null) && (currentPODetails.FieldName3UsedForMatch.Length > 0))
+                //{
+                //    strSQL = strSQL + "    AND p.FieldName3UsedForMatch = @fieldName3UsedForMatch ";
+                //}
 
                 using (SqlCommand commandES = new SqlCommand(strSQL, sqlCon))
                 {
@@ -53,19 +57,19 @@ namespace APSIM.PerformanceTests.Service
                     commandES.Parameters.AddWithValue("@PullRequestId", acceptedPullRequestID);
                     commandES.Parameters.AddWithValue("@filename", currentApsimFileFileName);
                     commandES.Parameters.AddWithValue("@tablename", currentPODetails.DatabaseTableName);
-                    commandES.Parameters.AddWithValue("@predictedTableName", currentPODetails.PredictedTableName);
-                    commandES.Parameters.AddWithValue("@observedTableName", currentPODetails.ObservedTableName);
-                    commandES.Parameters.AddWithValue("@fieldNameUsedForMatch", currentPODetails.FieldNameUsedForMatch);
+                    //commandES.Parameters.AddWithValue("@predictedTableName", currentPODetails.PredictedTableName);
+                    //commandES.Parameters.AddWithValue("@observedTableName", currentPODetails.ObservedTableName);
+                    //commandES.Parameters.AddWithValue("@fieldNameUsedForMatch", currentPODetails.FieldNameUsedForMatch);
 
-                    if ((currentPODetails.FieldName2UsedForMatch != null) && (currentPODetails.FieldName2UsedForMatch.Length > 0))
-                    {
-                        commandES.Parameters.AddWithValue("@fieldName2UsedForMatch", currentPODetails.FieldName2UsedForMatch);
-                    }
+                    //if ((currentPODetails.FieldName2UsedForMatch != null) && (currentPODetails.FieldName2UsedForMatch.Length > 0))
+                    //{
+                    //    commandES.Parameters.AddWithValue("@fieldName2UsedForMatch", currentPODetails.FieldName2UsedForMatch);
+                    //}
 
-                    if ((currentPODetails.FieldName3UsedForMatch != null) && (currentPODetails.FieldName3UsedForMatch.Length > 0))
-                    {
-                        commandES.Parameters.AddWithValue("@fieldName3UsedForMatch", currentPODetails.FieldName3UsedForMatch);
-                    }
+                    //if ((currentPODetails.FieldName3UsedForMatch != null) && (currentPODetails.FieldName3UsedForMatch.Length > 0))
+                    //{
+                    //    commandES.Parameters.AddWithValue("@fieldName3UsedForMatch", currentPODetails.FieldName3UsedForMatch);
+                    //}
 
                     object obj = commandES.ExecuteScalar();
 
@@ -82,6 +86,7 @@ namespace APSIM.PerformanceTests.Service
             return acceptedPredictedObservedDetailsID;
         }
 
+ 
         /// <summary>
         /// Retrieves the Tests stats for the 'Accepted' PredictedObservedTests 
         /// </summary>
@@ -272,7 +277,7 @@ namespace APSIM.PerformanceTests.Service
             if (StatsType == "Accept")
             {
                 acceptLog.StatsPullRequestId = 0;
-                acceptLog.FileCount = 0;
+                //acceptLog.FileCount = 0;
             }
 
             //need to authenticate the process
@@ -285,7 +290,7 @@ namespace APSIM.PerformanceTests.Service
                 try
                 {
                     string strSQL = "INSERT INTO AcceptStatsLogs (PullRequestId, SubmitPerson, SubmitDate, FileCount, LogPerson, LogReason, LogStatus, LogAcceptDate, StatsPullRequestId) "
-                                    + " Values ( @PullRequestId, @SubmitPerson, @SubmitDate, @LogPerson, @LogReason, @LogStatus, @LogAcceptDate, @StatsPullRequestId )";
+                                    + " Values ( @PullRequestId, @SubmitPerson, @SubmitDate, @FileCount, @LogPerson, @LogReason, @LogStatus, @LogAcceptDate, @StatsPullRequestId )";
                     using (SqlCommand commandENQ = new SqlCommand(strSQL, sqlCon))
                     {
                         commandENQ.CommandType = CommandType.Text;

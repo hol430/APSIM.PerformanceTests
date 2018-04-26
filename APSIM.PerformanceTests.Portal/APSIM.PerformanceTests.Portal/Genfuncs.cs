@@ -10,8 +10,6 @@ namespace APSIM.PerformanceTests.Portal
     public static class Genfuncs
     {
 
-
-
         ///###############################################################
         /// <summary>
         /// Convert a List to a DataTable.

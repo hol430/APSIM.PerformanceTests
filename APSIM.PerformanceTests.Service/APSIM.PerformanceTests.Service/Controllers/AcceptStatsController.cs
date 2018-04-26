@@ -95,7 +95,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
             Task<PullRequest> pullRequestTask = github.PullRequest.Get("APSIMInitiative", "ApsimX", pullRequestID);
             pullRequestTask.Wait();
             PullRequest pullRequest = pullRequestTask.Result;
-            Uri statusURL = pullRequest.StatusesUrl;
+            Uri statusURL = new System.Uri(pullRequest.StatusesUrl);
 
             string header = "Authorization: token " + token;
             string state = "failure";
@@ -106,7 +106,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 stateFormatted = "Pass";
             }
 
-            string urlStr = string.Format("http://www.apsim.info/APSIM.PerformanceTests.Portal/Default.aspx?PULLREQUEST={0}", pullRequestID);
+            string urlStr = string.Format("https://apsim.csiro.au/APSIM.PerformanceTests/Default.aspx?PULLREQUEST={0}", pullRequestID);
 
             string body = "{" + Environment.NewLine +
                           "  \"state\": \"" + state + "\"," + Environment.NewLine +
