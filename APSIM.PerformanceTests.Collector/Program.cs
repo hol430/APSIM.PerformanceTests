@@ -1,4 +1,7 @@
 ﻿using APSIM.PerformanceTests.Models;
+using Models.Core;
+using Models.Core.ApsimFile;
+using Models.PostSimulationTools;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -337,92 +340,59 @@ namespace APSIM.PerformanceTests.Collector
         }
 
         /// <summary>
-        /// Searches the specified file and searches for all instances of PredictedObserved data, and adds it to a list of PredictedObserved items.
+        /// Searches the specified file and returns all instances of PredictedObserved data.
         /// </summary>
-        /// <param name="fileName"></param>
+        /// <param name="fileName">Path to the .apsimx file to be searched.</param>
         private static List<PredictedObservedDetails> GetPredictedObservedDetails(string fullFileName)
         {
-
-            //PredictedObservedDetails[] predictedObservedDetailList = new PredictedObservedDetails[0];
-            List<PredictedObservedDetails> predictedObservedDetailList = new List<PredictedObservedDetails>();
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(fullFileName);
-
-
-            //these are under simulation/area/outputfile/filename, title)
-            XmlNodeList elemList = xmlDoc.SelectNodes("//PredictedObserved");
-            if (elemList.Count > 0)
+            List<Exception> errors;
+            Simulations sims = FileFormat.ReadFromFile<Simulations>(fullFileName, out errors);
+            if (errors != null && errors.Count > 0)
             {
-                //predictedObservedDetailList = new PredictedObservedDetails[elemList.Count];
-                for (int i = 0; i < elemList.Count; i++)
+                // Write all errors except for the last to a log file, and throw the last error
+                // to ensure that we don't proceed further.
+                for (int i = 0; i < errors.Count; i++)
                 {
-                    PredictedObservedDetails PredictedObservedInstance = new PredictedObservedDetails();
-                    PredictedObservedInstance.FieldName2UsedForMatch = string.Empty;
-                    PredictedObservedInstance.FieldName3UsedForMatch = string.Empty;
-
-                    bool hasData = false;
-                    if (elemList[i].HasChildNodes) { hasData = true; }
-                    //modLMC - 15/11/2017 - this is not longer required (after discussion with Dean, need to include all)
-                    //if (elemList[i].ParentNode.Name != "DataStore") { hasData = false; }
-                    if (hasData == true)
-                    {
-                        for (int n = 0; n < elemList[i].ChildNodes.Count; n++)
-                        {
-                            string nodeName = elemList[i].ChildNodes[n].Name;
-                            switch (nodeName)
-                            {
-                                case "Name":
-                                    PredictedObservedInstance.DatabaseTableName = elemList[i].ChildNodes[n].InnerText;
-                                    break;
-                                //case "Tests":
-                                //    PredictedObservedInstance.Tests = elemList[i].ChildNodes[n].InnerText;
-                                //    break;
-                                case "PredictedTableName":
-                                    PredictedObservedInstance.PredictedTableName = elemList[i].ChildNodes[n].InnerText;
-                                    break;
-                                case "ObservedTableName":
-                                    PredictedObservedInstance.ObservedTableName = elemList[i].ChildNodes[n].InnerText;
-                                    break;
-                                case "FieldNameUsedForMatch":
-                                    PredictedObservedInstance.FieldNameUsedForMatch = elemList[i].ChildNodes[n].InnerText;
-                                    break;
-                                case "FieldName2UsedForMatch":
-                                    PredictedObservedInstance.FieldName2UsedForMatch = elemList[i].ChildNodes[n].InnerText;
-                                    break;
-                                case "FieldName3UsedForMatch":
-                                    PredictedObservedInstance.FieldName3UsedForMatch = elemList[i].ChildNodes[n].InnerText;
-                                    break;
-                                    //WHAT IF THE MATCH IS DONE ACROSS MULTIPLE FIELDS (TWO OR THREE).
-                            }
-                        }
-                        PredictedObservedInstance.PredictedObservedData = GetPredictedObservedDataTable(PredictedObservedInstance.DatabaseTableName, fullFileName);
-                    }
-                    //only add this instance if there is data
-                    if ((PredictedObservedInstance.PredictedObservedData != null) && (PredictedObservedInstance.PredictedObservedData.Rows.Count > 0))
-                    {
-                        predictedObservedDetailList.Add(PredictedObservedInstance);
-                    }
+                    if (i == errors.Count - 1)
+                        throw errors[i];
+                    WriteToLogFile(string.Format("    ERROR opening file {0}: {1}", fullFileName, errors[i].ToString()));
                 }
             }
+
+            List<PredictedObservedDetails> predictedObservedDetailList = new List<PredictedObservedDetails>();
+            foreach (PredictedObserved poModel in Apsim.ChildrenRecursively(sims, typeof(PredictedObserved)))
+            {
+                if (poModel.Children != null && poModel.Children.Count > 0)
+                {
+                    PredictedObservedDetails instance = new PredictedObservedDetails(poModel);
+                    instance.Data = GetPredictedObservedDataTable(poModel.Name, Path.ChangeExtension(fullFileName, ".db"));
+
+                    // Only add this instance if there is data.
+                    if ((instance.Data != null) && (instance.Data.Rows.Count > 0))
+                        predictedObservedDetailList.Add(instance);
+                    else
+                        WriteToLogFile(string.Format("    No PredictedObserved data was found for table {0} of file {1}", poModel.Name, fullFileName));
+                }
+            }
+
             return predictedObservedDetailList;
         }
 
         /// <summary>
         /// Based on a specified PredictedObserved item, searches for the corresponding sqlite db file and extracts the
-        /// datatable information for this PredictedObserved item
+        /// datatable information for this PredictedObserved item.
         /// </summary>
-        /// <param name="apsimRun"></param>
-        /// <returns></returns>
+        /// <param name="predictedObservedName">Name of the PredictedObserved table.</param>
+        /// <param name="databasePath">Path to the .db file.</param>
         private static DataTable GetPredictedObservedDataTable(string predictedObservedName, string databasePath)
         {
             DataTable POdata = new DataTable(predictedObservedName);
             try
             {
-                string dbName = Path.GetFileNameWithoutExtension(databasePath) + ".db";
-                string fullPath = Path.GetDirectoryName(databasePath) + "\\" + dbName;
-                if (File.Exists(string.Format(@"{0}", fullPath)))
+                if (File.Exists(databasePath))
                 {
-                    using (SQLiteConnection con = new SQLiteConnection("Data Source=" + fullPath))
+                    string dbFileName = Path.GetFileName(databasePath);
+                    using (SQLiteConnection con = new SQLiteConnection("Data Source=" + databasePath))
                     {
                         con.Open();
                         string selectSQL = "SELECT * FROM " + predictedObservedName;
@@ -433,25 +403,25 @@ namespace APSIM.PerformanceTests.Collector
                             if (rdr != null)
                             {
                                 POdata.Load(rdr);
-                                WriteToLogFile(string.Format("    There are {0} Predicted Observed records in database {1}, table {2}.", POdata.Rows.Count, dbName, predictedObservedName));
+                                WriteToLogFile(string.Format("    There are {0} Predicted Observed records in database {1}, table {2}.", POdata.Rows.Count, dbFileName, predictedObservedName));
                             }
                         }
                         catch (Exception ex)
                         {
                             if (ex.Message.ToString().IndexOf("no such table") > 0)
                             {
-                                WriteToLogFile(string.Format("    For Database {0}, Table {1} does not exist!", dbName, predictedObservedName));
+                                WriteToLogFile(string.Format("    For Database {0}, Table {1} does not exist!", dbFileName, predictedObservedName));
                             }
                             else
                             {
-                                WriteToLogFile(string.Format("    ERROR reading database {0}: {1}!", dbName, ex.Message.ToString()));
+                                WriteToLogFile(string.Format("    ERROR reading database {0}: {1}!", dbFileName, ex.Message));
                             }
                         }
                     }
                 }
                 else
                 {
-                     throw new Exception(string.Format("ERROR Database file {0} does not exist", dbName));
+                     throw new Exception(string.Format("ERROR Database file {0} does not exist", databasePath));
                 }
 
                 string ColumnName, ObservedName, PredictedName;
