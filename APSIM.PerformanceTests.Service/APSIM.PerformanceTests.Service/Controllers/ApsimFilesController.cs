@@ -345,7 +345,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         //--------------------------------------------------------------------------------------
                         //And finally this is where we will insert the actual Predited Observed DATA
                         //--------------------------------------------------------------------------------------
-                        DataView PredictedObservedView = new DataView(poDetail.PredictedObservedData);
+                        DataView PredictedObservedView = new DataView(poDetail.Data);
 
                         string ObservedColumName, PredictedColumnName;
 
@@ -354,9 +354,9 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         //need to find the first (and then each instance thereafter) of a field name being with Observed,
                         //the get the corresponding Predicted field name, and then create a new table definition based on this
                         //data,
-                        for (int i = 0; i < poDetail.PredictedObservedData.Columns.Count; i++)
+                        for (int i = 0; i < poDetail.Data.Columns.Count; i++)
                         {
-                            ObservedColumName = poDetail.PredictedObservedData.Columns[i].ColumnName.Trim();
+                            ObservedColumName = poDetail.Data.Columns[i].ColumnName.Trim();
                             if (ObservedColumName.StartsWith("Observed"))
                             {
                                 //get the corresponding Predicted Column Name
@@ -444,7 +444,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
 
                         //Need to run the testing procecedure here, and then save the test data
-                        if (poDetail.PredictedObservedData.Rows.Count > 0)
+                        if (poDetail.Data.Rows.Count > 0)
                         {
                             ErrMessageHelper = string.Empty;
 
@@ -456,7 +456,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                             DataTable acceptedStats = RetrieveAcceptedStatsData(sqlCon, ApsimID, apsimfile, poDetail, predictedObservedID, ref acceptedPredictedObservedDetailsID);
 
                             ErrMessageHelper = "Processing Tests.DoValidationTest.";
-                            DataTable dtTests = Tests.DoValidationTest(poDetail.DatabaseTableName, poDetail.PredictedObservedData, acceptedStats);
+                            DataTable dtTests = Tests.DoValidationTest(poDetail.DatabaseTableName, poDetail.Data, acceptedStats);
 
                             ErrMessageHelper = "Processing DBFunctions.AddPredictedObservedTestsData.";
                             DBFunctions.AddPredictedObservedTestsData(sqlCon, apsimfile.FileName, predictedObservedID, poDetail.DatabaseTableName, dtTests);
