@@ -32,3 +32,6 @@ packages/
 *.sum
 Documents/
 *.csv
+APSIM.PerformanceTests.Collector/.vs/
+APSIM.PerformanceTests.Service/.vs/
+APSIM.PerformanceTests.Portal/.vs/
