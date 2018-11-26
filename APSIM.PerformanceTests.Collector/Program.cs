@@ -364,7 +364,16 @@ namespace APSIM.PerformanceTests.Collector
             {
                 if (poModel.Children != null && poModel.Children.Count > 0)
                 {
-                    PredictedObservedDetails instance = new PredictedObservedDetails(poModel);
+                    PredictedObservedDetails instance = new PredictedObservedDetails()
+                    {
+                        DatabaseTableName = poModel.Name,
+                        PredictedTableName = poModel.PredictedTableName,
+                        ObservedTableName = poModel.ObservedTableName,
+                        FieldNameUsedForMatch = poModel.FieldNameUsedForMatch,
+                        FieldName2UsedForMatch = poModel.FieldName2UsedForMatch,
+                        FieldName3UsedForMatch = poModel.FieldName3UsedForMatch,
+
+                    };
                     instance.Data = GetPredictedObservedDataTable(poModel.Name, Path.ChangeExtension(fullFileName, ".db"));
 
                     // Only add this instance if there is data.
@@ -583,7 +592,7 @@ namespace APSIM.PerformanceTests.Collector
                     using (SQLiteConnection con = new SQLiteConnection("Data Source=" + fullPath))
                     {
                         con.Open();
-                        string selectSQL = "SELECT * FROM _Simulations ";
+                        string selectSQL = "SELECT ID, Name FROM _Simulations ";
 
                         using (SQLiteCommand cmd = new SQLiteCommand(selectSQL, con))
                         {
