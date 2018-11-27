@@ -370,8 +370,8 @@ namespace APSIM.PerformanceTests.Collector
                         PredictedTableName = poModel.PredictedTableName,
                         ObservedTableName = poModel.ObservedTableName,
                         FieldNameUsedForMatch = poModel.FieldNameUsedForMatch,
-                        FieldName2UsedForMatch = poModel.FieldName2UsedForMatch,
-                        FieldName3UsedForMatch = poModel.FieldName3UsedForMatch,
+                        FieldName2UsedForMatch = poModel.FieldName2UsedForMatch ?? string.Empty,
+                        FieldName3UsedForMatch = poModel.FieldName3UsedForMatch ?? string.Empty,
 
                     };
                     instance.Data = GetPredictedObservedDataTable(poModel.Name, Path.ChangeExtension(fullFileName, ".db"));
