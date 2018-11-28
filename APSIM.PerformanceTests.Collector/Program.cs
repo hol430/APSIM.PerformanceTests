@@ -362,26 +362,23 @@ namespace APSIM.PerformanceTests.Collector
             List<PredictedObservedDetails> predictedObservedDetailList = new List<PredictedObservedDetails>();
             foreach (PredictedObserved poModel in Apsim.ChildrenRecursively(sims, typeof(PredictedObserved)))
             {
-                if (poModel.Children != null && poModel.Children.Count > 0)
+                PredictedObservedDetails instance = new PredictedObservedDetails()
                 {
-                    PredictedObservedDetails instance = new PredictedObservedDetails()
-                    {
-                        DatabaseTableName = poModel.Name,
-                        PredictedTableName = poModel.PredictedTableName,
-                        ObservedTableName = poModel.ObservedTableName,
-                        FieldNameUsedForMatch = poModel.FieldNameUsedForMatch,
-                        FieldName2UsedForMatch = poModel.FieldName2UsedForMatch ?? string.Empty,
-                        FieldName3UsedForMatch = poModel.FieldName3UsedForMatch ?? string.Empty,
+                    DatabaseTableName = poModel.Name,
+                    PredictedTableName = poModel.PredictedTableName,
+                    ObservedTableName = poModel.ObservedTableName,
+                    FieldNameUsedForMatch = poModel.FieldNameUsedForMatch,
+                    FieldName2UsedForMatch = poModel.FieldName2UsedForMatch ?? string.Empty,
+                    FieldName3UsedForMatch = poModel.FieldName3UsedForMatch ?? string.Empty,
 
-                    };
-                    instance.Data = GetPredictedObservedDataTable(poModel.Name, Path.ChangeExtension(fullFileName, ".db"));
+                };
+                instance.Data = GetPredictedObservedDataTable(poModel.Name, Path.ChangeExtension(fullFileName, ".db"));
 
-                    // Only add this instance if there is data.
-                    if ((instance.Data != null) && (instance.Data.Rows.Count > 0))
-                        predictedObservedDetailList.Add(instance);
-                    else
-                        WriteToLogFile(string.Format("    No PredictedObserved data was found for table {0} of file {1}", poModel.Name, fullFileName));
-                }
+                // Only add this instance if there is data.
+                if ((instance.Data != null) && (instance.Data.Rows.Count > 0))
+                    predictedObservedDetailList.Add(instance);
+                else
+                    WriteToLogFile(string.Format("    No PredictedObserved data was found for table {0} of file {1}", poModel.Name, fullFileName));
             }
 
             return predictedObservedDetailList;
