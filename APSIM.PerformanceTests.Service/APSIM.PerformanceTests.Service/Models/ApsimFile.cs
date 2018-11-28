@@ -37,8 +37,8 @@ namespace APSIM.PerformanceTests.Models
         public int HasTests { get; set; }
         public int AcceptedPredictedObservedDetailsId { get; set; }
 
-        public DataTable PredictedObservedData { get; set; }
-        public ApsimFile apsimFile { get; set; }
+        public DataTable Data { get; set; }
+        public ApsimFile ApsimFile { get; set; }
 
     }
 
