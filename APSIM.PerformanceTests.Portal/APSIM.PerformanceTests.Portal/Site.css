@@ -293,6 +293,9 @@
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-size: 13px;
 }
+.PR_Message {
+    margin-left: 30px;
+}
 .PR_TopRow {
     border-top: 2px solid black;
     border-bottom: 1px solid black;

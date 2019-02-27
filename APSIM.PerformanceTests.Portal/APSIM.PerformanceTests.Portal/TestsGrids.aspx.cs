@@ -56,6 +56,7 @@ namespace APSIM.PerformanceTests.Portal
 
         private void RetrieveDataAndBindGrids()
         {
+            AddPerformanceRatingTable();
             int pullRequestId = int.Parse(hfPullRequestID.Value.ToString());
             List<vPredictedObservedTests> POTestsList = PredictedObservedDS.GetCurrentAcceptedTestsFiltered(pullRequestId);
 
@@ -218,7 +219,6 @@ namespace APSIM.PerformanceTests.Portal
                 table.Rows.Add(DefineTableVariableRow(holdVariable, currPO_ID, N_Current, N_Accepted, RMSE_Current, RMSE_Accepted, RMSE_Difference, NSE_Current, NSE_Accepted, NSE_Difference, RSR_Current, RSR_Accepted, RSR_Difference));
             }
             phGrids.Controls.Add(table);
-            AddPerformanceRatingTable();
         }
 
 
@@ -702,8 +702,10 @@ namespace APSIM.PerformanceTests.Portal
             table.Rows.Add(row);
 
             phGrids.Controls.Add(new LiteralControl("<br />"));
-            phGrids.Controls.Add(new LiteralControl("<br />"));
             phGrids.Controls.Add(table);
+            phGrids.Controls.Add(new LiteralControl("<br />"));
+            phGrids.Controls.Add(new LiteralControl("<strong class=\"PR_Message\">Changes are only considered significant if they differ from the accepted stat by more than 1%.</strong>"));
+            phGrids.Controls.Add(new LiteralControl("<br />"));
             phGrids.Controls.Add(new LiteralControl("<br />"));
         }
         #endregion
