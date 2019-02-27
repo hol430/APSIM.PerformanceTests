@@ -704,6 +704,8 @@ namespace APSIM.PerformanceTests.Portal
             phGrids.Controls.Add(new LiteralControl("<br />"));
             phGrids.Controls.Add(table);
             phGrids.Controls.Add(new LiteralControl("<br />"));
+            // TODO: 1% threshold is hardcoded here, but it could easily change.
+            // This actual number is APSIM.PerformanceTests.Service.Tests.Threshold.
             phGrids.Controls.Add(new LiteralControl("<strong class=\"PR_Message\">Changes are only considered significant if they differ from the accepted stat by more than 1%.</strong>"));
             phGrids.Controls.Add(new LiteralControl("<br />"));
             phGrids.Controls.Add(new LiteralControl("<br />"));

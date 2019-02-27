@@ -158,9 +158,13 @@ namespace APSIM.PerformanceTests.Portal
                             {
                                 currColour = Color.Orange;
                             }
-                            else if (((bool)item.IsImprovement) || ((bool)item.PassedTest))
+                            else if ((bool)item.IsImprovement)
                             {
                                 currColour = Color.Green;
+                            }
+                            else if ((bool)item.PassedTest)
+                            {
+                                currColour = Color.White;
                             }
                             else if (item.Accepted != null) 
                             {
@@ -254,6 +258,7 @@ namespace APSIM.PerformanceTests.Portal
             myChart.Series["Current"].Points.DataBindXY(currentXValues, currentYValues);
             for (int i = 0; i < currentColours.Count(); i++)
             {
+                myChart.Series["Current"].Points[i].BorderColor = Color.Black;
                 myChart.Series["Current"].Points[i].Color = currentColours[i];
             }
 
