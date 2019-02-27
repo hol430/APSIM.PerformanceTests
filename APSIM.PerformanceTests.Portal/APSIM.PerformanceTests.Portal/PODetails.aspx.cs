@@ -712,10 +712,10 @@ namespace APSIM.PerformanceTests.Portal
 
             //Now display it in the chart
             Series acceptedSeries = chartPODetails.Series["Accepted"];
-            acceptedSeries.Points.DataBind(POValuesList, "AcceptedObservedValue", "AcceptedPredictedValue", "");
+            acceptedSeries.Points.DataBind(POValuesList, "AcceptedObservedValue", "AcceptedPredictedValue", "SimulationName=SimulationName");
 
             Series currentSeries = chartPODetails.Series["Current"];
-            currentSeries.Points.DataBind(POValuesList, "CurrentObservedValue", "CurrentPredictedValue", "");
+            currentSeries.Points.DataBind(POValuesList, "CurrentObservedValue", "CurrentPredictedValue", "SimulationName=SimulationName");
 
             double maxValue = 0;
             double value = 0;

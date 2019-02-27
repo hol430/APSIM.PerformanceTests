@@ -110,10 +110,10 @@
                 <Series>
                     <asp:Series Name="Accepted" ChartArea="ChartArea1" 
                         ChartType="Point" MarkerColor="255, 128, 0" MarkerSize="12" MarkerStyle="Circle"
-                        IsVisibleInLegend="true" Tooltip="Observed: #VALX, Predicted: #VALY" Legend="Legend1" ></asp:Series>
+                        IsVisibleInLegend="true" Tooltip="Observed: #VALX, Predicted: #VALY (#CUSTOMPROPERTY(SimulationName))" Legend="Legend1" ></asp:Series>
                     <asp:Series Name="Current" ChartArea="ChartArea1" 
                         ChartType="Point" MarkerColor="Navy" MarkerSize="6" MarkerStyle="Diamond"
-                        IsVisibleInLegend="true" Tooltip="Observed: #VALX, Predicted: #VALY" Legend="Legend1" ></asp:Series>
+                        IsVisibleInLegend="true" Tooltip="Observed: #VALX, Predicted: #VALY (#CUSTOMPROPERTY(SimulationName))" Legend="Legend1" ></asp:Series>
                     <asp:Series Name="Slope" ChartArea="ChartArea1" ChartType="Line" Color="Black" IsVisibleInLegend="false"  ></asp:Series>
                 </Series>
                 <ChartAreas>
