@@ -24,6 +24,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AjaxControlToolkit, Version=17.1.1.0, Culture=neutral, PublicKeyToken=28f01b0e84b6d53e, processorArchitecture=MSIL">
@@ -80,6 +81,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ChartsHelp.aspx" />
     <Content Include="Compare.aspx" />
     <Content Include="Difference.aspx" />
     <Content Include="Gridstyle.css" />
@@ -118,6 +120,13 @@
     <Compile Include="App_Code\AcceptStatsLogDS.cs" />
     <Compile Include="App_Code\ApsimFilesDS.cs" />
     <Compile Include="App_Code\PredictedObservedDS.cs" />
+    <Compile Include="ChartsHelp.aspx.cs">
+      <DependentUpon>ChartsHelp.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ChartsHelp.aspx.designer.cs">
+      <DependentUpon>ChartsHelp.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Compare.aspx.cs">
       <DependentUpon>Compare.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

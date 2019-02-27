@@ -81,7 +81,10 @@ namespace APSIM.PerformanceTests.Portal
 
             Color currColour, accColour;
             int chartNo = 0;
-
+            HyperLink help = new HyperLink();
+            help.Text = "Help";
+            help.NavigateUrl = "/ChartsHelp.aspx";
+            phCharts.Controls.Add(help);
             foreach (vPredictedObservedTests item in POTestsList)
             {
 
