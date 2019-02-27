@@ -141,6 +141,7 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Models\PODataPoint.cs" />
     <Compile Include="Models\PORename.cs" />
     <Compile Include="PODetails.aspx.cs">
       <DependentUpon>PODetails.aspx</DependentUpon>
