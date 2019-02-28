@@ -251,8 +251,10 @@ namespace APSIM.PerformanceTests.Portal
                     // This means we can put a border around the heatmap, not the
                     // cell, which can be bigger than the heatmap. Without the border,
                     // it can be very difficult to see where the heatmaps start/end.
-                    span = new HtmlGenericControl("span");
+                    span = new HtmlGenericControl("div");
                     span.Style.Add("border", "1px solid black");
+                    span.Style.Add("display", "inline-block");
+                    span.Style.Add("overflow", "hidden");
 
                     // Area of the heatmap will be the smallest square number which
                     // is larger than the number of data points in the heatmap.
