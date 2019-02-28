@@ -21,6 +21,11 @@
         <tr>
             <td colspan="2"></td>
         </tr>
+        <tr>
+            <td colspan="2">
+                <asp:PlaceHolder ID="phHeatmap" runat="server"></asp:PlaceHolder>
+            </td>
+        </tr>
     </table>
     <asp:UpdatePanel ID="upCharts" runat="server">
         <ContentTemplate>

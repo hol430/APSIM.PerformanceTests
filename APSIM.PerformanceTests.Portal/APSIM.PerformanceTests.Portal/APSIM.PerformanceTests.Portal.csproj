@@ -85,7 +85,11 @@
     <Content Include="Compare.aspx" />
     <Content Include="Difference.aspx" />
     <Content Include="Gridstyle.css" />
+    <Content Include="Images\green.png" />
     <Content Include="Images\grid-alt.png" />
+    <Content Include="Images\orange.png" />
+    <Content Include="Images\red.png" />
+    <Content Include="Images\white.png" />
     <Content Include="packages.config" />
     <Content Include="RenameVariable.aspx" />
     <Content Include="RenameTable.aspx" />

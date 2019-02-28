@@ -8,7 +8,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.DataVisualization.Charting;
 using APSIM.PerformanceTests.Portal.Models;
-
+using System.Drawing.Imaging;
+using System.IO;
 
 namespace APSIM.PerformanceTests.Portal
 {
@@ -18,7 +19,6 @@ namespace APSIM.PerformanceTests.Portal
         #endregion
 
         #region Page and Control Events
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Request.QueryString["PULLREQUEST"] != null)
@@ -30,11 +30,10 @@ namespace APSIM.PerformanceTests.Portal
             }
             else
             {
-                hfPullRequestID.Value = "2208";
-                lblPullRequest.Text = "Pull Request Id: 2208";
+                hfPullRequestID.Value = "3551";
+                lblPullRequest.Text = "Pull Request Id: 3551";
                 RetrieveDataAndBindCharts();
             }
-
         }
 
         protected void btnBack_Click(object sender, EventArgs e)
@@ -69,7 +68,7 @@ namespace APSIM.PerformanceTests.Portal
             string tooltip = string.Empty;
             //string[] xValues = { "September", "October", "November", "December" };
             //double[] yValues = { 15, 60, 12, 13 };
-
+            GenerateHeatmap(POTestsList);
 
             List<string> AcceptedXValues = new List<string>();
             List<double> AcceptedYValues = new List<double>(); 
@@ -199,6 +198,51 @@ namespace APSIM.PerformanceTests.Portal
                 tooltip = string.Format("{0} - {1}", holdFileName, holdTableName);
                 CreateCharts(chartNo, holdVariable, holdPO_Id, tooltip, AcceptedColours.ToArray(), AcceptedXValues.ToArray(), AcceptedYValues.ToArray(),
                     CurrentColours.ToArray(), CurrentXValues.ToArray(), CurrentYValues.ToArray());
+            }
+        }
+
+        private void GenerateHeatmap(List<vPredictedObservedTests> poTestsList)
+        {
+            ImageButton control;
+            for (int i = 0; i < poTestsList.Count; i++)
+            {
+                vPredictedObservedTests item = poTestsList[i];
+                if (item.Current != null)
+                {
+                    control = new ImageButton();
+                    if (item.IsImprovement != null && (bool)item.IsImprovement)
+                        control.ImageUrl = Path.Combine("Images", "green.png");
+                    else if (item.PassedTest != null && (bool)item.PassedTest)
+                    {
+                        if ((double)item.Current > 1)
+                            control.ImageUrl = Path.Combine("Images", "orange.png");
+                        else
+                            control.ImageUrl = Path.Combine("Images", "white.png");
+                    }
+                    else
+                        control.ImageUrl = Path.Combine("Images", "red.png");
+
+                    control.ID = item.PredictedObservedDetailsID.ToString() + "#" + i;
+                    control.Style.Add("float", "left");
+                    control.ToolTip = item.Variable + " " + item.Test;
+                    control.CausesValidation = false;
+                    control.Click += new ImageClickEventHandler(OnHeatmapPixelClicked);
+                    phHeatmap.Controls.Add(control);
+                }
+            }
+        }
+
+        private void OnHeatmapPixelClicked(object sender, ImageClickEventArgs e)
+        {
+            ImageButton image = sender as ImageButton;
+            if (image != null)
+            {
+                int i = image.ID.IndexOf('#');
+                if (i > 0)
+                {
+                    string id = image.ID.Substring(0, i);
+                    Response.Redirect("ValuesCharts.aspx?PO_Id=" + id);
+                }
             }
         }
 
