@@ -10,6 +10,7 @@ using System.Web.UI.DataVisualization.Charting;
 using APSIM.PerformanceTests.Portal.Models;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Web.UI.HtmlControls;
 
 namespace APSIM.PerformanceTests.Portal
 {
@@ -201,49 +202,131 @@ namespace APSIM.PerformanceTests.Portal
             }
         }
 
+        /// <summary>
+        /// Generates a table of heatmaps of the data.
+        /// Each row represents stats for one model (wheat, barley, sorghum, etc.).
+        /// Each column represents one particular statistic (r2, nse, etc.).
+        /// </summary>
+        /// <param name="poTestsList"></param>
         private void GenerateHeatmap(List<vPredictedObservedTests> poTestsList)
         {
-            ImageButton control;
-            for (int i = 0; i < poTestsList.Count; i++)
-            {
-                vPredictedObservedTests item = poTestsList[i];
-                if (item.Current != null)
-                {
-                    control = new ImageButton();
-                    if (item.IsImprovement != null && (bool)item.IsImprovement)
-                        control.ImageUrl = Path.Combine("Images", "green.png");
-                    else if (item.PassedTest != null && (bool)item.PassedTest)
-                    {
-                        if ((double)item.Current > 1)
-                            control.ImageUrl = Path.Combine("Images", "orange.png");
-                        else
-                            control.ImageUrl = Path.Combine("Images", "white.png");
-                    }
-                    else
-                        control.ImageUrl = Path.Combine("Images", "red.png");
+            Table heatmapTable = new Table();
+            TableRow row;
+            TableCell cell;
+            ImageButton dataPoint; // This represents one data point (pixel) in a heatmap.
+            HtmlGenericControl span; // This wraps the heatmap inside each cell.
+            // First, create a row of column headers, containing the test names.
+            string[] testNames = poTestsList.Select(po => po.Test).Distinct().ToArray();
+            row = new TableRow();
 
-                    control.ID = item.PredictedObservedDetailsID.ToString() + "#" + i;
-                    control.Style.Add("float", "left");
-                    control.ToolTip = item.Variable + " " + item.Test;
-                    control.CausesValidation = false;
-                    control.Click += new ImageClickEventHandler(OnHeatmapPixelClicked);
-                    phHeatmap.Controls.Add(control);
-                }
+            // Left-most column contains model names.
+            cell = new TableHeaderCell();
+            cell.Text = "Model Name";
+            row.Cells.Add(cell);
+            foreach (string test in testNames)
+            {
+                cell = new TableHeaderCell();
+                cell.Text = test;
+                row.Cells.Add(cell);
             }
+            heatmapTable.Rows.Add(row);
+
+            // Next, iterate over each model in the data. These will be our rows.
+            foreach (var model in poTestsList.GroupBy(v => v.FileName))
+            {
+                row = new TableRow();
+
+                // The first cell in each row will contain the model name.
+                cell = new TableHeaderCell();
+                cell.Text = model.Key;
+                row.Cells.Add(cell);
+
+                foreach (var test in model.GroupBy(v => v.Test))
+                {
+                    // Each cell contains a heatmap of data. We display this in
+                    // a square rather than a line, to conserve space.
+                    cell = new TableCell();
+
+                    // Each heatmap goes inside a span, which goes inside a cell.
+                    // This means we can put a border around the heatmap, not the
+                    // cell, which can be bigger than the heatmap. Without the border,
+                    // it can be very difficult to see where the heatmaps start/end.
+                    span = new HtmlGenericControl("span");
+                    span.Style.Add("border", "1px solid black");
+
+                    // Area of the heatmap will be the smallest square number which
+                    // is larger than the number of data points in the heatmap.
+                    // The length of each row will be the square root of this number.
+                    int rowLength = (int)Math.Floor(Math.Sqrt(test.Count())) + 1;
+
+                    // Our data contains many nullable doubles (ugh) so let's filter
+                    // them out before we start iteration, otherwise it will mess up
+                    // our indexing.
+                    List<vPredictedObservedTests> testWithoutNulls = test.Where(v => v.Current != null).ToList();
+
+                    for (int i = 0; i < testWithoutNulls.Count; i++)
+                    {
+                        vPredictedObservedTests item = testWithoutNulls[i];
+                        dataPoint = new ImageButton();
+                        dataPoint.ImageUrl = GetImageUrl(item);
+
+                        // Embed PO ID in the image.
+                        dataPoint.Attributes["POID"] = item.PredictedObservedDetailsID.ToString();
+
+                        // The last item in each row needs to be "display: block;"
+                        // All other items need to be "float: left;"
+                        if ( ((i + 1) % rowLength) == 0)
+                            dataPoint.Style.Add("display", "block");
+                        else
+                            dataPoint.Style.Add("float", "left");
+
+                        dataPoint.ToolTip = item.Variable + " " + item.Test;
+                        dataPoint.Click += OnHeatmapPixelClicked;
+                        span.Controls.Add(dataPoint);
+                    }
+                    cell.Controls.Add(span);
+                    row.Cells.Add(cell);
+                }
+                heatmapTable.Rows.Add(row);
+            }
+            phHeatmap.Controls.Add(heatmapTable);
         }
 
+        /// <summary>
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// TODO: Allow for different colours and automatic image generation.
+        /// </remarks>
+        private string GetImageUrl(vPredictedObservedTests item)
+        {
+            if (item.IsImprovement != null && (bool)item.IsImprovement)
+                return Path.Combine("Images", "green.png");
+            else if (item.PassedTest != null && (bool)item.PassedTest)
+            {
+                if ((double)item.Current > 1)
+                    return Path.Combine("Images", "orange.png");
+                else
+                    return Path.Combine("Images", "white.png");
+            }
+            else
+                return Path.Combine("Images", "red.png");
+        }
+
+        /// <summary>
+        /// Navigates to the ValuesCharts page, which contains more detailed info.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <remarks>
+        /// Assumes that each heatmap pixel's css class contains the PO_Id.
+        /// </remarks>
         private void OnHeatmapPixelClicked(object sender, ImageClickEventArgs e)
         {
             ImageButton image = sender as ImageButton;
             if (image != null)
-            {
-                int i = image.ID.IndexOf('#');
-                if (i > 0)
-                {
-                    string id = image.ID.Substring(0, i);
-                    Response.Redirect("ValuesCharts.aspx?PO_Id=" + id);
-                }
-            }
+                Response.Redirect("ValuesCharts.aspx?PO_Id=" + image.Attributes["POID"]);
         }
 
         private void UpdatePlaceHolderWithTitle(PlaceHolder ph, string name, bool addSpace)
