@@ -303,17 +303,110 @@ namespace APSIM.PerformanceTests.Portal
         /// </remarks>
         private string GetImageUrl(vPredictedObservedTests item)
         {
+            Color colour = GetColour(item);
+            return $"/WebForm1.aspx?a={colour.A}&r={colour.R}&g={colour.G}&b={colour.B}";
+        }
+
+        private Color GetColour(vPredictedObservedTests item)
+        {
+            double intensity = Math.Abs( ((double)item.Current - (double)item.Accepted) / (double)item.Accepted);
+            intensity = Math.Min(intensity, 1); // Ensure it's less than 1.
             if (item.IsImprovement != null && (bool)item.IsImprovement)
-                return Path.Combine("Images", "green.png");
+                return GetGreen(intensity);
             else if (item.PassedTest != null && (bool)item.PassedTest)
-            {
-                if ((double)item.Current > 1)
-                    return Path.Combine("Images", "orange.png");
-                else
-                    return Path.Combine("Images", "white.png");
-            }
+                return GetGreyscaleColour(GetColourIntensity(item));
             else
-                return Path.Combine("Images", "red.png");
+                return GetRed(intensity);
+        }
+
+        private double GetColourIntensity(vPredictedObservedTests item)
+        {
+            switch (item.Test.ToUpper())
+            {
+                case "N":
+                    return item.Current == item.Accepted ? 1 : 0;
+                case "NSE":
+                    return NormaliseNse((double)item.Current);
+                case "R2":
+                    return (double)item.Current;
+                case "RMSE":
+                    return NormaliseNse(1 - (double)item.Current);
+                case "RSR":
+                    return NormaliseNse(1 - (double)item.Current);
+                default:
+                    throw new Exception($"unknown statistic: {item.Test}");
+            }
+        }
+
+        /// <summary>
+        /// Takes an NSE value in the range [-inf, 1] and
+        /// (somewhat arbitrarily) normalises it, returning
+        /// a number in the range [0, 1], where 1 represents a
+        /// perfect fit, and 0 represents a very bad fit.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// -10 and below will return 0.
+        /// The result scales linearly from input in the range [-10, 0].
+        /// A value of 0 returns 0.5. The result then scales lienarly
+        /// (but differently) in the range [0, 1]. A value of 1 returns 1.
+        /// </remarks>
+        private double NormaliseNse(double value)
+        {
+            if (value > 0)
+                return value / 2 + 0.5;
+            else if (value > -10)
+                return 0.05 * value + 0.5;
+            else
+                return 0;
+        }
+
+        /// <summary>
+        /// Gets a shade of green with a given intensity in the range [0, 1].
+        /// </summary>
+        /// <param name="intensity">
+        /// Intensity of the shade in the range [0, 1].
+        /// Value of 0 represents very dark green (almost black.
+        /// Value of 1 represents full intensity.
+        /// </param>
+        /// <returns>Shade of green.</returns>
+        private Color GetGreen(double intensity)
+        {
+            if (intensity < 0 || intensity > 1)
+                throw new Exception($"value out of range: {intensity}");
+            int shade = (int)Math.Floor(intensity * 127) + 128; // min value of 128
+            return Color.FromArgb(0, shade, 0);
+        }
+
+        /// <summary>
+        /// Gets a shade of red with a given intensity in the range [0, 1].
+        /// </summary>
+        /// <param name="intensity">
+        /// Intensity of the shade in the range [0, 1].
+        /// Value of 0 represents very dark red (almost black.
+        /// Value of 1 represents full intensity.
+        /// </param>
+        /// <returns>Shade of Red.</returns>
+        private Color GetRed(double intensity)
+        {
+            if (intensity < 0 || intensity > 1)
+                throw new Exception($"value out of range: {intensity}");
+            int shade = (int)Math.Floor(intensity * 127) + 128; // min value of 128
+            return Color.FromArgb(shade, 0, 0);
+        }
+
+        /// <summary>
+        /// Gets a greyscale colour from a standardised value in the range [0, 1],
+        /// where a value of 1 represents green (perfect) and a value of
+        /// 0 represents red (bad).
+        /// </summary>
+        private Color GetGreyscaleColour(double value)
+        {
+            if (value < 0 || value > 1)
+                throw new Exception($"value out of range: {value}");
+            int shade = (int)Math.Floor(value * 255);
+            return Color.FromArgb(shade, shade, shade);
         }
 
         /// <summary>

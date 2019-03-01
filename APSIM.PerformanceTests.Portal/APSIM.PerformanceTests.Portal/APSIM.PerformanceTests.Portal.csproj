@@ -95,6 +95,7 @@
     <Content Include="RenameVariable.aspx" />
     <Content Include="RenameTable.aspx" />
     <Content Include="Site.Master" />
+    <Content Include="WebForm1.aspx" />
     <None Include="Properties\PublishProfiles\ApsimInfoPerformanceTests_Portal.pubxml" />
     <None Include="Properties\PublishProfiles\CsiroApsim_PerformanceTests_Portal.pubxml" />
     <None Include="Web.ApsimInfo.config">
@@ -224,6 +225,13 @@
       <DependentUpon>ValuesCharts.aspx</DependentUpon>
     </Compile>
     <Compile Include="WebAP_Interactions.cs" />
+    <Compile Include="WebForm1.aspx.cs">
+      <DependentUpon>WebForm1.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WebForm1.aspx.designer.cs">
+      <DependentUpon>WebForm1.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
