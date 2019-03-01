@@ -107,14 +107,14 @@
     font-family:  Verdana;
     font-size: 13px;
 	color: White;
-	background: #004844 url(Image/gridheader.jpg) repeat-x;
+	background: #004844 url(Images/gridheader.jpg) repeat-x;
 }
 .GridViewHeaderStyle_DropDown {
     font-family:  Verdana;
     font-size: 11px;
     font-weight: bold;
 	color: White;
-	background: #004844 url(Image/gridheader.jpg) repeat-x;
+	background: #004844 url(Images/gridheader.jpg) repeat-x;
 }
 
 .GridViewHeaderStyle_POValues {
@@ -122,7 +122,7 @@
     font-size: 12px;
     font-weight: bold;
 	color: White;
-	background: #004844 url(Image/gridheader.jpg) repeat-x;
+	background: #004844 url(Images/gridheader.jpg) repeat-x;
 }
 
 .GridViewRowStyle {
