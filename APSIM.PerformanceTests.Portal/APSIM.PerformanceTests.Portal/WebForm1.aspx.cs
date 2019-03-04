@@ -52,7 +52,6 @@ namespace APSIM.PerformanceTests.Portal
                     using (MemoryStream stream = new MemoryStream())
                     {
                         image.Save(stream, ImageFormat.Png);
-                        image.Save(@"C:\Users\hol430\Desktop\test.png", ImageFormat.Png);
                         Response.BinaryWrite(stream.ToArray());
                     }
                 }
