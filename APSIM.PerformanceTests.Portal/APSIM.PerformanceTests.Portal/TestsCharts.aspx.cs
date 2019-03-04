@@ -18,7 +18,7 @@ namespace APSIM.PerformanceTests.Portal
     {
         /// <summary>
         /// 'Worst' value of NSE. NSE will appear black in the heatmap if it is
-        /// less than or equal to this.
+        /// less than or equal to this. Cannot be 1.
         /// </summary>
         public const double NSEThreshold = 0;
 
@@ -360,52 +360,38 @@ namespace APSIM.PerformanceTests.Portal
         }
 
         /// <summary>
-        /// Takes an RSR value in the range [0, inf] and (somewhat arbitrarily)
-        /// normalises it, returning a number in the range [0, 1], where 1
-        /// represents a perfect fit, and 0 represents a very bad fit.
+        /// Takes an RSR value in the range [0, inf] and normalises it,
+        /// returning a number in the range [0, 1], where 1 represents a
+        /// perfect fit, and 0 represents a very bad fit.
         /// </summary>
         /// <param name="value">The RSR value.</param>
         /// <returns>
-        /// The scaling is based on the variable <see cref="RSRThreshold"/>.
-        /// The result scales linearly from input in the range [0, 1]: a value
-        /// of 0 returns 1, and a value of 1 returns 0.5.
-        /// The result then scales linearly in the range [1, `rsrThreshold`]. A
-        /// value of 1 returns 0.5, and a value of `rsrThreshold` returns 0.
-        /// A value of `rsrThreshold` or above will return 0.
+        /// A value greater than `RSRThreshold` returns 0.
+        /// Otherwise, the result scales linearly: f(0) = 1, f(RSRThreshold) = 0.
         /// </returns>
         private double NormaliseRsr(double value)
         {
-            if (value < 1)
-                return (1 - value) / 2 + 0.5; // f(0) = 1 -> f(1) = 0.5
-            else if (value < RSRThreshold)
-            {
-                double coeff = 1 / (2 * (1 - RSRThreshold));
-                return (coeff * value) - (RSRThreshold * coeff); // f(1) = 0.5 -> f(rsrThreshold) = 0
-            }
+            if (value < RSRThreshold)
+                return 1 - (value / RSRThreshold); // f(0) = 1, f(RSRThreshold) = 0
             else
                 return 0;
         }
 
         /// <summary>
-        /// Takes an NSE value in the range [-inf, 1] and
-        /// (somewhat arbitrarily) normalises it, returning
+        /// Takes an NSE value in the range [-inf, 1] normalises it, returning
         /// a number in the range [0, 1], where 1 represents a
-        /// perfect fit, and 0 represents a very bad fit.
+        /// perfect fit, and 0 represents a very bad fit (NSE < <see cref="NSEThreshold"/>).
         /// </summary>
         /// <param name="value">The NSE value.</param>
         /// <returns></returns>
         /// <remarks>
-        /// `nseThreshold` and below will return 0.
-        /// The result scales linearly from input in the range [`nseThreshold`, 0].
-        /// A value of 0 returns 0.5. The result then scales linearly
-        /// in the range [0, 1]. A value of 1 returns 1.
+        /// A value less than `NSEThreshold` will return 0.
+        /// Otherwise, the result scales linearly: f(1) = 1, f(NSEThreshold) = 0.
         /// </remarks>
         private static double NormaliseNse(double value)
         {
-            if (value > 0)
-                return value / 2 + 0.5;
-            else if (value > NSEThreshold)
-                return (-0.5 / NSEThreshold) * value + 0.5;
+            if (value > NSEThreshold)
+                return (value - 1) / (1 - NSEThreshold) + 1; // f(1) = 1, f(NSEThreshold) = 0
             else
                 return 0;
         }

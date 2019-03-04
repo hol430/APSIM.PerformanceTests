@@ -11,13 +11,13 @@
         <h1>Graphical Results Guide</h1>
         <h2>Heatmap Explanation</h2>
         <p>
-            Unchanged results are a shade of grey, ranging from black if the stat is considered poor (RSR > 1 or NSE < 0), to white if the stat is considered good.
+            Unchanged results are a shade of grey, ranging from black if the stat is considered poor (RSR > <asp:Label ID="lblRSRThreshold" runat="server" Text="Label"></asp:Label> or NSE < <asp:Label ID="lblNSEThreshold" runat="server" Text="Label"></asp:Label>), to white if the stat is considered good.
         </p>
         <p>
             Improved results are a shade of green; darker for minor improvements, and brighter for more significant improvements.
         </p>
         <p>
-            Results which have worsened are a shade of red; the brighter the shade, the more significant the change.
+            Results which have worsened are a shade of red; the darker the shade, the more significantly the result has worsened.
         </p>
         <h2>Bar Chart Guide</h2>
         <ul>

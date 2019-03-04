@@ -11,5 +11,23 @@ namespace APSIM.PerformanceTests.Portal {
     
     
     public partial class ChartsHelp {
+        
+        /// <summary>
+        /// lblRSRThreshold control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRSRThreshold;
+        
+        /// <summary>
+        /// lblNSEThreshold control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblNSEThreshold;
     }
 }
