@@ -11,7 +11,7 @@
         <h1>Graphical Results Guide</h1>
         <h2>Heatmap Explanation</h2>
         <p>
-            Unchanged results are a shade of grey, ranging from black if the stat is considered poor (RSR > 10 or NSE < -10), to white if the stat is considered good.
+            Unchanged results are a shade of grey, ranging from black if the stat is considered poor (RSR > 1 or NSE < 0), to white if the stat is considered good.
         </p>
         <p>
             Improved results are a shade of green; darker for minor improvements, and brighter for more significant improvements.

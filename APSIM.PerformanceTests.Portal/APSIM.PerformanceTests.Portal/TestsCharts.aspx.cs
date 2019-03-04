@@ -20,13 +20,13 @@ namespace APSIM.PerformanceTests.Portal
         /// 'Worst' value of NSE. NSE will appear black in the heatmap if it is
         /// less than or equal to this.
         /// </summary>
-        public const double NSEThreshold = -10;
+        public const double NSEThreshold = 0;
 
         /// <summary>
         /// 'Worst' value of RSR. RSR will appear black in the heatmap if it is
         /// greater than or equal to this.
         /// </summary>
-        public const double RSRThreshold = 10;
+        public const double RSRThreshold = 1;
 
         #region Page and Control Events
         protected void Page_Load(object sender, EventArgs e)
@@ -333,7 +333,7 @@ namespace APSIM.PerformanceTests.Portal
             else if (item.PassedTest != null && (bool)item.PassedTest)
                 return GetGreyscaleColour(GetColourIntensity(item));
             else
-                return GetRed(intensity);
+                return GetRed(1 - intensity); // Darker red = worse, so invert the intensity.
         }
 
         /// <summary>
