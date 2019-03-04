@@ -19,7 +19,7 @@
             </td>
         </tr>
         <tr>
-            <td colspan="2"></td>
+            <td colspan="2"><a href="ChartsHelp.aspx">What does this mean?!</a></td>
         </tr>
         <tr>
             <td colspan="2">

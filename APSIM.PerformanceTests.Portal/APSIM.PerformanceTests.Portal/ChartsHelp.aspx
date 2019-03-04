@@ -9,6 +9,16 @@
 <body>
     <div>
         <h1>Graphical Results Guide</h1>
+        <h2>Heatmap Explanation</h2>
+        <p>
+            Unchanged results are a shade of grey, ranging from black if the stat is considered poor (RSR > 10 or NSE < -10), to white if the stat is considered good.
+        </p>
+        <p>
+            Improved results are a shade of green; darker for minor improvements, and brighter for more significant improvements.
+        </p>
+        <p>
+            Results which have worsened are a shade of red; the brighter the shade, the more significant the change.
+        </p>
         <h2>Bar Chart Guide</h2>
         <ul>
             <li>Black for accepted results that are considered poor - when the absolute value of the statistic is greater than 1</li>
@@ -18,10 +28,6 @@
             <li>Red for current results which have worsened</li>
             <li>Green for current results which have improved</li>
         </ul>
-        <h2>Heatmap Explanation</h2>
-        <p>
-            The heatmap only displays statistics for data in this pull request. The colour scheme is the same as for the bar charts, except that black and grey do not apply since the accepted stats are not shown.
-        </p>
     </div>
 </body>
 </html>

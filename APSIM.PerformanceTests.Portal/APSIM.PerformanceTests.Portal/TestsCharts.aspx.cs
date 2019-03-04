@@ -16,8 +16,17 @@ namespace APSIM.PerformanceTests.Portal
 {
     public partial class TestsCharts : System.Web.UI.Page
     {
-        #region Constants and variables
-        #endregion
+        /// <summary>
+        /// 'Worst' value of NSE. NSE will appear black in the heatmap if it is
+        /// less than or equal to this.
+        /// </summary>
+        public const double NSEThreshold = -10;
+
+        /// <summary>
+        /// 'Worst' value of RSR. RSR will appear black in the heatmap if it is
+        /// greater than or equal to this.
+        /// </summary>
+        public const double RSRThreshold = 10;
 
         #region Page and Control Events
         protected void Page_Load(object sender, EventArgs e)
@@ -67,8 +76,7 @@ namespace APSIM.PerformanceTests.Portal
             string holdTitle = string.Empty;
             string holdPO_Id = string.Empty;
             string tooltip = string.Empty;
-            //string[] xValues = { "September", "October", "November", "December" };
-            //double[] yValues = { 15, 60, 12, 13 };
+
             GenerateHeatmap(POTestsList);
 
             List<string> AcceptedXValues = new List<string>();
@@ -81,10 +89,7 @@ namespace APSIM.PerformanceTests.Portal
 
             Color currColour, accColour;
             int chartNo = 0;
-            HyperLink help = new HyperLink();
-            help.Text = "Help";
-            help.NavigateUrl = "/ChartsHelp.aspx";
-            phCharts.Controls.Add(help);
+
             foreach (vPredictedObservedTests item in POTestsList)
             {
 
@@ -214,19 +219,23 @@ namespace APSIM.PerformanceTests.Portal
             TableRow row;
             TableCell cell;
             ImageButton dataPoint; // This represents one data point (pixel) in a heatmap.
-            HtmlGenericControl span; // This wraps the heatmap inside each cell.
+            HtmlGenericControl div; // This wraps the heatmap inside each cell.
+
             // First, create a row of column headers, containing the test names.
-            string[] testNames = poTestsList.Select(po => po.Test).Distinct().ToArray();
+            // For now, we will not graph RMSE, as it is in the units of the variable it describes.
+            string[] testNames = poTestsList.Select(po => po.Test).Distinct().Where(t => !t.Equals("RMSE", StringComparison.InvariantCultureIgnoreCase)).ToArray();
             row = new TableRow();
 
             // Left-most column contains model names.
             cell = new TableHeaderCell();
             cell.Text = "Model Name";
             row.Cells.Add(cell);
-            foreach (string test in testNames)
+
+            // The remaining cells in the top row contain the test names (nse, r2, etc).
+            foreach (string testName in testNames)
             {
                 cell = new TableHeaderCell();
-                cell.Text = test;
+                cell.Text = testName;
                 row.Cells.Add(cell);
             }
             heatmapTable.Rows.Add(row);
@@ -243,18 +252,22 @@ namespace APSIM.PerformanceTests.Portal
 
                 foreach (var test in model.GroupBy(v => v.Test))
                 {
+                    // We don't want to generate a heatmap for every test.
+                    if (!testNames.Contains(test.Key))
+                        continue;
+
                     // Each cell contains a heatmap of data. We display this in
                     // a square rather than a line, to conserve space.
                     cell = new TableCell();
 
-                    // Each heatmap goes inside a span, which goes inside a cell.
+                    // Each heatmap goes inside a div, which goes inside a cell.
                     // This means we can put a border around the heatmap, not the
                     // cell, which can be bigger than the heatmap. Without the border,
                     // it can be very difficult to see where the heatmaps start/end.
-                    span = new HtmlGenericControl("div");
-                    span.Style.Add("border", "1px solid black");
-                    span.Style.Add("display", "inline-block");
-                    span.Style.Add("overflow", "hidden");
+                    div = new HtmlGenericControl("div");
+                    div.Style.Add("border", "1px solid black");
+                    div.Style.Add("display", "inline-block");
+                    div.Style.Add("overflow", "hidden");
 
                     // Area of the heatmap will be the smallest square number which
                     // is larger than the number of data points in the heatmap.
@@ -284,9 +297,9 @@ namespace APSIM.PerformanceTests.Portal
 
                         dataPoint.ToolTip = item.Variable + " " + item.Test;
                         dataPoint.Click += OnHeatmapPixelClicked;
-                        span.Controls.Add(dataPoint);
+                        div.Controls.Add(dataPoint);
                     }
-                    cell.Controls.Add(span);
+                    cell.Controls.Add(div);
                     row.Cells.Add(cell);
                 }
                 heatmapTable.Rows.Add(row);
@@ -301,16 +314,20 @@ namespace APSIM.PerformanceTests.Portal
         /// <remarks>
         /// TODO: Allow for different colours and automatic image generation.
         /// </remarks>
-        private string GetImageUrl(vPredictedObservedTests item)
+        private static string GetImageUrl(vPredictedObservedTests item)
         {
             Color colour = GetColour(item);
             return $"/WebForm1.aspx?a={colour.A}&r={colour.R}&g={colour.G}&b={colour.B}";
         }
 
-        private Color GetColour(vPredictedObservedTests item)
+        /// <summary>
+        /// Generates a colour for an item, for use in the heatmap.
+        /// </summary>
+        /// <param name="item">The item for which we need a colour.</param>
+        private static Color GetColour(vPredictedObservedTests item)
         {
             double intensity = Math.Abs( ((double)item.Current - (double)item.Accepted) / (double)item.Accepted);
-            intensity = Math.Min(intensity, 1); // Ensure it's less than 1.
+            intensity = Math.Min(intensity, 1); // Upper bound = 1.
             if (item.IsImprovement != null && (bool)item.IsImprovement)
                 return GetGreen(intensity);
             else if (item.PassedTest != null && (bool)item.PassedTest)
@@ -319,7 +336,13 @@ namespace APSIM.PerformanceTests.Portal
                 return GetRed(intensity);
         }
 
-        private double GetColourIntensity(vPredictedObservedTests item)
+        /// <summary>
+        /// Gets an estimation of the 'goodness' of an item's result, for use
+        /// in the heatmap.
+        /// </summary>
+        /// <param name="item">The item for which we need an intensity.</param>
+        /// <returns>A double in the range [0, 1].</returns>
+        private static double GetColourIntensity(vPredictedObservedTests item)
         {
             switch (item.Test.ToUpper())
             {
@@ -329,8 +352,6 @@ namespace APSIM.PerformanceTests.Portal
                     return NormaliseNse((double)item.Current);
                 case "R2":
                     return (double)item.Current;
-                case "RMSE":
-                    return NormaliseNse(1 - (double)item.Current);
                 case "RSR":
                     return NormaliseNse(1 - (double)item.Current);
                 default:
@@ -339,39 +360,68 @@ namespace APSIM.PerformanceTests.Portal
         }
 
         /// <summary>
+        /// Takes an RSR value in the range [0, inf] and (somewhat arbitrarily)
+        /// normalises it, returning a number in the range [0, 1], where 1
+        /// represents a perfect fit, and 0 represents a very bad fit.
+        /// </summary>
+        /// <param name="value">The RSR value.</param>
+        /// <returns>
+        /// The scaling is based on the variable <see cref="RSRThreshold"/>.
+        /// The result scales linearly from input in the range [0, 1]: a value
+        /// of 0 returns 1, and a value of 1 returns 0.5.
+        /// The result then scales linearly in the range [1, `rsrThreshold`]. A
+        /// value of 1 returns 0.5, and a value of `rsrThreshold` returns 0.
+        /// A value of `rsrThreshold` or above will return 0.
+        /// </returns>
+        private double NormaliseRsr(double value)
+        {
+            if (value < 1)
+                return (1 - value) / 2 + 0.5; // f(0) = 1 -> f(1) = 0.5
+            else if (value < RSRThreshold)
+            {
+                double coeff = 1 / (2 * (1 - RSRThreshold));
+                return (coeff * value) - (RSRThreshold * coeff); // f(1) = 0.5 -> f(rsrThreshold) = 0
+            }
+            else
+                return 0;
+        }
+
+        /// <summary>
         /// Takes an NSE value in the range [-inf, 1] and
         /// (somewhat arbitrarily) normalises it, returning
         /// a number in the range [0, 1], where 1 represents a
         /// perfect fit, and 0 represents a very bad fit.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The NSE value.</param>
         /// <returns></returns>
         /// <remarks>
-        /// -10 and below will return 0.
-        /// The result scales linearly from input in the range [-10, 0].
-        /// A value of 0 returns 0.5. The result then scales lienarly
-        /// (but differently) in the range [0, 1]. A value of 1 returns 1.
+        /// `nseThreshold` and below will return 0.
+        /// The result scales linearly from input in the range [`nseThreshold`, 0].
+        /// A value of 0 returns 0.5. The result then scales linearly
+        /// in the range [0, 1]. A value of 1 returns 1.
         /// </remarks>
-        private double NormaliseNse(double value)
+        private static double NormaliseNse(double value)
         {
             if (value > 0)
                 return value / 2 + 0.5;
-            else if (value > -10)
-                return 0.05 * value + 0.5;
+            else if (value > NSEThreshold)
+                return (-0.5 / NSEThreshold) * value + 0.5;
             else
                 return 0;
         }
 
         /// <summary>
         /// Gets a shade of green with a given intensity in the range [0, 1].
+        /// Higher number represents more intense shade of green.
+        /// A value of 0 will return #008000.
         /// </summary>
         /// <param name="intensity">
         /// Intensity of the shade in the range [0, 1].
-        /// Value of 0 represents very dark green (almost black.
-        /// Value of 1 represents full intensity.
+        /// Value of 0 represents very dark green (#008000).
+        /// Value of 1 represents full intensity (#FF0000).
         /// </param>
         /// <returns>Shade of green.</returns>
-        private Color GetGreen(double intensity)
+        private static Color GetGreen(double intensity)
         {
             if (intensity < 0 || intensity > 1)
                 throw new Exception($"value out of range: {intensity}");
@@ -381,14 +431,15 @@ namespace APSIM.PerformanceTests.Portal
 
         /// <summary>
         /// Gets a shade of red with a given intensity in the range [0, 1].
+        /// Higher number represents more intense shade of red.
         /// </summary>
         /// <param name="intensity">
         /// Intensity of the shade in the range [0, 1].
-        /// Value of 0 represents very dark red (almost black.
-        /// Value of 1 represents full intensity.
+        /// Value of 0 represents very dark red (#800000).
+        /// Value of 1 represents full intensity (#FF0000).
         /// </param>
         /// <returns>Shade of Red.</returns>
-        private Color GetRed(double intensity)
+        private static Color GetRed(double intensity)
         {
             if (intensity < 0 || intensity > 1)
                 throw new Exception($"value out of range: {intensity}");
@@ -398,10 +449,10 @@ namespace APSIM.PerformanceTests.Portal
 
         /// <summary>
         /// Gets a greyscale colour from a standardised value in the range [0, 1],
-        /// where a value of 1 represents green (perfect) and a value of
-        /// 0 represents red (bad).
+        /// where a value of 1 represents white (perfect) and a value of
+        /// 0 represents black (bad).
         /// </summary>
-        private Color GetGreyscaleColour(double value)
+        public static Color GetGreyscaleColour(double value)
         {
             if (value < 0 || value > 1)
                 throw new Exception($"value out of range: {value}");
