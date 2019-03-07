@@ -48,14 +48,11 @@
             </asp:TemplateField>
         </Columns>
     </asp:GridView>
-    
+    <asp:Label ID="lblAcceptedDetails" runat="server" Text="Accepted Pull Request Details"></asp:Label>
+    <br />
+    <br />
     <br />
     <table>
-        <tr>
-            <td>
-                <asp:Label ID="lblAcceptedDetails" runat="server" CssClass="ScreenLabel" Text="Accepted Pull Request Details"></asp:Label>
-            </td>
-        </tr>
         <tr>
             <td>
 <%--                <asp:Button ID="btnDifferences" runat="server" Text="Pull Request Tests - Differences" Visible="false" OnClick="btnDifferences_Click"/>--%>
