@@ -275,7 +275,7 @@ namespace APSIM.PerformanceTests.Collector
 
             string searchDir = ConfigurationManager.AppSettings["searchDirectory"].ToString();
 #if DEBUG
-            searchDir = @"C:/ApsimWork/Tests/;C:/ApsimWork/Prototypes/";
+            searchDir = @"C:/ApsimX/Tests";
 #endif
 
             string[] filePaths = searchDir.Split(';');
