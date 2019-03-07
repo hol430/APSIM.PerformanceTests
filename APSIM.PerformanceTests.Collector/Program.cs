@@ -99,7 +99,9 @@ namespace APSIM.PerformanceTests.Collector
 
                     if (pullCmd == "AddToDatabase")
                     {
-                        RetrieveData(pullId, runDate, submitDetails);
+                        bool error = RetrieveData(pullId, runDate, submitDetails);
+                        if (error)
+                            retValue = 1;
                         pullCmd = "AddToDatabase";
                     }
                     //Console.ReadKey();      //this will pause the screen so that we can see the output in the console window
@@ -263,11 +265,16 @@ namespace APSIM.PerformanceTests.Collector
         /// <summary>
         /// THIS IS THE MAIN FUNCTION WITHIN THIS PROGRAM
         /// Retreieves all Apsimx simulation files with for the search directory specified in the App.config file
-        /// and then process these files
+        /// and then process these files.
+        /// 
+        /// Returns true iff an error is encountered.
         /// </summary>
         /// <param name="pullId"></param>
-        private static void RetrieveData(int pullId, DateTime runDate, string submitDetails)
+        /// <param name="runDate"></param>
+        /// <param name="submitDetails"></param>
+        private static bool RetrieveData(int pullId, DateTime runDate, string submitDetails)
         {
+            bool error = false;
             //"C:/Jenkins/workspace/1. GitHub pull request/ApsimX/Tests/C:/Jenkins/workspace/1. GitHub pull request/ApsimX/Prototypes/";
 
             //need to allow for "Tests" and "ProtoTypes" directory
@@ -315,6 +322,7 @@ namespace APSIM.PerformanceTests.Collector
                             }
                             catch (Exception ex)
                             {
+                                error = true;
                                 WriteToLogFile(string.Format("    ERROR Posting Apsim File: {0}, Pull Request Id {1}, dated {2}: {3}", apsimFile.FileName, pullId, runDate,  ex.Message.ToString()));
                             }
 
@@ -322,6 +330,7 @@ namespace APSIM.PerformanceTests.Collector
                     }
                     catch (Exception ex)
                     {
+                        error = true;
                         WriteToLogFile(ex.Message);
                     }
 
@@ -337,6 +346,7 @@ namespace APSIM.PerformanceTests.Collector
             //{
                 UpdatePullRequestsPassedTestsStatus(pullId).Wait();
             //}
+            return error;
         }
 
         /// <summary>
