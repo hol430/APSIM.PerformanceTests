@@ -299,8 +299,6 @@ public class PredictedObservedDS
         }
     }
 
-
-
     public static List<vPredictedObservedTests> GetCurrentAcceptedTests(int pullRequestId)
     {
         using (ApsimDBContext context = new ApsimDBContext())
@@ -326,7 +324,6 @@ public class PredictedObservedDS
             return results;
         }
     }
-
 
     /// <summary>
     /// This is used tor retrieve the Tests details for a specifice Predicted Observed Id and variable.

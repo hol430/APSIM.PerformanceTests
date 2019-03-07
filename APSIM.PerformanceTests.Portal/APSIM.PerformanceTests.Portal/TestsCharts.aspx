@@ -19,7 +19,12 @@
             </td>
         </tr>
         <tr>
-            <td colspan="2"></td>
+            <td colspan="2"><a href="ChartsHelp.aspx">What does this mean?!</a></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <asp:PlaceHolder ID="phHeatmap" runat="server"></asp:PlaceHolder>
+            </td>
         </tr>
     </table>
     <asp:UpdatePanel ID="upCharts" runat="server">

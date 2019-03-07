@@ -2,7 +2,7 @@
     Title="APSIM PerformanceTests Tests Grid"  %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-
+    <script src="JavaScript/TestsGrids.js" type="text/javascript"></script>
     <table style="width: 100%">
         <tr>
             <td style="width:auto">
@@ -23,6 +23,7 @@
             <td colspan="2">&nbsp;</td>
         </tr>
     </table>
+    <label><input type="checkbox" ID="chkFilter" onchange="OnToggleFilter()" />Only show changed stats</label>
     <asp:UpdatePanel ID="upGrids" runat="server">
         <ContentTemplate>
             <asp:PlaceHolder ID="phGrids" runat="server"></asp:PlaceHolder>

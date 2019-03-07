@@ -22,20 +22,22 @@ namespace APSIM.PerformanceTests.Portal
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Request.QueryString["PULLREQUEST"] != null)
+            if (!IsPostBack)
             {
-                int pullRequestId = int.Parse(Request.QueryString["PULLREQUEST"].ToString());
-                hfPullRequestID.Value = pullRequestId.ToString();
-                lblPullRequest.Text = "Pull Request Id: " + pullRequestId.ToString();
-                RetrieveDataAndBindGrids();
+                if (Request.QueryString["PULLREQUEST"] != null)
+                {
+                    int pullRequestId = int.Parse(Request.QueryString["PULLREQUEST"].ToString());
+                    hfPullRequestID.Value = pullRequestId.ToString();
+                    lblPullRequest.Text = "Pull Request Id: " + pullRequestId.ToString();
+                    RetrieveDataAndBindGrids();
+                }
+                else
+                {
+                    hfPullRequestID.Value = "3551";
+                    lblPullRequest.Text = "Pull Request Id: 3551";
+                    RetrieveDataAndBindGrids();
+                }
             }
-            else
-            {
-                hfPullRequestID.Value = "2236";
-                lblPullRequest.Text = "Pull Request Id: 2236";
-                RetrieveDataAndBindGrids();
-            }
-
         }
 
         protected void btnBack_Click(object sender, EventArgs e)
@@ -56,6 +58,7 @@ namespace APSIM.PerformanceTests.Portal
 
         private void RetrieveDataAndBindGrids()
         {
+            AddPerformanceRatingTable();
             int pullRequestId = int.Parse(hfPullRequestID.Value.ToString());
             List<vPredictedObservedTests> POTestsList = PredictedObservedDS.GetCurrentAcceptedTestsFiltered(pullRequestId);
 
@@ -76,7 +79,7 @@ namespace APSIM.PerformanceTests.Portal
             string NSE_Current = string.Empty, NSE_Accepted = string.Empty, NSE_Difference = string.Empty;
             string Bias_Current = string.Empty, Bias_Accepted = string.Empty, Bias_Difference = string.Empty;
             string RSR_Current = string.Empty, RSR_Accepted = string.Empty, RSR_Difference = string.Empty;
-
+            bool hasChanged = false;
 
             Table table = new Table();
             table.CssClass = "TGR_Table";
@@ -108,7 +111,7 @@ namespace APSIM.PerformanceTests.Portal
                     if (holdVariable != string.Empty)
                     {
                         //then we can print the variable details
-                        table.Rows.Add(DefineTableVariableRow(holdVariable, currPO_ID, N_Current, N_Accepted, RMSE_Current, RMSE_Accepted, RMSE_Difference, NSE_Current, NSE_Accepted, NSE_Difference, RSR_Current, RSR_Accepted, RSR_Difference));
+                        table.Rows.Add(DefineTableVariableRow(holdVariable, currPO_ID, N_Current, N_Accepted, RMSE_Current, RMSE_Accepted, RMSE_Difference, NSE_Current, NSE_Accepted, NSE_Difference, RSR_Current, RSR_Accepted, RSR_Difference, hasChanged));
                         N_Current = string.Empty;
                         N_Accepted = string.Empty;
                         RMSE_Current = string.Empty;
@@ -121,11 +124,12 @@ namespace APSIM.PerformanceTests.Portal
                         RSR_Accepted = string.Empty;
                         RSR_Difference = string.Empty;
                         currPO_ID = string.Empty;
+                        hasChanged = false;
                     }
 
                     if (item.FileName != holdFileName)
                     {
-                        table.Rows.Add(DefineBlankRow());
+                        table.Rows[table.Rows.Count - 1].Style.Add("margin-bottom", "1em");
                         table.Rows.Add(DefineSimNameRow(item.FileName));
                         holdFileName = item.FileName;
                         firstVariable = true;
@@ -151,23 +155,21 @@ namespace APSIM.PerformanceTests.Portal
 
                 bool isImprovement = false;
                 if (item.IsImprovement != null)
-                {
                     isImprovement = (bool)item.IsImprovement;
-                }
 
                 bool passedTest = false;
                 if (item.PassedTest != null)
-                {
                     passedTest = (bool)item.PassedTest;
-                }
 
                 diff = string.Empty;
                 if (isImprovement == true)
                 {
+                    hasChanged = true;
                     diff = "<span style=\"font-weight: bold; color: Green;\">" + ArrowChars + "</span>";
                 }
                 else if (passedTest != true)
                 {
+                    hasChanged = true;
                     diff = "<span style=\"font-weight: bold; color: Red;\">" + CrossChars + "</span>";
                 }
 
@@ -215,12 +217,10 @@ namespace APSIM.PerformanceTests.Portal
             if (holdVariable != string.Empty)
             {
                 //then we can print the variable details
-                table.Rows.Add(DefineTableVariableRow(holdVariable, currPO_ID, N_Current, N_Accepted, RMSE_Current, RMSE_Accepted, RMSE_Difference, NSE_Current, NSE_Accepted, NSE_Difference, RSR_Current, RSR_Accepted, RSR_Difference));
+                table.Rows.Add(DefineTableVariableRow(holdVariable, currPO_ID, N_Current, N_Accepted, RMSE_Current, RMSE_Accepted, RMSE_Difference, NSE_Current, NSE_Accepted, NSE_Difference, RSR_Current, RSR_Accepted, RSR_Difference, hasChanged));
             }
             phGrids.Controls.Add(table);
-            AddPerformanceRatingTable();
         }
-
 
         private TableRow DefineTableStructure()
         {
@@ -326,7 +326,7 @@ namespace APSIM.PerformanceTests.Portal
         private TableRow DefineBlankRow()
         {
             TableRow row = new TableRow();
-
+            row.CssClass = "blank";
             TableCell cell = new TableCell();
             cell.ColumnSpan = _TableColCount;
             cell.Text = "&nbsp;";
@@ -338,7 +338,7 @@ namespace APSIM.PerformanceTests.Portal
         private TableRow DefineSimNameRow(string simName)
         {
             TableRow row = new TableRow();
-
+            row.CssClass = "SimulationName";
             TableCell cell = new TableCell();
             cell.ColumnSpan = _TableColCount;
             cell.CssClass = "TGCell_SimName";
@@ -351,7 +351,7 @@ namespace APSIM.PerformanceTests.Portal
         private TableRow DefineTableRow(string POtableName)
         {
             TableRow row = new TableRow();
-
+            row.CssClass = "TableName";
             TableCell cell = new TableCell();
             cell.Text = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
             row.Cells.Add(cell);
@@ -415,11 +415,12 @@ namespace APSIM.PerformanceTests.Portal
         }
 
         private TableRow DefineTableVariableRow(string variable, string currPO_ID, string currentN, string acceptedN, string currentRMSE, string acceptRMSE, string diffRMSE, string currentNSE, string acceptNSE, string diffNSE,
-           string currentRSR, string acceptRSR, string diffRSR)
+           string currentRSR, string acceptRSR, string diffRSR, bool hasChanged)
         {
             TableRow row = new TableRow();
             row.CssClass = "TGR_Cell";
-
+            if (!hasChanged)
+                row.CssClass += " nodiff";
             //this column holds the TableName
             TableCell cell = new TableCell();
             cell.Text = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
@@ -702,11 +703,14 @@ namespace APSIM.PerformanceTests.Portal
             table.Rows.Add(row);
 
             phGrids.Controls.Add(new LiteralControl("<br />"));
-            phGrids.Controls.Add(new LiteralControl("<br />"));
             phGrids.Controls.Add(table);
+            phGrids.Controls.Add(new LiteralControl("<br />"));
+            // TODO: 1% threshold is hardcoded here, but it could easily change.
+            // This actual number is APSIM.PerformanceTests.Service.Tests.Threshold.
+            phGrids.Controls.Add(new LiteralControl("<strong class=\"PR_Message\">Changes are only considered significant if they differ from the accepted stat by more than 1%.</strong>"));
+            phGrids.Controls.Add(new LiteralControl("<br />"));
             phGrids.Controls.Add(new LiteralControl("<br />"));
         }
         #endregion
-
     }
 }

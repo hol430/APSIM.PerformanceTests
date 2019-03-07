@@ -14,6 +14,12 @@ namespace APSIM.PerformanceTests.Service
     public class Tests
     {
         /// <summary>
+        /// Stat changes are only considered significant if they are greather
+        /// than this value, which is a proportion of the accepted value.
+        /// </summary>
+        public const double Threshold = 0.01; // 1%
+
+        /// <summary>
         /// Run tests
         /// </summary>
         public static DataTable DoValidationTest(string PO_Name, DataTable POtable, DataTable acceptedStats)
@@ -244,6 +250,7 @@ namespace APSIM.PerformanceTests.Service
                         diffValue = currentValue - acceptedValue;
 
                         row["Difference"] = diffValue;
+                        bool changeIsSignificant = Math.Abs(diffValue) > (Threshold * Math.Abs(acceptedValue));
 
                         //only do this for 'n'
                         if (row["Test"].ToString() == "n" && diffValue > 0)
@@ -253,33 +260,33 @@ namespace APSIM.PerformanceTests.Service
                         else
                         {
                             //row["PassedTest"] = Math.Abs(Convert.ToDouble(row["Difference"])) > Math.Abs(Convert.ToDouble(row["Accepted"])) * 0.01 ? sigIdent : "1";
-                            row["PassedTest"] = Math.Abs(diffValue) > Math.Abs(acceptedValue) * 0.01 ? sigIdent : "1";
+                            row["PassedTest"] = changeIsSignificant ? sigIdent : "1";
                         }
 
                         bool isImprovement = false;
-                        switch (row["Test"].ToString())
+                        if (changeIsSignificant)
                         {
-                            case "R2":  //if the current is GREATER than accepted (ie difference is POSITIVE) then is an improvement
-                                //if (row["Variable"].ToString() == "GrainWt")
-                                //{
-                                //    row["Variable"] = "GrainWt";
-                                //}
-                                if (currentValue > acceptedValue) { isImprovement = true; }
-                                break;
+                            // Don't set isImprovement to true unless the change is significant.
+                            switch (row["Test"].ToString())
+                            {
+                                case "R2":  //if the current is GREATER than accepted (ie difference is POSITIVE) then is an improvement
+                                    if (currentValue > acceptedValue) { isImprovement = true; }
+                                    break;
 
-                            case "RMSE":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
-                                if (currentValue < acceptedValue) { isImprovement = true; }
-                                break;
+                                case "RMSE":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
+                                    if (currentValue < acceptedValue) { isImprovement = true; }
+                                    break;
 
-                            case "NSE":  //if the current value is closer to ZERO than the accepted , then it is an improvement
-                                //if (Math.Abs(currentValue) < Math.Abs(acceptedValue)) { isImprovement = true; }
-                                //modLMC - 15/11/2017 - change to this rule - after discussion with Dean (request from Hamish).
-                                if (currentValue > acceptedValue) { isImprovement = true; }
-                                break;
+                                case "NSE":  //if the current value is closer to ZERO than the accepted , then it is an improvement
+                                             //if (Math.Abs(currentValue) < Math.Abs(acceptedValue)) { isImprovement = true; }
+                                             //modLMC - 15/11/2017 - change to this rule - after discussion with Dean (request from Hamish).
+                                    if (currentValue > acceptedValue) { isImprovement = true; }
+                                    break;
 
-                            case "RSR":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
-                                if (currentValue < acceptedValue) { isImprovement = true; }
-                                break;
+                                case "RSR":  //if the current is LESS than accepted (ie difference is NEGATIVE) then is an improvement
+                                    if (currentValue < acceptedValue) { isImprovement = true; }
+                                    break;
+                            }
                         }
                         if (isImprovement == true)
                         {

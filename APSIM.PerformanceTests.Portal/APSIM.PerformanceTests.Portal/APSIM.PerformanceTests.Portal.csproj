@@ -24,6 +24,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AjaxControlToolkit, Version=17.1.1.0, Culture=neutral, PublicKeyToken=28f01b0e84b6d53e, processorArchitecture=MSIL">
@@ -80,14 +81,21 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ChartsHelp.aspx" />
     <Content Include="Compare.aspx" />
     <Content Include="Difference.aspx" />
     <Content Include="Gridstyle.css" />
+    <Content Include="Images\green.png" />
     <Content Include="Images\grid-alt.png" />
+    <Content Include="Images\orange.png" />
+    <Content Include="Images\red.png" />
+    <Content Include="Images\white.png" />
+    <Content Include="Javascript\TestsGrids.js" />
     <Content Include="packages.config" />
     <Content Include="RenameVariable.aspx" />
     <Content Include="RenameTable.aspx" />
     <Content Include="Site.Master" />
+    <Content Include="WebForm1.aspx" />
     <None Include="Properties\PublishProfiles\ApsimInfoPerformanceTests_Portal.pubxml" />
     <None Include="Properties\PublishProfiles\CsiroApsim_PerformanceTests_Portal.pubxml" />
     <None Include="Web.ApsimInfo.config">
@@ -118,6 +126,13 @@
     <Compile Include="App_Code\AcceptStatsLogDS.cs" />
     <Compile Include="App_Code\ApsimFilesDS.cs" />
     <Compile Include="App_Code\PredictedObservedDS.cs" />
+    <Compile Include="ChartsHelp.aspx.cs">
+      <DependentUpon>ChartsHelp.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ChartsHelp.aspx.designer.cs">
+      <DependentUpon>ChartsHelp.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Compare.aspx.cs">
       <DependentUpon>Compare.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -132,6 +147,7 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Models\PODataPoint.cs" />
     <Compile Include="Models\PORename.cs" />
     <Compile Include="PODetails.aspx.cs">
       <DependentUpon>PODetails.aspx</DependentUpon>
@@ -209,6 +225,13 @@
       <DependentUpon>ValuesCharts.aspx</DependentUpon>
     </Compile>
     <Compile Include="WebAP_Interactions.cs" />
+    <Compile Include="WebForm1.aspx.cs">
+      <DependentUpon>WebForm1.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WebForm1.aspx.designer.cs">
+      <DependentUpon>WebForm1.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

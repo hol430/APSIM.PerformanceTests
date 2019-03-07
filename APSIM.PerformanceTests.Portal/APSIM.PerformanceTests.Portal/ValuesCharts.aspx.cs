@@ -73,12 +73,12 @@ namespace APSIM.PerformanceTests.Portal
             }
 
             List<vSimulationPredictedObserved> POCurrentValuesList = PredictedObservedDS.GetCurrentAcceptedSimulationValues(currPODetails.ID, (int)currPODetails.AcceptedPredictedObservedDetailsID);
-            string holdVariable = string.Empty, holdSimulationName = string.Empty;
-            string tooltip = string.Empty, textAnnotation = string.Empty ;
-            List<double> AcceptedXValues = new List<double>();
-            List<double> AcceptedYValues = new List<double>();
-            List<double> CurrentXValues = new List<double>();
-            List<double> CurrentYValues = new List<double>();
+            string holdVariable = string.Empty;
+            string holdSimulationName = string.Empty;
+            string tooltip = string.Empty;
+            string textAnnotation = string.Empty;
+            List<PODataPoint> acceptedData = new List<PODataPoint>();
+            List<PODataPoint> currentData = new List<PODataPoint>();
             double maxXYValue = 0;
             bool newchart = false;
             int chartNo = 0;
@@ -99,17 +99,15 @@ namespace APSIM.PerformanceTests.Portal
                 if (newchart == true)
                 {
                     //create the chart
-                    if ((CurrentXValues.Count > 0) || (AcceptedXValues.Count > 0))
+                    if ((currentData.Count > 0) || (currentData.Count > 0))
                     {
                         chartNo += 1;
                         textAnnotation = GetPredictedObservedTests(currPODetails.ID, holdVariable);
-                        BindCurrentAcceptedChart(chartNo, holdVariable, currPODetails.ID, tooltip, CurrentXValues.ToArray(), CurrentYValues.ToArray(), AcceptedXValues.ToArray(), AcceptedYValues.ToArray(), maxXYValue, textAnnotation);
+                        BindCurrentAcceptedChart(chartNo, holdVariable, currPODetails.ID, tooltip, currentData.ToArray(), acceptedData.ToArray(), maxXYValue, textAnnotation);
                     }
                     //reset the variables
-                    AcceptedXValues = new List<double>();
-                    AcceptedYValues = new List<double>();
-                    CurrentXValues = new List<double>();
-                    CurrentYValues = new List<double>();
+                    acceptedData.Clear();
+                    currentData.Clear();
                     maxXYValue = 0;
                     holdVariable = item.ValueName;
                     holdSimulationName = item.SimulationName;
@@ -117,28 +115,37 @@ namespace APSIM.PerformanceTests.Portal
 
                 if ((item.AcceptedObservedValue != null) && (item.AcceptedPredictedValue != null))
                 {
-                    AcceptedXValues.Add((double)item.AcceptedObservedValue);
-                    AcceptedYValues.Add((double)item.AcceptedPredictedValue);
-
-                    if ((double)item.AcceptedObservedValue > maxXYValue) { maxXYValue = (double)item.AcceptedObservedValue; }
-                    if ((double)item.AcceptedPredictedValue > maxXYValue) { maxXYValue = (double)item.AcceptedPredictedValue; }
+                    acceptedData.Add(new PODataPoint()
+                    {
+                        X = (double)item.AcceptedObservedValue,
+                        Y = (double)item.AcceptedPredictedValue,
+                        SimulationName = item.SimulationName
+                    });
+                    if ((double)item.AcceptedObservedValue > maxXYValue)
+                        maxXYValue = (double)item.AcceptedObservedValue;
+                    if ((double)item.AcceptedPredictedValue > maxXYValue)
+                        maxXYValue = (double)item.AcceptedPredictedValue;
                 }
 
                 if ((item.CurrentObservedValue != null) && (item.CurrentPredictedValue != null))
                 {
-                    CurrentXValues.Add((double)item.CurrentObservedValue);
-                    CurrentYValues.Add((double)item.CurrentPredictedValue);
-
-                    if ((double)item.CurrentObservedValue > maxXYValue) { maxXYValue = (double)item.CurrentObservedValue; }
-                    if ((double)item.CurrentPredictedValue > maxXYValue) { maxXYValue = (double)item.CurrentPredictedValue; }
-
+                    currentData.Add(new PODataPoint()
+                    {
+                        X = (double)item.CurrentObservedValue,
+                        Y = (double)item.CurrentPredictedValue,
+                        SimulationName = item.SimulationName
+                    });
+                    if ((double)item.CurrentObservedValue > maxXYValue)
+                        maxXYValue = (double)item.CurrentObservedValue;
+                    if ((double)item.CurrentPredictedValue > maxXYValue)
+                        maxXYValue = (double)item.CurrentPredictedValue;
                 }
             }
-            if ((CurrentXValues.Count > 0) || (AcceptedXValues.Count > 0))
+            if ((currentData.Count > 0) || (acceptedData.Count > 0))
             {
                 chartNo += 1;
                 textAnnotation = GetPredictedObservedTests(currPODetails.ID, holdVariable);
-                BindCurrentAcceptedChart(chartNo, holdVariable, currPODetails.ID, tooltip, CurrentXValues.ToArray(), CurrentYValues.ToArray(), AcceptedXValues.ToArray(), AcceptedYValues.ToArray(), maxXYValue, textAnnotation);
+                BindCurrentAcceptedChart(chartNo, holdVariable, currPODetails.ID, tooltip, currentData.ToArray(), acceptedData.ToArray(), maxXYValue, textAnnotation);
             }
         }
 
@@ -244,8 +251,8 @@ namespace APSIM.PerformanceTests.Portal
         }
 
 
-        private void BindCurrentAcceptedChart(int chartNo, string chartTitle, int currPO_ID, string tooltip, double[] currentXValues, double[] currentYValues, 
-            double[] acceptedXValues, double[] acceptedYValues, double maxXYValue, string annotationText)
+        private void BindCurrentAcceptedChart(int chartNo, string chartTitle, int currPO_ID, string tooltip,
+            PODataPoint[] currentData, PODataPoint[] acceptedData, double maxXYValue, string annotationText)
         {
 
             Chart myChart = new Chart();
@@ -266,7 +273,7 @@ namespace APSIM.PerformanceTests.Portal
             myChart.Legends.Add(myLegend);
             myChart.Legends[0].Alignment = System.Drawing.StringAlignment.Near;
 
-
+            string seriesTooltip = "Observed: #VALX, Predicted: #VALY (#CUSTOMPROPERTY(SimulationName))";
 
             myChart.Series.Add("Accepted");
             Series acceptedSeries = myChart.Series["Accepted"];
@@ -275,8 +282,8 @@ namespace APSIM.PerformanceTests.Portal
             acceptedSeries.MarkerSize = 12;
             acceptedSeries.MarkerStyle = MarkerStyle.Circle;
             acceptedSeries.IsVisibleInLegend = true;
-            acceptedSeries.ToolTip = "Observed: #VALX, Predicted: #VALY";
-            acceptedSeries.Points.DataBindXY(acceptedXValues, acceptedYValues);
+            acceptedSeries.Points.DataBind(acceptedData, "X", "Y", "SimulationName=SimulationName");
+            acceptedSeries.ToolTip = seriesTooltip;
             acceptedSeries.Url = string.Format("PODetails.aspx?PO_Id={0}", currPO_ID);
             acceptedSeries.Legend = "myLegend";
 
@@ -288,8 +295,8 @@ namespace APSIM.PerformanceTests.Portal
             currentSeries.MarkerSize = 6;
             currentSeries.MarkerStyle = MarkerStyle.Diamond;
             currentSeries.IsVisibleInLegend = true;
-            currentSeries.ToolTip = "Observed: #VALX, Predicted: #VALY";
-            currentSeries.Points.DataBindXY(currentXValues, currentYValues);
+            currentSeries.Points.DataBind(currentData, "X", "Y", "SimulationName=SimulationName");
+            currentSeries.ToolTip = seriesTooltip;
             currentSeries.Url = string.Format("PODetails.aspx?PO_Id={0}", currPO_ID);
             currentSeries.Legend = "myLegend";
 
