@@ -308,16 +308,18 @@ namespace APSIM.PerformanceTests.Portal
         }
 
         /// <summary>
+        /// Gets a URL for a coloured square to be used in the heatmap for a 
+        /// given PredictedObserved test.
         /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        /// <remarks>
-        /// TODO: Allow for different colours and automatic image generation.
-        /// </remarks>
+        /// <param name="item">The item for which we want a colour.</param>
         private static string GetImageUrl(vPredictedObservedTests item)
         {
             Color colour = GetColour(item);
-            return $"/WebForm1.aspx?a={colour.A}&r={colour.R}&g={colour.G}&b={colour.B}";
+            string url = $"/APSIM.PerformanceTests/WebForm1.aspx?a={colour.A}&r={colour.R}&g={colour.G}&b={colour.B}";
+#if DEBUG
+            url = $"/WebForm1.aspx?a={colour.A}&r={colour.R}&g={colour.G}&b={colour.B}";
+#endif
+            return url;
         }
 
         /// <summary>
