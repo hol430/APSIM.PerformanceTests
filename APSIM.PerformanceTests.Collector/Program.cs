@@ -139,6 +139,7 @@ namespace APSIM.PerformanceTests.Collector
 
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            httpClient.Timeout = TimeSpan.FromMinutes(10); // Allow for max 10 minutes to upload P/O data from a single apsim file.
         }
 
         /// <summary>
@@ -184,43 +185,33 @@ namespace APSIM.PerformanceTests.Collector
         /// <param name="apsimInstance"></param>
         static async Task PostApsimRun(ApsimFile apsimInstance)
         {
-            bool tryAgain = true;
-            int i = 0;
-            while ((tryAgain == true) && (i < 2))
+            WriteToLogFile(string.Format("    Calling httpClient with ApsimFile {0}", apsimInstance.FileName));
+            string apsimFileName = string.Empty;
+            apsimFileName = apsimInstance.FileName;
+            try
             {
-                i++;
-                WriteToLogFile(string.Format("    Calling httpClient with ApsimFile {0}", apsimInstance.FileName));
-                string apsimFileName = string.Empty;
-                apsimFileName = apsimInstance.FileName;
-                try
-                {
-                    //this will call the service on www..apsim.info.au
-                    HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/apsimfiles", apsimInstance);
-                    response.EnsureSuccessStatusCode();
-                    if (response.IsSuccessStatusCode)
-                    {
-                        WriteToLogFile(string.Format("    Successfully posted ApsimFile {0}", apsimFileName));
-                    }
-                    else
-                    {
-                        WriteToLogFile(string.Format("    ERROR posting ApsimFile {0}: {1}", apsimFileName, response.StatusCode.ToString()));
-                    }
-                    tryAgain = false;
-                }
+                //this will call the service on www..apsim.info.au
+                HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/apsimfiles", apsimInstance);
+                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                    WriteToLogFile(string.Format("    Successfully posted ApsimFile {0}", apsimFileName));
+                else
+                    WriteToLogFile(string.Format("    ERROR posting ApsimFile {0}: {1}", apsimFileName, response.StatusCode.ToString()));
+            }
+            catch (TaskCanceledException ex)
+            {
+                string errorMessage = $"    ERROR posting Apsim File {apsimFileName} to Web API. ";
+                if (!ex.CancellationToken.IsCancellationRequested)
+                    errorMessage += "This is probably due to a timeout: ";
+                errorMessage += ex.Message;
 
-                catch (Exception ex)
-                {
-                    WriteToLogFile(string.Format("    ERROR posting Apsim File {0} to Web API: {1} ", apsimFileName, ex.Message.ToString()));
-                    if (ex.Message.ToString().Trim().ToLower() == "a task was canceled.")
-                    {
-                        tryAgain = true;
-                    }
-                    else
-                    {
-                        tryAgain = false;
-                        throw new Exception(ex.Message.ToString());
-                    }
-                }
+                WriteToLogFile(errorMessage);
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                WriteToLogFile(string.Format("    ERROR posting Apsim File {0} to Web API: {1} ", apsimFileName, ex.Message.ToString()));
+                throw ex;
             }
         }
 
