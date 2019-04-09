@@ -110,7 +110,7 @@ namespace APSIM.PerformanceTests.Collector
             catch (Exception ex)
             {
                 retValue = 1;  // unhandled exception - set this to false
-                WriteToLogFile("ERROR: " + ex.Message.ToString());
+                WriteToLogFile("ERROR: " + ex.ToString());
             }
             return retValue;
         }
@@ -203,14 +203,14 @@ namespace APSIM.PerformanceTests.Collector
                 string errorMessage = $"    ERROR posting Apsim File {apsimFileName} to Web API. ";
                 if (!ex.CancellationToken.IsCancellationRequested)
                     errorMessage += "This is probably due to a timeout: ";
-                errorMessage += ex.Message;
+                errorMessage += ex.ToString();
 
                 WriteToLogFile(errorMessage);
                 throw ex;
             }
             catch (Exception ex)
             {
-                WriteToLogFile(string.Format("    ERROR posting Apsim File {0} to Web API: {1} ", apsimFileName, ex.Message.ToString()));
+                WriteToLogFile(string.Format("    ERROR posting Apsim File {0} to Web API: {1} ", apsimFileName, ex.ToString()));
                 throw ex;
             }
         }
@@ -230,7 +230,7 @@ namespace APSIM.PerformanceTests.Collector
             }
             catch (Exception ex)
             {
-                WriteToLogFile(string.Format("  ERROR:  Unable to process PassedTests Status for Pull Request Id {0}: {1}", id, ex.Message.ToString()));
+                WriteToLogFile(string.Format("  ERROR:  Unable to process PassedTests Status for Pull Request Id {0}: {1}", id, ex.ToString()));
             }
         }
 
@@ -314,7 +314,7 @@ namespace APSIM.PerformanceTests.Collector
                             catch (Exception ex)
                             {
                                 error = true;
-                                WriteToLogFile(string.Format("    ERROR Posting Apsim File: {0}, Pull Request Id {1}, dated {2}: {3}", apsimFile.FileName, pullId, runDate,  ex.Message.ToString()));
+                                WriteToLogFile(string.Format("    ERROR Posting Apsim File: {0}, Pull Request Id {1}, dated {2}: {3}", apsimFile.FileName, pullId, runDate,  ex.ToString()));
                             }
 
                         }
@@ -322,7 +322,7 @@ namespace APSIM.PerformanceTests.Collector
                     catch (Exception ex)
                     {
                         error = true;
-                        WriteToLogFile(ex.Message);
+                        WriteToLogFile(ex.ToString());
                     }
 
                 }
@@ -417,11 +417,11 @@ namespace APSIM.PerformanceTests.Collector
                         {
                             if (ex.Message.ToString().IndexOf("no such table") > 0)
                             {
-                                WriteToLogFile(string.Format("    For Database {0}, Table {1} does not exist!", dbFileName, predictedObservedName));
+                                WriteToLogFile(string.Format("    For Database {0}, Table {1} does not exist: {2}", dbFileName, predictedObservedName, ex.ToString()));
                             }
                             else
                             {
-                                WriteToLogFile(string.Format("    ERROR reading database {0}: {1}!", dbFileName, ex.Message));
+                                WriteToLogFile(string.Format("    ERROR reading database {0}: {1}!", dbFileName, ex.ToString()));
                             }
                         }
                     }
@@ -556,7 +556,7 @@ namespace APSIM.PerformanceTests.Collector
                             }
                             catch (Exception ex)
                             {
-                                WriteToLogFile(String.Format("        ERROR:  Unable to convert {0}.{1} to double: {2}", POdata.TableName, ColumnName, ex.Message.ToString()));
+                                WriteToLogFile(String.Format("        ERROR:  Unable to convert {0}.{1} to double: {2}", POdata.TableName, ColumnName, ex.ToString()));
                             }
                         }
                         
@@ -567,7 +567,7 @@ namespace APSIM.PerformanceTests.Collector
             }
             catch (Exception ex)
             {
-                WriteToLogFile("    ERROR:  Unable to access Data: " + ex.Message.ToString());
+                WriteToLogFile("    ERROR:  Unable to access Data: " + ex.ToString());
                 return POdata;
             }
         }
@@ -611,7 +611,7 @@ namespace APSIM.PerformanceTests.Collector
             }
             catch (Exception ex)
             {
-                WriteToLogFile("    Unable to retrieve DataTable: " + ex.Message.ToString());
+                WriteToLogFile("    Unable to retrieve DataTable: " + ex.ToString());
                 return simData;
             }
         }
