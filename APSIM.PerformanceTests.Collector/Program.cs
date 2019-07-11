@@ -24,13 +24,12 @@ namespace APSIM.PerformanceTests.Collector
         static HttpClient httpClient = new HttpClient();
         static string LogFileName = "CsiroApsim";
 
+        private static int retValue = 0;
+
         static int Main(string[] args)
         {
-            int retValue = 0;       //this is true
             try
             {
-                //initially set to true
-                //Console.Title = typeof(Program).Name;
                 string pullCmd = string.Empty;
                 int pullId = 0;
                 string submitDetails = string.Empty;
@@ -273,7 +272,7 @@ namespace APSIM.PerformanceTests.Collector
 
             string searchDir = ConfigurationManager.AppSettings["searchDirectory"].ToString();
 #if DEBUG
-            searchDir = @"C:/ApsimX/Tests";
+            searchDir = @"C:/ApsimX/Tests/Validation/FodderBeet";
 #endif
 
             string[] filePaths = searchDir.Split(';');
@@ -302,10 +301,8 @@ namespace APSIM.PerformanceTests.Collector
                         apsimFile.SubmitDetails = submitDetails;
 
                         if (apsimFile.PredictedObserved.Count() > 0)
-                        //if (PredictedObservedDatabaseDataExists == true)
                         {
                             apsimFile.Simulations = GetSimulationDataTable(apsimFile.FileName, apsimFile.FullFileName);
-                            //apsimFiles.Add(apsimFile);q
 
                             try
                             {
@@ -347,6 +344,10 @@ namespace APSIM.PerformanceTests.Collector
         private static List<PredictedObservedDetails> GetPredictedObservedDetails(string fullFileName)
         {
             List<Exception> errors;
+            // note - if we get a badformat exception thrown here, it's because .net is trying to
+            // load a 64-bit version of sqlite3.dll for some reason. To fix this, we need to
+            // copy the 32-bit version from ApsimX/DeploymentSupport/Windows/Bin/sqlite3.dll to
+            // APSIM.PerformanceTests.Collector/Bin/Debug/ (or release if building in release mode).
             Simulations sims = FileFormat.ReadFromFile<Simulations>(fullFileName, out errors);
             if (errors != null && errors.Count > 0)
             {
@@ -609,9 +610,30 @@ namespace APSIM.PerformanceTests.Collector
                 }
 
             }
+            catch (ConstraintException err)
+            {
+                WriteToLogFile("    Unable to retrieve DataTable: " + err.ToString());
+                if (simData != null && simData.HasErrors)
+                {
+                    string[] columnNames = simData.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
+                    foreach (DataRow error in simData.GetErrors())
+                    {
+                        StringBuilder info = new StringBuilder();
+                        info.AppendLine("Additional info:");
+                        for (int i = 0; i < columnNames.Length; i++)
+                            info.AppendLine($"{columnNames[i]}: {error.ItemArray[i]}");
+
+                        WriteToLogFile(error.RowError);
+                        WriteToLogFile(info.ToString());
+                    }
+                }
+                retValue = 1;
+                return simData;
+            }
             catch (Exception ex)
             {
                 WriteToLogFile("    Unable to retrieve DataTable: " + ex.ToString());
+                retValue = 1;
                 return simData;
             }
         }
