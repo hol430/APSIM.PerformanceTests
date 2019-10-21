@@ -277,7 +277,7 @@ namespace APSIM.PerformanceTests.Portal
                     // Our data contains many nullable doubles (ugh) so let's filter
                     // them out before we start iteration, otherwise it will mess up
                     // our indexing.
-                    List<vPredictedObservedTests> testWithoutNulls = test.Where(v => v.Current != null).ToList();
+                    List<vPredictedObservedTests> testWithoutNulls = test.Where(v => v.Current != null && v.Accepted != null).ToList();
 
                     for (int i = 0; i < testWithoutNulls.Count; i++)
                     {
