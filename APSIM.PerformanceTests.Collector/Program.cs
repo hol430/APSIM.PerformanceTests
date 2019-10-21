@@ -130,7 +130,7 @@ namespace APSIM.PerformanceTests.Collector
             {
                 serviceUrl = ConfigurationManager.AppSettings["serviceAddress_csiro"].ToString() + "APSIM.PerformanceTests.Service/";
             }
-            //this is for www.apsim.info.au
+            //this is for apsimdev.apsim.info.au
             httpClient.BaseAddress = new Uri(serviceUrl);
 #if DEBUG
             httpClient.BaseAddress = new Uri("http://localhost:53187/");

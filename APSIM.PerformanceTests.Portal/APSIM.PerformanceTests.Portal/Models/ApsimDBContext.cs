@@ -33,7 +33,7 @@ namespace APSIM.PerformanceTests.Portal.Models
 
             string file = ConfigurationManager.AppSettings["connectStr"].ToString() + "dbConnect.txt";
 
-            //string file = @"D:\Websites\dbConnect.txt";  //for the apsim server (www.apsim.info)
+            //string file = @"D:\Websites\dbConnect.txt";  //for the apsim server (apsimdev.apsim.info)
             //string file = @"E:\Sites\APSIM-Sites\dbConnect.txt";      //for the csiro server
             string connectionString = string.Empty;
 //#if DEBUG

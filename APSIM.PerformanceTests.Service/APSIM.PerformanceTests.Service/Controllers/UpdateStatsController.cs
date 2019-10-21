@@ -54,7 +54,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
         /// <summary>
         /// Updates the Tests stats for a specified pull Request to a new pull Request Id
         /// eg:  http://localhost:53187/api/updateStats/1986/1977
-        ///      http://www.apsim.info/APSIM.PerformanceTests.Service/api/updateStats/1986/1977
+        ///      http://apsimdev.apsim.info/APSIM.PerformanceTests.Service/api/updateStats/1986/1977
         /// </summary>
         /// <param name="currentPullRequestID"></param>
         /// <param name="acceptedPullRequestID"></param>
