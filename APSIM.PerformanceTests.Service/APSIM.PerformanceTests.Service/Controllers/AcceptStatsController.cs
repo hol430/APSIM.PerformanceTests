@@ -66,9 +66,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     }
 
                     // Get file count for this pull request.
-                    strSQL = "SELECT COUNT(*) AS CurrentFileCount" + Environment.NewLine +
-                                "FROM[APSIM.PerformanceTests].[dbo].[ApsimFiles] af" + Environment.NewLine +
-                                "WHERE af.[PullRequestId] = @PullRequestID ";
+                    strSQL = @"SELECT COUNT(*) as CurrentFileCount
+FROM [APSIM.PerformanceTests].[dbo].[PredictedObservedDetails], [APSIM.PerformanceTests].[dbo].[ApsimFiles] af
+WHERE [ApsimFilesID] = af.[ID]
+AND af.[PullRequestId] = @PullRequestID";
                     using (SqlCommand commandES = new SqlCommand(strSQL, sqlCon))
                     {
                         commandES.CommandType = CommandType.Text;
