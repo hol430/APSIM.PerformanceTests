@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Reflection;
-
+using System.Text;
 
 namespace APSIM.PerformanceTests.Portal
 {
@@ -601,10 +601,17 @@ namespace APSIM.PerformanceTests.Portal
             hfPullRequestId.Value = pullRequestId.ToString();
             if (acceptPullRequestId > 0)
             {
-                string errorMessage = ApsimFilesDS.GetFileCountDetails(pullRequestId, acceptPullRequestId);
-                if (errorMessage.Length > 0)
+                List<string> missingTables = ApsimFilesDS.GetMissingTables(pullRequestId, acceptPullRequestId);
+                if (missingTables != null && missingTables.Count > 0)
+                    lblMissing.Text = "Missing FileName.TableName(s): " + string.Join(",", missingTables) + ".";
+
+                List<string> newTables = ApsimFilesDS.GetNewTables(pullRequestId, acceptPullRequestId);
+                if (newTables != null && newTables.Count > 0)
                 {
-                    lblMissing.Text = "Missing FileName.TableName(s): " + errorMessage + ".";
+                    StringBuilder message = new StringBuilder();
+                    message.AppendLine("New predicted/observed tables have been added by this pull request:");
+                    message.AppendLine(string.Join(",", newTables));
+                    lblNewFiles.Text = message.ToString();
                 }
             }
 

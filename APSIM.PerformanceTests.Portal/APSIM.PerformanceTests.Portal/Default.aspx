@@ -68,7 +68,7 @@
             <asp:Label ID="lblPullRequestId" runat="server" CssClass="SectionTitles" Text=""></asp:Label>
             <br />
             <asp:Label ID="lblMissing" runat="server" CssClass="ScreenDetails, FailedTests" Text=""></asp:Label>
-
+            <asp:Label ID="lblNewFiles" runat="server" CssClass="ScreenDetails, PassedTests" Text=""></asp:Label>
             <asp:GridView ID="gvSimFiles" runat="server" AutoGenerateColumns="false" PageSize="25" AllowPaging="true" AllowSorting="true" 
                 DataKeyNames="PredictedObservedID" 
                 CssClass="Grid2" AlternatingRowStyle-CssClass="alt" PagerStyle-CssClass="pgr"

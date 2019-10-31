@@ -149,34 +149,68 @@ public class ApsimFilesDS
         }
     }
 
-
-    public static string GetFileCountDetails(int pullRequestId, int acceptedPullRequestId)
+    /// <summary>
+    /// Get a list of new predicted/observed tables which are in the
+    /// accepted stats but are missing from this pull request.
+    /// The returned table names will be of the form "FileName.TableName".
+    /// </summary>
+    /// <param name="pullRequestId">Pull request ID.</param>
+    /// <param name="acceptedPullRequestId">ID of the pull request of the accepted stats.</param>
+    public static List<string> GetMissingTables(int pullRequestId, int acceptedPullRequestId)
     {
         string returnStr = string.Empty;
         using (ApsimDBContext context = new ApsimDBContext())
         {
-            string strsql = "SELECT b.[FileName] + '.' + b.[TableName] "
-                + "   FROM ( "
-                + "       SELECT 'currentPO' as 'Source', a1.[FileName], pod1.[TableName] "
-                + "       FROM [dbo].[ApsimFiles] a1 "
-                + "       INNER JOIN[dbo].[PredictedObservedDetails] pod1 on a1.ID = pod1.ApsimFilesID "
-                + "       WHERE a1.[PullRequestId] = " + pullRequestId
-                + "     UNION ALL "
-                + "       SELECT 'acceptedPO' as 'Source', a1.[FileName], pod1.[TableName] "
-                + "       FROM[dbo].[ApsimFiles] a1  "
-                + "       INNER JOIN[dbo].[PredictedObservedDetails] pod1 on a1.ID = pod1.ApsimFilesID "
-                + "       WHERE a1.[PullRequestId] = " + acceptedPullRequestId
-                + "   ) AS b "
-                + "   GROUP BY b.[FileName], b.[TableName] "
-                + "   HAVING  COUNT(b.Source) < 2 ";
+            string strsql = $@"SELECT acc.[Filename]
+FROM (
+	SELECT 'currentPO' as 'Source', a1.[FileName] + '.' + pod1.[TableName] as [FileName]
+	FROM [dbo].[ApsimFiles] a1
+	INNER JOIN [dbo].[PredictedObservedDetails] pod1 on a1.ID = pod1.ApsimFilesID
+	WHERE a1.[PullRequestId] = {pullRequestId}
+) as curr
+LEFT OUTER JOIN (
+		SELECT 'acceptedPO' as 'Source', a1.[FileName] + '.' + pod1.[TableName] as [FileName]
+		FROM[dbo].[ApsimFiles] a1
+		INNER JOIN [dbo].[PredictedObservedDetails] pod1 on a1.ID = pod1.ApsimFilesID
+		WHERE a1.[PullRequestId] = {acceptedPullRequestId}
+) AS acc
+ON curr.[FileName] = acc.[FileName]
+WHERE curr.[FileName] IS NULL;";
 
-            var missing = context.Database.SqlQuery<string>(strsql).ToList();
-            returnStr = String.Join(", ", missing);
-
+            return context.Database.SqlQuery<string>(strsql).ToList();
         }
-        return returnStr;
     }
 
+    /// <summary>
+    /// Get a list of new predicted/observed tables added by a pull request.
+    /// The returned table names will be of the form "FileName.TableName".
+    /// </summary>
+    /// <param name="pullRequestId">Pull request ID.</param>
+    /// <param name="acceptedPullRequestId">ID of the pull request of the accepted stats.</param>
+    public static List<string> GetNewTables(int pullRequestId, int acceptedPullRequestId)
+    {
+        string returnStr = string.Empty;
+        using (ApsimDBContext context = new ApsimDBContext())
+        {
+            string strsql = $@"SELECT curr.[Filename]
+FROM (
+	SELECT 'currentPO' as 'Source', a1.[FileName] + '.' + pod1.[TableName] as [FileName]
+	FROM [dbo].[ApsimFiles] a1
+	INNER JOIN [dbo].[PredictedObservedDetails] pod1 on a1.ID = pod1.ApsimFilesID
+	WHERE a1.[PullRequestId] = {pullRequestId}
+) as curr
+LEFT OUTER JOIN (
+		SELECT 'acceptedPO' as 'Source', a1.[FileName] + '.' + pod1.[TableName] as [FileName]
+		FROM[dbo].[ApsimFiles] a1
+		INNER JOIN [dbo].[PredictedObservedDetails] pod1 on a1.ID = pod1.ApsimFilesID
+		WHERE a1.[PullRequestId] = {acceptedPullRequestId}
+) AS acc
+ON curr.[FileName] = acc.[FileName]
+WHERE acc.[FileName] IS NULL;";
+
+            return context.Database.SqlQuery<string>(strsql).ToList();
+        }
+    }
 
     /// <summary>
     /// Gets Details of the individual Apsim simulation Files that make up this specified Pull Request

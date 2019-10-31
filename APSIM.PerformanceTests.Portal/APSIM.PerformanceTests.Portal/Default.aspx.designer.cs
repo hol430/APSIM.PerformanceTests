@@ -103,6 +103,15 @@ namespace APSIM.PerformanceTests.Portal {
         protected global::System.Web.UI.WebControls.Label lblMissing;
         
         /// <summary>
+        /// lblNewFiles control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblNewFiles;
+        
+        /// <summary>
         /// gvSimFiles control.
         /// </summary>
         /// <remarks>
