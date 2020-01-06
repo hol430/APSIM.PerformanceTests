@@ -200,6 +200,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     catch (Exception ex)
                     {
                         Utilities.WriteToLogFile("    ERROR:  Checking for existing Pull Requests: " + ex.Message.ToString());
+                        throw;
                     }
 
                     if (pullRequestCount > 0)
@@ -222,6 +223,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         catch (Exception ex)
                         {
                             Utilities.WriteToLogFile("    ERROR:  Error Removing original Pull Request Data: " + ex.Message.ToString());
+                            throw;
                         }
                     }
                     sqlConnect.Close();
@@ -267,6 +269,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     catch (Exception ex)
                     {
                         Utilities.WriteToLogFile("    ERROR:  Inserting into ApsimFiles failed: " + ex.Message.ToString());
+                        throw;
                     }
 
                     //--------------------------------------------------------------------------------------
@@ -295,6 +298,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         catch (Exception ex)
                         {
                             Utilities.WriteToLogFile("    ERROR:  usp_SimulationsInsert failed: " + ex.Message.ToString());
+                            throw;
                         }
                     }
 
@@ -338,7 +342,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         }
                         catch (Exception ex)
                         {
-                            Utilities.WriteToLogFile("    ERROR:  INSERT INTO PredictedObservedDetails failed: " + ex.Message.ToString()); 
+                            Utilities.WriteToLogFile("    ERROR:  INSERT INTO PredictedObservedDetails failed: " + ex.Message.ToString());
+                            throw;
                         }
 
 
@@ -438,6 +443,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                                 catch (Exception ex)
                                 {
                                     Utilities.WriteToLogFile("    ERROR:  Unable to import PredictedObserved Data: " + ErrMessageHelper.ToString() + " - " + ex.Message.ToString());
+                                    throw;
                                 }
                             }   //ObservedColumName.StartsWith("Observed")
                         }   // for (int i = 0; i < poDetail.PredictedObservedData.Columns.Count; i++)
