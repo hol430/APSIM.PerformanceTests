@@ -348,11 +348,9 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
 
                         //--------------------------------------------------------------------------------------
-                        //And finally this is where we will insert the actual Predited Observed DATA
+                        //And finally this is where we will insert the actual Predicted Observed DATA
                         //--------------------------------------------------------------------------------------
-                        DataView PredictedObservedView = new DataView(poDetail.Data);
-
-                        string ObservedColumName, PredictedColumnName;
+                        string ObservedColumnName, PredictedColumnName;
 
                         Utilities.WriteToLogFile(string.Format("    PredictedObserved Data Values for {0}.{1} - import started!", apsimfile.FileName, poDetail.DatabaseTableName));
 
@@ -361,39 +359,73 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         //data,
                         for (int i = 0; i < poDetail.Data.Columns.Count; i++)
                         {
-                            ObservedColumName = poDetail.Data.Columns[i].ColumnName.Trim();
-                            if (ObservedColumName.StartsWith("Observed"))
+                            ObservedColumnName = poDetail.Data.Columns[i].ColumnName.Trim();
+                            if (ObservedColumnName.StartsWith("Observed"))
                             {
                                 //get the corresponding Predicted Column Name
-                                int dotPosn = ObservedColumName.IndexOf('.');
-                                string valueName = ObservedColumName.Substring(dotPosn + 1);
+                                int dotPosn = ObservedColumnName.IndexOf('.');
+                                string valueName = ObservedColumnName.Substring(dotPosn + 1);
                                 PredictedColumnName = "Predicted." + valueName;
 
                                 DataTable selectedData;
                                 try
                                 {
+                                    // Using SimulationID as the field name to match on causes pain because one
+                                    // of the parameters we're about to pass into the stored proc is a data table.
+                                    // The table must have a SimulationID column and it must have a column for each
+                                    // of the field names to match on. We can't have two columns called SimulationID,
+                                    // so we need to remap/rename some of the columns when creating the table
+                                    // (selectedData) which gets passed into the stored proc.
+                                    // Note: I think the order of columns is important here(?).
+                                    DataTable result = new DataTable();
+                                    result.Columns.Add("SimulationID", typeof(long));
+                                    result.Columns.Add("MatchValue", typeof(string));
                                     if (poDetail.FieldName3UsedForMatch.Length > 0)
                                     {
-                                        selectedData = PredictedObservedView.ToTable(false, "SimulationID", poDetail.FieldNameUsedForMatch, poDetail.FieldName2UsedForMatch, poDetail.FieldName3UsedForMatch, PredictedColumnName, ObservedColumName);
+                                        result.Columns.Add("MatchValue2", poDetail.Data.Columns[poDetail.FieldName2UsedForMatch].DataType);
+                                        result.Columns.Add("MatchValue3", poDetail.Data.Columns[poDetail.FieldName3UsedForMatch].DataType);
+
                                         strSQL = "usp_PredictedObservedDataThreeInsert";
                                     }
                                     else if (poDetail.FieldName2UsedForMatch.Length > 0)
                                     {
-                                        selectedData = PredictedObservedView.ToTable(false, "SimulationID", poDetail.FieldNameUsedForMatch, poDetail.FieldName2UsedForMatch, PredictedColumnName, ObservedColumName);
+                                        result.Columns.Add("MatchValue2", poDetail.Data.Columns[poDetail.FieldName2UsedForMatch].DataType);
+
                                         strSQL = "usp_PredictedObservedDataTwoInsert";
                                     }
                                     else
                                     {
-                                        selectedData = PredictedObservedView.ToTable(false, "SimulationID", poDetail.FieldNameUsedForMatch, PredictedColumnName, ObservedColumName);
                                         strSQL = "usp_PredictedObservedDataInsert";
                                     }
 
-                                    bool validColumn = true;
-                                    if (selectedData.Columns[PredictedColumnName].DataType == typeof(string)) { validColumn = false; }
-                                    if (selectedData.Columns[PredictedColumnName].DataType == typeof(bool)) { validColumn = false;  }
-                                    if (selectedData.Columns[PredictedColumnName].DataType == typeof(DateTime)) { validColumn = false; }
+                                    result.Columns.Add("PredictedValue", poDetail.Data.Columns[PredictedColumnName].DataType);
+                                    result.Columns.Add("ObservedValue", poDetail.Data.Columns[ObservedColumnName].DataType);
 
-                                    if (validColumn == true)
+                                    selectedData = poDetail.Data.AsEnumerable().Select(r =>
+                                    {
+                                        var row = result.NewRow();
+                                        foreach (DataColumn column in result.Columns)
+                                        {
+                                            if (column.ColumnName == "MatchValue")
+                                                row[column.ColumnName] = r[poDetail.FieldNameUsedForMatch];
+                                            else if (column.ColumnName == "MatchValue2")
+                                                row[column.ColumnName] = r[poDetail.FieldName2UsedForMatch];
+                                            else if (column.ColumnName == "MatchValue3")
+                                                row[column.ColumnName] = r[poDetail.FieldName3UsedForMatch];
+                                            else if (column.ColumnName == "PredictedValue")
+                                                row[column.ColumnName] = r[PredictedColumnName];
+                                            else if (column.ColumnName == "ObservedValue")
+                                                row[column.ColumnName] = r[ObservedColumnName];
+                                            else
+                                                row[column.ColumnName] = r[column.ColumnName];
+                                        }
+                                        return row;
+                                    }).CopyToDataTable();
+
+                                    Type dataType = selectedData.Columns["PredictedValue"].DataType;
+                                    bool validColumn = dataType != typeof(string) && dataType != typeof(bool) && dataType != typeof(DateTime); // so a char is a testable piece of data?
+
+                                    if (validColumn)
                                     {
                                         using (SqlCommand commandENQ = new SqlCommand(strSQL, sqlCon))
                                         {
@@ -442,7 +474,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                                 }
                                 catch (Exception ex)
                                 {
-                                    Utilities.WriteToLogFile("    ERROR:  Unable to import PredictedObserved Data: " + ErrMessageHelper.ToString() + " - " + ex.Message.ToString());
+                                    Utilities.WriteToLogFile("    ERROR:  Unable to import PredictedObserved Data: " + ErrMessageHelper + " - " + ex.Message);
                                     throw;
                                 }
                             }   //ObservedColumName.StartsWith("Observed")
