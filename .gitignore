@@ -35,3 +35,8 @@ Documents/
 APSIM.PerformanceTests.Collector/.vs/
 APSIM.PerformanceTests.Service/.vs/
 APSIM.PerformanceTests.Portal/.vs/
+APSIM.PerformanceTests.Tests/.vs/
+.vs/
+.vscode/
+**/bin/
+**/obj/
