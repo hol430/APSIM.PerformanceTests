@@ -15,12 +15,12 @@ CREATE TABLE ApsimFiles (
   PullRequestId INTEGER   NOT NULL,
   FileName TEXT   NOT NULL,
   FullFileName TEXT   NOT NULL,
-  RunDate DATETIME   NOT NULL,
+  RunDate TEXT   NOT NULL,
   StatsAccepted BOOLEAN,
   IsMerged BOOLEAN,
   SubmitDetails TEXT,
   AcceptedPullRequestId INTEGER,
-  AcceptedRunDate DATETIME
+  AcceptedRunDate TEXT
 );
 CREATE TABLE PredictedObservedDetails (
   ID INTEGER   PRIMARY KEY   NOT NULL,
@@ -54,11 +54,11 @@ CREATE TABLE PredictedObservedValues (
   PredictedObservedDetailsID INTEGER   NOT NULL,
   SimulationsID INTEGER   NOT NULL,
   MatchName TEXT   NOT NULL,
-  MatchValue TEXT   NOT NULL,
+  MatchValue REAL   NOT NULL,
   MatchName2 TEXT,
-  MatchValue2 TEXT,
+  MatchValue2 REAL,
   MatchName3 TEXT,
-  MatchValue3 TEXT,
+  MatchValue3 REAL,
   ValueName TEXT   NOT NULL,
   PredictedValue REAL,
   ObservedValue REAL

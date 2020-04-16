@@ -101,6 +101,8 @@ namespace APSIM.PerformanceTests.Service
             {
                 try
                 {
+                    if (ConfigurationManager.AppSettings["LogFilePath"] == null)
+                        return;
                     string filePathLog = ConfigurationManager.AppSettings["LogFilePath"].ToString();
                     //this is just a temporary measure so that I can see what is happening
                     //Console.WriteLine(message);

@@ -39,7 +39,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 string authenCode = Utilities.GetStatsAcceptedToken();
                 if (acceptLog.LogPerson == authenCode)
                 {
-                    DBFunctions.UpdateAsStatsAccepted("Update", acceptLog);
+                    using (SqlConnection connection = new SqlConnection(Utilities.GetConnectionString()))
+                        DBFunctions.UpdateAsStatsAccepted(connection, "Update", acceptLog);
                     UpdateAcceptedStatsforPullRequest(currentPullRequestID, acceptedPullRequestID);
                 }
             }
