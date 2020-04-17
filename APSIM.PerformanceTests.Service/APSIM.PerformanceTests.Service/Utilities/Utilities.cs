@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.Common;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -22,6 +24,27 @@ namespace APSIM.PerformanceTests.Service
         //  filePathLog = @"C:\Dev\PerformanceTests\";
         //#endif
 
+        /// <summary>
+        /// Add a LIMIT or TOP clause to the select statement.
+        /// In the long run, this should really be removed as it's
+        /// basically a hack to workaround microsoft's lack of a
+        /// LIMIT clause.
+        /// </summary>
+        /// <remarks>
+        /// FIXME - this should be moved to DBFunctions.
+        /// </remarks>
+        /// <param name="connection">Database connection.</param>
+        /// <param name="sql">Query text.</param>
+        /// <param name="n">Number of items to limit to.</param>
+        public static string Limit(DbConnection connection, string sql, int n)
+        {
+            if (connection is SqlConnection)
+                return sql.Replace("SELECT", $"SELECT TOP {n}");
+            if (connection.GetType().Name == "SQLiteConnection")
+                return sql + $" LIMIT {n}";
+
+            throw new NotImplementedException($"{connection.GetType().Name}: connection type not supported");
+        }
 
         public static string GetModifiedFileName(string fileName)
         {

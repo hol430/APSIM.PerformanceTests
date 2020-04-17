@@ -87,10 +87,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 sqlCon.Open();
                 try
                 {
-                    List<ApsimFile> currentApsimFiles = GetApsimFilesRelatedPredictedObservedData(sqlCon, currentPullRequestID);
+                    List<ApsimFile> currentApsimFiles = DBFunctions.GetApsimFilesRelatedPredictedObservedData(sqlCon, currentPullRequestID);
 
                     //need to get the (latest) run date for the acceptedPullRequestID 
-                    DateTime acceptedRunDate = DBFunctions.GetLatestPullRequestRunDate(sqlCon, acceptedPullRequestID);
+                    DateTime acceptedRunDate = DBFunctions.GetLatestRunDateForPullRequest(sqlCon, acceptedPullRequestID);
 
                     foreach (ApsimFile currentApsimFile in currentApsimFiles)
                     {
@@ -124,99 +124,6 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     Utilities.WriteToLogFile(string.Format("ERROR:  Unable to update {0}: {1}", HelperMessage, ex.Message.ToString())); ;
                 }
             }
-        }
-
-
-        /// <summary>
-        /// Retrieves the ApsimFile details and related child Predicted Observed Details for a specific Pull Request
-        /// </summary>
-        /// <param name="connectStr"></param>
-        /// <param name="pullRequestId"></param>
-        /// <returns></returns>
-        private List<ApsimFile> GetApsimFilesRelatedPredictedObservedData(SqlConnection sqlCon, int pullRequestId)
-        {
-            string strSQL;
-            List<ApsimFile> apsimFilesList = new List<ApsimFile>();
-
-            try
-            {
-                strSQL = "SELECT * FROM ApsimFiles WHERE PullRequestId = @PullRequestId ORDER BY RunDate DESC";
-                using (SqlCommand commandER = new SqlCommand(strSQL, sqlCon))
-                {
-                    commandER.CommandType = CommandType.Text;
-                    commandER.Parameters.AddWithValue("@PullRequestId", pullRequestId);
-                    SqlDataReader reader = commandER.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        ApsimFile apsim = new ApsimFile
-                        {
-                            ID = reader.GetInt32(0),
-                            PullRequestId = reader.GetInt32(1),
-                            FileName = reader.GetString(2),
-                            FullFileName = reader.GetString(3),
-                            RunDate = reader.GetDateTime(4),
-                            StatsAccepted = reader.GetBoolean(5),
-                            IsMerged = reader.GetBoolean(6),
-                            SubmitDetails = reader.GetString(7)
-                        };
-                        if (reader.IsDBNull(8))
-                        {
-                            apsim.AcceptedPullRequestId = 0;
-                        }
-                        else
-                        {
-                            apsim.AcceptedPullRequestId = reader.GetInt32(8);
-                        }
-                        apsimFilesList.Add(apsim);
-                    }
-                    reader.Close();
-                }
-
-                foreach (ApsimFile currentApsimFile in apsimFilesList)
-                {
-                    List<PredictedObservedDetails> currentPredictedObservedDetails = new List<PredictedObservedDetails>();
-                    //retrieve the predicted observed details for this apsim file
-                    strSQL = "SELECT * FROM PredictedObservedDetails WHERE ApsimFilesId = @ApsimFilesId ORDER BY ID";
-                    using (SqlCommand commandER = new SqlCommand(strSQL, sqlCon))
-                    {
-                        commandER.CommandType = CommandType.Text;
-                        commandER.Parameters.AddWithValue("@ApsimFilesId", currentApsimFile.ID);
-                        SqlDataReader reader = commandER.ExecuteReader();
-                        while (reader.Read())
-                        {
-                            PredictedObservedDetails predictedObserved = new PredictedObservedDetails
-                            {
-                                ID = reader.GetInt32(0),
-                                ApsimID = reader.GetInt32(1),
-                                DatabaseTableName = reader.GetString(2),
-                                PredictedTableName = reader.GetString(3),
-                                ObservedTableName = reader.GetString(4),
-                                FieldNameUsedForMatch = reader.GetString(5),
-                                FieldName2UsedForMatch = reader.GetString(6),
-                                FieldName3UsedForMatch = reader.GetString(7),
-                                PassedTests = reader.GetDouble(8),
-                                HasTests = reader.GetInt32(9)
-                            };
-                            if (reader.IsDBNull(10))
-                            {
-                                predictedObserved.AcceptedPredictedObservedDetailsId = 0;
-                            }
-                            else
-                            {
-                                predictedObserved.AcceptedPredictedObservedDetailsId = reader.GetInt32(10);
-                            }
-                            currentPredictedObservedDetails.Add(predictedObserved);
-                        }
-                        reader.Close();
-                    }
-                    currentApsimFile.PredictedObserved = currentPredictedObservedDetails;
-                }
-            }
-            catch (Exception ex)
-            {
-                Utilities.WriteToLogFile(string.Format("ERROR:  Unable to retrieve Apsim Files and PredictedObservedDetails for Pull Request Id {0}: {1}", pullRequestId.ToString(), ex.Message.ToString()));
-            }
-            return apsimFilesList;
         }
 
         /// <summary>

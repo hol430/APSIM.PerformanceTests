@@ -48,6 +48,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TableFactory.cs" />
     <Compile Include="Tests\ApsimFilesControllerTests.cs" />
+    <Compile Include="Tests\DBFunctionTests.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>

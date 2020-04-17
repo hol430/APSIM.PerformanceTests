@@ -11,11 +11,169 @@ using System.Text;
 using System.Web.Http.Description;
 using System.Data.Common;
 using APSIM.PerformanceTests.Service.Extensions;
+using APSIM.Shared.Utilities;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace APSIM.PerformanceTests.Service
 {
     public class DBFunctions
     {
+        /// <summary>
+        /// Get the number of files in a given pull request.
+        /// </summary>
+        /// <param name="connection">Database connection.</param>
+        /// <param name="pullRequestID">Pull request ID.</param>
+        public static int GetFileCount(DbConnection connection, int pullRequestID)
+        {
+            string sql = @"SELECT COUNT(*) as CurrentFileCount " +
+                          "FROM PredictedObservedDetails, ApsimFiles af " +
+                          "WHERE ApsimFilesID = af.ID " +
+                          "AND af.PullRequestId = @PullRequestID";
+            using (DbCommand command = connection.CreateCommand(sql))
+            {
+                command.AddParamWithValue("@PullRequestID", pullRequestID);
+                object res = command.ExecuteScalar();
+                if (res == null || res == DBNull.Value)
+                    throw new Exception($"Unable to get file count for pull request {pullRequestID}: pull request not found");
+                return Convert.ToInt32(res);
+            }
+        }
+
+        /// <summary>
+        /// Get the number of files in the accepted pull request.
+        /// </summary>
+        /// <param name="connection">Database connection.</param>
+        /// <remarks>
+        /// This should be changed so that it calls <see cref="GetFileCount(SqlConnection, int)"/>.
+        /// </remarks>
+        public static int GetAcceptedFileCount(DbConnection connection)
+        {
+            string sql = "SELECT FileCount " +
+                         "FROM AcceptStatsLogs " +
+                         "WHERE LogStatus = 1 " +
+                         "AND StatsPullRequestId = 0 " +
+                         "ORDER BY ID DESC";
+            sql = Utilities.Limit(connection, sql, 1);
+            using (DbCommand command = connection.CreateCommand(sql))
+            {
+                object res = command.ExecuteScalar();
+                if (res == null || res == DBNull.Value)
+                    throw new Exception("Unable to get accepted file count - no accepted stats found.");
+                return Convert.ToInt32(res);
+            }
+        }
+
+        /// <summary>
+        /// Calcualte the percentage of tests which a given pull request passed.
+        /// Throws if pull request not found.
+        /// </summary>
+        /// <param name="connection">Database connection.</param>
+        /// <param name="pullRequestID">ID of the pull request.</param>
+        public static double GetPercentPassed(DbConnection connection, int pullRequestID)
+        {
+            string sql = "SELECT 100 * COUNT(CASE WHEN [PassedTests] = 100 THEN 1 ELSE NULL END) / COUNT(CASE WHEN [PassedTests] IS NOT NULL THEN 1 ELSE 0 END) as PercentPassed "
+                       + "FROM  ApsimFiles AS a "
+                       + "INNER JOIN PredictedObservedDetails AS p ON a.ID = p.ApsimFilesID "
+                       + "WHERE a.PullRequestId = @PullRequestId ";
+            using (DbCommand command = connection.CreateCommand(sql))
+            {
+                command.AddParamWithValue("@PullRequestid", pullRequestID);
+                object res = command.ExecuteScalar();
+                if (res == null || res == DBNull.Value)
+                    throw new Exception($"Pull request not found: #{pullRequestID}");
+                return Convert.ToDouble(res);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the ApsimFile details and related child Predicted Observed Details for a specific Pull Request
+        /// </summary>
+        /// <param name="connectStr"></param>
+        /// <param name="pullRequestId"></param>
+        /// <returns></returns>
+        public static List<ApsimFile> GetApsimFilesRelatedPredictedObservedData(DbConnection sqlCon, int pullRequestId)
+        {
+            List<ApsimFile> apsimFilesList = new List<ApsimFile>();
+
+            try
+            {
+                string sql = "SELECT * FROM ApsimFiles WHERE PullRequestId = @PullRequestId ORDER BY RunDate DESC";
+                using (DbCommand commandER = sqlCon.CreateCommand(sql))
+                {
+                    commandER.CommandType = CommandType.Text;
+                    commandER.AddParamWithValue("@PullRequestId", pullRequestId);
+                    DbDataReader reader = commandER.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        ApsimFile apsim = new ApsimFile
+                        {
+                            ID = reader.GetInt32(0),
+                            PullRequestId = reader.GetInt32(1),
+                            FileName = reader.GetString(2),
+                            FullFileName = reader.GetString(3),
+                            RunDate = reader.GetDateTime(4),
+                            StatsAccepted = reader.GetBoolean(5),
+                            IsMerged = reader.GetBoolean(6),
+                            SubmitDetails = reader.GetString(7)
+                        };
+                        if (reader.IsDBNull(8))
+                            apsim.AcceptedPullRequestId = 0;
+                        else
+                            apsim.AcceptedPullRequestId = reader.GetInt32(8);
+
+                        apsimFilesList.Add(apsim);
+                    }
+                    reader.Close();
+                }
+
+                foreach (ApsimFile currentApsimFile in apsimFilesList)
+                {
+                    List<PredictedObservedDetails> currentPredictedObservedDetails = new List<PredictedObservedDetails>();
+                    //retrieve the predicted observed details for this apsim file
+                    sql = "SELECT * FROM PredictedObservedDetails WHERE ApsimFilesId = @ApsimFilesId ORDER BY ID";
+                    using (DbCommand commandER = sqlCon.CreateCommand(sql))
+                    {
+                        commandER.CommandType = CommandType.Text;
+                        commandER.AddParamWithValue("@ApsimFilesId", currentApsimFile.ID);
+                        DbDataReader reader = commandER.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            PredictedObservedDetails predictedObserved = new PredictedObservedDetails()
+                            {
+                                ID = reader.GetInt32(0),
+                                ApsimID = reader.GetInt32(1),
+                                DatabaseTableName = reader.GetString(2),
+                                PredictedTableName = reader.GetString(3),
+                                ObservedTableName = reader.GetString(4),
+                                FieldNameUsedForMatch = reader.GetString(5),
+                                FieldName2UsedForMatch = reader.GetNullOrString(6),
+                                FieldName3UsedForMatch = reader.GetNullOrString(7),
+                                PassedTests = reader.GetDouble(8),
+                                HasTests = reader.GetInt32(9),
+                            };
+                            if (reader.IsDBNull(10))
+                            {
+                                predictedObserved.AcceptedPredictedObservedDetailsId = 0;
+                            }
+                            else
+                            {
+                                predictedObserved.AcceptedPredictedObservedDetailsId = reader.GetInt32(10);
+                            }
+                            currentPredictedObservedDetails.Add(predictedObserved);
+                        }
+                        reader.Close();
+                    }
+                    currentApsimFile.PredictedObserved = currentPredictedObservedDetails;
+                }
+            }
+            catch (Exception ex)
+            {
+                Utilities.WriteToLogFile(string.Format("ERROR:  Unable to retrieve Apsim Files and PredictedObservedDetails for Pull Request Id {0}: {1}", pullRequestId.ToString(), ex.Message.ToString()));
+            }
+            return apsimFilesList;
+        }
+
         /// <summary>
         /// Gets the PredictedObservedDetail.ID for the records that match our current record 'matching' criteria
         /// </summary>
@@ -130,7 +288,7 @@ namespace APSIM.PerformanceTests.Service
         /// <param name="sqlCon"></param>
         /// <param name="predictedObservedID"></param>
         /// <returns></returns>
-        public static DataTable GetPredictedObservedValues(SqlConnection sqlCon, int predictedObservedID)
+        public static DataTable GetPredictedObservedValues(DbConnection sqlCon, int predictedObservedID)
         {
             DataTable resultDT = new DataTable();
             try
@@ -140,14 +298,12 @@ namespace APSIM.PerformanceTests.Service
                         + " WHERE PredictedObservedDetailsID = @PredictedObservedDetailsID " 
                         + " ORDER BY ValueName, ID ";
 
-                using (SqlCommand commandER = new SqlCommand(strSQL, sqlCon))
+                using (DbCommand commandER = sqlCon.CreateCommand(strSQL))
                 {
-                    commandER.CommandType = CommandType.Text;
-                    commandER.Parameters.AddWithValue("@PredictedObservedDetailsID", predictedObservedID);
+                    commandER.AddParamWithValue("@PredictedObservedDetailsID", predictedObservedID);
 
-                    SqlDataReader reader = commandER.ExecuteReader();
-                    resultDT.Load(reader);
-                    reader.Close();
+                    using (DbDataReader reader = commandER.ExecuteReader())
+                        resultDT.Load(reader);
                 }
             }
             catch (Exception ex)
@@ -380,20 +536,49 @@ namespace APSIM.PerformanceTests.Service
             }
         }
 
-        public static DateTime GetLatestPullRequestRunDate(SqlConnection sqlCon, int acceptedPullRequestID)
+        /// <summary>
+        /// Gets the date/time of the latest run date for a given pull request.
+        /// Throws if the pull request does not exist.
+        /// </summary>
+        /// <param name="connection">Database connection.</param>
+        /// <param name="pullRequestID">Pull request ID.</param>
+        public static DateTime GetLatestRunDateForPullRequest(DbConnection connection, int pullRequestID)
         {
-            DateTime returnDate = new DateTime();
-
-            string strSQL = "SELECT TOP 1 RunDate FROM ApsimFiles WHERE PullRequestId = @PullRequestId ORDER BY RunDate DESC";
-            using (SqlCommand commandES = new SqlCommand(strSQL, sqlCon))
+            try
             {
-                commandES.CommandType = CommandType.Text;
-                commandES.Parameters.AddWithValue("@PullRequestId", acceptedPullRequestID);
-
-                returnDate = (DateTime)commandES.ExecuteScalar();
+                string sql = "SELECT RunDate FROM ApsimFiles WHERE PullRequestId = @PullRequestId ORDER BY RunDate DESC";
+                sql = Utilities.Limit(connection, sql, 1);
+                using (DbCommand command = connection.CreateCommand(sql))
+                {
+                    command.AddParamWithValue("@PullRequestId", pullRequestID);
+                    return DateTime.Parse(command.ExecuteScalar().ToString());
+                }
             }
-            return returnDate;
+            catch (NullReferenceException)
+            {
+                throw new Exception($"No pull request exists with ID {pullRequestID}");
+            }
         }
 
+        /// <summary>
+        /// Unsure exactly what the idea is here. Seems to rename the P/O table name
+        /// for all apsim files in the entire DB?
+        /// </summary>
+        /// <param name="connection">Database connection.</param>
+        /// <param name="fileName">Name of the .apsimx file containing the P/O table to be renamed.</param>
+        /// <param name="oldTableName">Old P/O table name.</param>
+        /// <param name="newTableName">New P/O table name.</param>
+        public static void RenamePOTable(DbConnection connection, string fileName, string oldTableName, string newTableName)
+        {
+            string sql = ReflectionUtilities.GetResourceAsString("APSIM.PerformanceTests.Service.RenamePOTable.sql");
+            using (DbCommand command = connection.CreateCommand(sql))
+            {
+                command.AddParamWithValue("@NewTableName", newTableName);
+                command.AddParamWithValue("@OldTableName", oldTableName);
+                command.AddParamWithValue("@FileName", fileName);
+
+                command.ExecuteNonQuery();
+            }
+        }
     }
 }

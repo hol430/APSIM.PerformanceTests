@@ -119,8 +119,10 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\Site.css" />
     <EmbeddedResource Include="DeleteByPRIDNotByDate.sql" />
+    <EmbeddedResource Include="DeleteByPullRequest.sql" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
+    <EmbeddedResource Include="RenamePOTable.sql" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />

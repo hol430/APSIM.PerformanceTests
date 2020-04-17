@@ -27,47 +27,12 @@ namespace APSIM.PerformanceTests.Service.Controllers
         /// <returns></returns>
         public List<ApsimFile> GetAllApsimFiles()
         {
-            List<ApsimFile> apsimFiles = new List<ApsimFile>();
-            string connectStr = Utilities.GetConnectionString();
-
-            using (SqlConnection sqlCon = new SqlConnection(connectStr))
+            using (SqlConnection connection = new SqlConnection(Utilities.GetConnectionString()))
             {
-                sqlCon.Open();
-                string strSQL = "SELECT * FROM ApsimFiles ORDER BY RunDate DESC, PullRequestId ";
-                using (SqlCommand commandER = new SqlCommand(strSQL, sqlCon))
-                {
-                    commandER.CommandType = CommandType.Text;
-                    SqlDataReader reader = commandER.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        ApsimFile apsim = new ApsimFile
-                        {
-                            ID = reader.GetInt32(0),
-                            PullRequestId = reader.GetInt32(1),
-                            FileName = reader.GetString(2),
-                            FullFileName = reader.GetString(3),
-                            RunDate = reader.GetDateTime(4),
-                            StatsAccepted = reader.GetBoolean(5),
-                            IsMerged = reader.GetBoolean(6),
-                            SubmitDetails = reader.GetString(7)
-                        };
-                        if (reader.IsDBNull(8))
-                        {
-                            apsim.AcceptedPullRequestId = 0;
-                        }
-                        else
-                        {
-                            apsim.AcceptedPullRequestId = reader.GetInt32(8);
-                        }
-
-                        apsimFiles.Add(apsim);
-                    }
-                    reader.Close();
-                }
+                connection.Open();
+                return GetAllApsimFiles(connection);
             }
-            return apsimFiles;
         }
-
 
         /// <summary>
         /// Returns the details of Apsim Files, based on the Pull Request ID
@@ -78,49 +43,12 @@ namespace APSIM.PerformanceTests.Service.Controllers
         [ResponseType(typeof(ApsimFile))]
         public List<ApsimFile> GetApsimFile(int id)
         {
-            List<ApsimFile> apsimFiles = new List<ApsimFile>();
-            string connectStr = Utilities.GetConnectionString();
-
-            using (SqlConnection sqlCon = new SqlConnection(connectStr))
+            using (SqlConnection connection = new SqlConnection(Utilities.GetConnectionString()))
             {
-                sqlCon.Open();
-                string strSQL = "SELECT * FROM ApsimFiles WHERE PullRequestId = @PullRequestId ORDER BY RunDate DESC";
-                using (SqlCommand commandER = new SqlCommand(strSQL, sqlCon))
-                {
-                    commandER.CommandType = CommandType.Text;
-                    commandER.Parameters.AddWithValue("@PullRequestId", id);
-                    SqlDataReader reader = commandER.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        ApsimFile apsim = new ApsimFile
-                        {
-                            ID = reader.GetInt32(0),
-                            PullRequestId = reader.GetInt32(1),
-                            FileName = reader.GetString(2),
-                            FullFileName = reader.GetString(3),
-                            RunDate = reader.GetDateTime(4),
-                            StatsAccepted = reader.GetBoolean(5),
-                            IsMerged = reader.GetBoolean(6),
-                            SubmitDetails = reader.GetString(7)
-                        };
-
-                        if (reader.IsDBNull(8))
-                        {
-                            apsim.AcceptedPullRequestId = 0;
-                        }
-                        else
-                        {
-                            apsim.AcceptedPullRequestId = reader.GetInt32(8);
-                        }
-
-                        apsimFiles.Add(apsim);
-                    }
-                    reader.Close();
-                }
+                connection.Open();
+                return GetApsimFiles(connection, id);
             }
-            return apsimFiles;
         }
-
 
         /// <summary>
         /// NOTE:  This is intended for localhost use only, will not work on production server
@@ -136,8 +64,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
             try
             {
                 Utilities.WriteToLogFile("-----------------------------------");
-                string connectStr = Utilities.GetConnectionString();
-                using (SqlConnection sqlCon = new SqlConnection(connectStr))
+                using (SqlConnection sqlCon = new SqlConnection(Utilities.GetConnectionString()))
                 {
                     sqlCon.Open();
                     DeleteByPullRequest(sqlCon, id);
@@ -256,7 +183,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
             {
                 strSQL = "INSERT INTO ApsimFiles (PullRequestId, FileName, FullFileName, RunDate, StatsAccepted, IsMerged, SubmitDetails, AcceptedPullRequestId, AcceptedRunDate) "
                        + "VALUES (@PullRequestId, @FileName, @FullFileName, @RunDate, @StatsAccepted, @IsMerged, @SubmitDetails, @AcceptedPullRequestId, @AcceptedRunDate); "
-                       + Limit(connection, "SELECT ID FROM ApsimFiles ORDER BY ID DESC", 1);
+                       + Utilities.Limit(connection, "SELECT ID FROM ApsimFiles ORDER BY ID DESC", 1);
                 using (DbCommand commandES = connection.CreateCommand())
                 {
                     commandES.CommandText = strSQL;
@@ -466,12 +393,18 @@ namespace APSIM.PerformanceTests.Service.Controllers
             }
         }
 
-        private static int GetSimulationID(DbConnection connection, int apsimID, int simulationID)
+        /// <summary>
+        /// Gets the ID of the record in the simulations table with a given ApsimFile ID and SimulationID.
+        /// </summary>
+        /// <param name="connection">Database connection.</param>
+        /// <param name="apsimFileID">ID of the apsim file.</param>
+        /// <param name="simulationID">ID of the simulation in the _Simulations table in the apsim .db file.</param>
+        private static int GetSimulationID(DbConnection connection, int apsimFileID, int simulationID)
         {
             using (DbCommand command = connection.CreateCommand())
             {
                 command.CommandText = "SELECT ID FROM Simulations WHERE ApsimFilesID = @ApsimFileID AND OriginalSimulationID = @SimulationID";
-                command.AddParamWithValue("@ApsimFileID", apsimID);
+                command.AddParamWithValue("@ApsimFileID", apsimFileID);
                 command.AddParamWithValue("@SimulationID", simulationID);
 
                 long res = (long)command.ExecuteScalar();
@@ -496,7 +429,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
             try
             {
                 string strSQL = "SELECT * FROM ApsimFiles WHERE StatsAccepted = 1 AND PullRequestId != @PullRequestId ORDER BY RunDate DESC";
-                strSQL = Limit(connection, strSQL, 1);
+                strSQL = Utilities.Limit(connection, strSQL, 1);
                 using (DbCommand command = connection.CreateCommand(strSQL))
                 {
                     command.CommandType = CommandType.Text;
@@ -537,51 +470,20 @@ namespace APSIM.PerformanceTests.Service.Controllers
         }
 
         /// <summary>
-        /// Add a LIMIT or TOP clause to the select statement.
-        /// In the long run, this should really be removed as it's
-        /// basically a hack to workaround microsoft's lack of a
-        /// LIMIT clause.
-        /// </summary>
-        /// <param name="connection">Database connection.</param>
-        /// <param name="sql">Query text.</param>
-        /// <param name="n">Number of items to limit to.</param>
-        /// <returns></returns>
-        private static string Limit(DbConnection connection, string sql, int n)
-        {
-            if (connection is SqlConnection)
-                return sql.Replace("SELECT", $"SELECT TOP {n}");
-            if (connection.GetType().Name == "SQLiteConnection")
-                return sql + $" LIMIT {n}";
-
-            throw new NotImplementedException($"{connection.GetType().Name}: connection type not supported");
-        }
-
-
-
-        /// <summary>
         /// Deletes all Data for a specified Pull RequestId
         /// </summary>
         /// <param name="connectStr"></param>
         /// <param name="pullRequestId"></param>
         public static void DeleteByPullRequest(DbConnection sqlCon, int pullRequestId)
         {
-            try
+            string sql = ReflectionUtilities.GetResourceAsString("APSIM.PerformanceTests.Service.DeleteByPullRequest.sql");
+            using (DbCommand command = sqlCon.CreateCommand(sql))
             {
-                using (DbCommand command = sqlCon.CreateCommand())
-                {
-                    command.CommandText = "usp_DeleteByPullRequestId";
-                    command.Connection = sqlCon;
-                    // Configure the command and parameter.
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.CommandTimeout = 0;
-                    command.AddParamWithValue("@PullRequestID", pullRequestId);
+                // Configure the command and parameter.
+                command.CommandTimeout = 0;
+                command.AddParamWithValue("@PullRequestID", pullRequestId);
 
-                    command.ExecuteNonQuery();
-                }
-            }
-            catch (Exception ex)
-            {
-                Utilities.WriteToLogFile(string.Format("    ERROR:  Unable to remove data for Pull Request Id: {0}: {1}.", pullRequestId, ex.Message.ToString()));
+                command.ExecuteNonQuery();
             }
         }
 
@@ -610,6 +512,87 @@ namespace APSIM.PerformanceTests.Service.Controllers
             catch (Exception ex)
             {
                 Utilities.WriteToLogFile(string.Format("    ERROR:  Unable to remove data for Pull Request Id: {0} on {1}: {2}.", pullRequestId, runDate.ToString("dd/MM/yyyy HH:mm"), ex.Message.ToString()));
+            }
+        }
+
+        /// <summary>
+        /// todo: should this be internal?
+        /// </summary>
+        /// <param name="connection"></param>
+        public static List<ApsimFile> GetAllApsimFiles(DbConnection connection)
+        {
+            List<ApsimFile> apsimFiles = new List<ApsimFile>();
+
+            string strSQL = "SELECT * FROM ApsimFiles ORDER BY RunDate DESC, PullRequestId;";
+            using (DbCommand commandER = connection.CreateCommand(strSQL))
+            {
+                commandER.CommandType = CommandType.Text;
+                using (DbDataReader reader = commandER.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        apsimFiles.Add(new ApsimFile
+                        {
+                            ID = reader.GetInt32(0),
+                            PullRequestId = reader.GetInt32(1),
+                            FileName = reader.GetString(2),
+                            FullFileName = reader.GetString(3),
+                            RunDate = reader.GetDateTime(4),
+                            StatsAccepted = reader.GetBoolean(5),
+                            IsMerged = reader.GetBoolean(6),
+                            SubmitDetails = reader.GetString(7),
+                            AcceptedPullRequestId = reader.IsDBNull(8) ? 0 : reader.GetInt32(8)
+                        });
+                    }
+                }
+            }
+
+            return apsimFiles;
+        }
+
+        /// <summary>
+        /// Get an apsim file with a given ID.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static List<ApsimFile> GetApsimFiles(DbConnection connection, int id)
+        {
+            List<ApsimFile> files = new List<ApsimFile>();
+
+            string strSQL = "SELECT * FROM ApsimFiles WHERE PullRequestId = @PullRequestId ORDER BY RunDate DESC";
+            using (DbCommand commandER = connection.CreateCommand(strSQL))
+            {
+                commandER.AddParamWithValue("@PullRequestId", id);
+                using (DbDataReader reader = commandER.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        ApsimFile apsim = new ApsimFile
+                        {
+                            ID = reader.GetInt32(0),
+                            PullRequestId = reader.GetInt32(1),
+                            FileName = reader.GetString(2),
+                            FullFileName = reader.GetString(3),
+                            RunDate = reader.GetDateTime(4),
+                            StatsAccepted = reader.GetBoolean(5),
+                            IsMerged = reader.GetBoolean(6),
+                            SubmitDetails = reader.GetString(7)
+                        };
+
+                        if (reader.IsDBNull(8))
+                        {
+                            apsim.AcceptedPullRequestId = 0;
+                        }
+                        else
+                        {
+                            apsim.AcceptedPullRequestId = reader.GetInt32(8);
+                        }
+
+                        files.Add(apsim);
+                    }
+                    return files;
+                }
             }
         }
     }

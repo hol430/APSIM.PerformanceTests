@@ -36,5 +36,10 @@ namespace APSIM.PerformanceTests.Service.Extensions
             command.CommandText = commandText;
             return command;
         }
+
+        public static string GetNullOrString(this DbDataReader reader, int index)
+        {
+            return reader.IsDBNull(index) ? null : reader.GetString(index);
+        }
     }
 }

@@ -15,7 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace APSIM.PerformanceTests.Tests.Tests
+namespace APSIM.PerformanceTests.Tests
 {
     [TestFixture]
     public class ApsimFilesControllerTests
@@ -328,60 +328,73 @@ namespace APSIM.PerformanceTests.Tests.Tests
         }
 
         /// <summary>
-        /// Tests the accept stats functionality.
+        /// Tests the <see cref="ApsimFilesController.GetApsimFile(int)"/> function.
         /// </summary>
         [Test]
-        public void TestAcceptStats()
+        public void TestGetApsimFile()
         {
+            using (SQLiteConnection connection = Utility.CreateSQLiteConnection())
+            {
+                // There are no apsim files.
+                Assert.AreEqual(0, ApsimFilesController.GetApsimFiles(connection, 0).Count);
+                Assert.AreEqual(0, ApsimFilesController.GetApsimFiles(connection, 1).Count);
+            }
+
             using (SQLiteConnection connection = Utility.CreatePopulatedDB())
             {
-                AcceptStatsLog log = new AcceptStatsLog()
-                {
-                    FileCount = 1,
-                    LogAcceptDate = new DateTime(2020, 2, 1),
-                    LogPerson = "Chazza",
-                    LogReason = "felt like it",
-                    LogStatus = true,
-                    PullRequestId = 1,
-                    StatsPullRequestId = -1,
-                    SubmitDate = new DateTime(2020, 1, 1),
-                    SubmitPerson = "Bazza",
-                };
+                // There should be 1 apsim file, with ID 1.
+                Assert.AreEqual(0, ApsimFilesController.GetApsimFiles(connection, 0).Count);
 
-                DBFunctions.UpdateAsStatsAccepted(connection, "Accept", log);
+                List<ApsimFile> files = ApsimFilesController.GetApsimFiles(connection, 1);
+                Assert.AreEqual(1, files.Count);
+                Assert.AreEqual(1, files[0].ID);
+            }
+        }
 
-                // Need to check AcceptStatsLogs and ApsimFiles.
-                DataTable acceptStatsLog = new DataTable();
-                using (DbCommand command = connection.CreateCommand("SELECT * FROM AcceptStatsLogs"))
-                    using (DbDataReader reader = command.ExecuteReader())
-                        acceptStatsLog.Load(reader);
+        /// <summary>
+        /// Tests the <see cref="ApsimFilesController.GetAllApsimFiles"/> function.
+        /// </summary>
+        [Test]
+        public void TestGetAllApsimFiles()
+        {
+            using (SQLiteConnection connection = Utility.CreateSQLiteConnection())
+                Assert.AreEqual(0, ApsimFilesController.GetAllApsimFiles(connection).Count);
 
-                Assert.AreEqual(1, acceptStatsLog.Rows.Count);
-                Assert.AreEqual(10, acceptStatsLog.Columns.Count);
-                DataRow row = acceptStatsLog.Rows[0];
+            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            {
+                List<ApsimFile> files = ApsimFilesController.GetAllApsimFiles(connection);
 
-                Assert.AreEqual(1, row["ID"]);
-                Assert.AreEqual(log.PullRequestId, row["PullRequestId"]);
-                Assert.AreEqual(log.SubmitPerson, row["SubmitPerson"]);
-                Assert.AreEqual(log.SubmitDate, row["SubmitDate"]);
-                Assert.AreEqual(log.LogPerson, row["LogPerson"]);
-                Assert.AreEqual(log.LogReason, row["LogReason"]);
-                Assert.AreEqual(log.LogStatus, row["LogStatus"]);
-                Assert.AreEqual(log.LogAcceptDate, row["LogAcceptDate"]);
-                Assert.AreEqual(log.StatsPullRequestId, row["StatsPullRequestId"]);
-                Assert.AreEqual(log.FileCount, row["FileCount"]);
+                Assert.AreEqual(1, files.Count);
+                Assert.AreEqual(1, files[0].ID);
+            }
+        }
 
-                DataTable apsimFiles = new DataTable();
-                using (DbCommand command = connection.CreateCommand("SELECT * FROM ApsimFiles"))
-                    using (DbDataReader reader = command.ExecuteReader())
-                        apsimFiles.Load(reader);
+        /// <summary>
+        /// Tests the <see cref="ApsimFilesController.DeleteByPullRequestId(int)"/> function.
+        /// </summary>
+        [Test]
+        public void TestDeleteByPullRequetID()
+        {
+            using (SQLiteConnection connection = Utility.CreateSQLiteConnection())
+            {
+                ApsimFilesController.DeleteByPullRequest(connection, 0);
+                using (DbCommand command = connection.CreateCommand("SELECT COUNT(*) FROM ApsimFiles"))
+                    Assert.AreEqual(0, command.ExecuteScalar());
+            }
 
-                Assert.AreEqual(1, apsimFiles.Rows.Count);
-                row = apsimFiles.Rows[0];
+            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            {
+                // This database contains data for a single pull request, with ID 1.
 
-                // Accepting the stats currently doesn't update the AcceptedPullRequestID of
-                // any existing apsim files.
-                Assert.AreEqual(-1, row["AcceptedPullRequestId"]);
+                // Deleting pull request with ID 0 should not remove any rows.
+                ApsimFilesController.DeleteByPullRequest(connection, 0);
+                using (DbCommand command = connection.CreateCommand("SELECT COUNT(*) FROM ApsimFiles"))
+                    Assert.AreEqual(1, command.ExecuteScalar());
+
+                // Deleting pull request with ID 1 should remove the only row.
+                ApsimFilesController.DeleteByPullRequest(connection, 1);
+                using (DbCommand command = connection.CreateCommand("SELECT COUNT(*) FROM ApsimFiles"))
+                    Assert.AreEqual(0, command.ExecuteScalar());
             }
         }
     }

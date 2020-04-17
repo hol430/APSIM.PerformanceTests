@@ -29,59 +29,16 @@ namespace APSIM.PerformanceTests.Service.Controllers
         public IHttpActionResult GetAcceptedStatsStatusAndUpdateGithub(int id)
         {
             Utilities.WriteToLogFile("-----------------------------------");
-            double PercentPassed = 0;
             bool passed = false;
-            int acceptedFileCount = 0;
-            int currentFileCount = 0;
-            string connectStr = Utilities.GetConnectionString();
-            using (SqlConnection sqlCon = new SqlConnection(connectStr))
+            using (SqlConnection sqlCon = new SqlConnection(Utilities.GetConnectionString()))
             {
                 sqlCon.Open();
                 try
                 {
-                    // Get proportion of tests which passed.
-                    string strSQL = "SELECT  100 * COUNT(CASE WHEN [PassedTests] = 100 THEN 1 ELSE NULL END) / COUNT(CASE WHEN [PassedTests] IS NOT NULL  THEN 1 ELSE 0 END) as PercentPassed "
-                                  + " FROM  [dbo].[ApsimFiles] AS a "
-                                  + "    INNER JOIN[dbo].[PredictedObservedDetails] AS p ON a.ID = p.ApsimFilesID "
-                                  + "  WHERE a.[PullRequestId] = @PullRequestId ";
-                    using (SqlCommand commandES = new SqlCommand(strSQL, sqlCon))
-                    {
-                        commandES.CommandType = CommandType.Text;
-                        commandES.Parameters.AddWithValue("@PullRequestId", id);
-                        object obj = commandES.ExecuteScalar();
-                        PercentPassed = double.Parse(obj.ToString());
-                    }
-
-                    // Get file count for accepted stats.
-                    strSQL = "SELECT TOP (1) [FileCount]" + Environment.NewLine +
-                                "FROM[APSIM.PerformanceTests].[dbo].[AcceptStatsLogs] af" + Environment.NewLine +
-                                "WHERE af.[LogStatus] = 1" + Environment.NewLine +
-                                "AND af.[StatsPullRequestId] = 0" + Environment.NewLine +
-                                "ORDER BY ID DESC";
-                    using (SqlCommand commandES = new SqlCommand(strSQL, sqlCon))
-                    {
-                        commandES.CommandType = CommandType.Text;
-                        object obj = commandES.ExecuteScalar();
-                        acceptedFileCount = int.Parse(obj.ToString());
-                    }
-
-                    // Get file count for this pull request.
-                    strSQL = @"SELECT COUNT(*) as CurrentFileCount
-FROM [APSIM.PerformanceTests].[dbo].[PredictedObservedDetails], [APSIM.PerformanceTests].[dbo].[ApsimFiles] af
-WHERE [ApsimFilesID] = af.[ID]
-AND af.[PullRequestId] = @PullRequestID";
-                    using (SqlCommand commandES = new SqlCommand(strSQL, sqlCon))
-                    {
-                        commandES.CommandType = CommandType.Text;
-                        commandES.Parameters.AddWithValue("@PullRequestId", id);
-                        object obj = commandES.ExecuteScalar();
-                        currentFileCount = int.Parse(obj.ToString());
-                    }
-
-                    if (PercentPassed == 100 && currentFileCount == acceptedFileCount)
-                    {
-                        passed = true;
-                    }
+                    double percentPassed = DBFunctions.GetPercentPassed(sqlCon, id);
+                    int acceptedFileCount = DBFunctions.GetAcceptedFileCount(sqlCon);
+                    int currentFileCount = DBFunctions.GetFileCount(sqlCon, id);
+                    passed = percentPassed == 100 && currentFileCount == acceptedFileCount;
                 }
                 catch (Exception ex)
                 {
