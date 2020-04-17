@@ -456,7 +456,7 @@ namespace APSIM.PerformanceTests.Tests
         }
 
         /// <summary>
-        /// Tests the <see cref="PORenameController.PostPORename(PORename)"/> function.
+        /// Tests the <see cref="DBFunctions.RenamePOTable(DbConnection, string, string, string)"/> function.
         /// </summary>
         [Test]
         public void TestRenamePOTable()

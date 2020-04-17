@@ -35,17 +35,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         sqlCon.Open();
                         if (renameObj.Type == "TableRename")
                         {
-                            using (SqlCommand commandENQ = new SqlCommand("usp_UpdatePredictedObservedTableName", sqlCon))
-                            {
-                                //Now update the database with the test results
-                                // Configure the command and parameter.
-                                commandENQ.CommandType = CommandType.StoredProcedure;
-                                commandENQ.Parameters.AddWithValue("@FileName", renameObj.FileName);
-                                commandENQ.Parameters.AddWithValue("@OldTableName", renameObj.TableName);
-                                commandENQ.Parameters.AddWithValue("@NewTableName", renameObj.NewTableName);
-
-                                commandENQ.ExecuteNonQuery();
-                            }
+                            DBFunctions.RenamePOTable(sqlCon, renameObj.FileName, renameObj.TableName, renameObj.NewTableName);
                             Utilities.WriteToLogFile("    " + errHelper + "  competed successfully!");
                         }
                         else if (renameObj.Type == "VariableRename")
