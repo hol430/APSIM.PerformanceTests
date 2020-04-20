@@ -109,8 +109,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
             }
             catch (Exception ex)
             {
-                Utilities.WriteToLogFile(string.Format("    ERROR in PostApsimFile:  {0} - {1}", ErrMessageHelper, ex.Message));
-                throw new Exception(string.Format("    ERROR in PostApsimFile:  {0} - {1}", ErrMessageHelper, ex.Message));
+                Utilities.WriteToLogFile(string.Format("    ERROR in PostApsimFile:  {0} - {1}", ErrMessageHelper, ex.ToString()));
+                throw new Exception(string.Format("    ERROR in PostApsimFile:  {0} - {1}", ErrMessageHelper, ex.Message), ex);
             }
         }
 
@@ -141,8 +141,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     commandES.AddParamWithValue("@PullRequestId", apsimfile.PullRequestId);
                     commandES.AddParamWithValue("@RunDate", apsimfile.RunDate);
 
-                    long x = (long)commandES.ExecuteScalar();
-                    pullRequestCount = (int)x;
+                    pullRequestCount = Convert.ToInt32(commandES.ExecuteScalar());
                 }
             }
             catch (Exception ex)
@@ -207,8 +206,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     //this should return the IDENTITY value for this record (which is required for the next update)
                     ErrMessageHelper = "Filename: " + apsimfile.FileName;
 
-                    long res = (long)commandES.ExecuteScalar();
-                    ApsimID = (int)res;
+                    ApsimID = Convert.ToInt32(commandES.ExecuteScalar());
                     apsimfile.ID = ApsimID;
                     ErrMessageHelper = "Filename: " + apsimfile.FileName + "- ApsimID: " + ApsimID;
                     Utilities.WriteToLogFile(string.Format("    Filename {0} inserted into ApsimFiles successfully!", apsimfile.FileName));
@@ -298,8 +296,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         //this should return the IDENTITY value for this record (which is required for the next update)
                         ErrMessageHelper = "PredictedObservedDetails for " + poDetail.DatabaseTableName;
 
-                        long res = (long)commandES.ExecuteScalar();
-                        predictedObservedID = (int)res;
+                        predictedObservedID = Convert.ToInt32(commandES.ExecuteScalar());
                         ErrMessageHelper = "PredictedObservedDetails for " + poDetail.DatabaseTableName + "(ID: " + predictedObservedID + ")";
                         Utilities.WriteToLogFile(string.Format("    Filename {0} PredictedObserved Table Details {1}, (Id: {2}) imported successfully!", apsimfile.FileName, poDetail.DatabaseTableName, predictedObservedID));
                     }
@@ -410,8 +407,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 command.AddParamWithValue("@ApsimFileID", apsimFileID);
                 command.AddParamWithValue("@SimulationID", simulationID);
 
-                long res = (long)command.ExecuteScalar();
-                return (int)res;
+                return Convert.ToInt32(command.ExecuteScalar());
             }
         }
 
