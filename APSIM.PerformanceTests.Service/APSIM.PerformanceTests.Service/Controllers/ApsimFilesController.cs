@@ -100,7 +100,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 // don't want to change anything until we have tests.
                 int ApsimID;
                 using (SqlConnection conn = new SqlConnection(Utilities.GetConnectionString()))
+                {
+                    conn.Open();
                     InsertApsimFile(conn, apsimfile, out ErrMessageHelper, out ApsimID);
+                }
 
                 return CreatedAtRoute("DefaultApi", new { id = ApsimID }, apsimfile);
             }

@@ -60,7 +60,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 {
                     //update the 'Stats accepted column from here
                     using (SqlConnection connection = new SqlConnection(Utilities.GetConnectionString()))
+                    {
+                        connection.Open();
                         DBFunctions.UpdateAsStatsAccepted(connection, "Accept", acceptLog);
+                    }
                     CallGitHubWithPassFail(acceptLog.PullRequestId, acceptLog.LogStatus);
                     Utilities.WriteToLogFile(string.Format("   Pull Request Id {0}, AcceptedStats has been confirmed and Github updated.", acceptLog.PullRequestId.ToString())); ;
                 }
