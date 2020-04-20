@@ -118,8 +118,11 @@
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\Site.css" />
+    <EmbeddedResource Include="DeleteByPRIDNotByDate.sql" />
+    <EmbeddedResource Include="DeleteByPullRequest.sql" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
+    <EmbeddedResource Include="RenamePOTable.sql" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
@@ -152,6 +155,7 @@
     <Compile Include="Controllers\AcceptStatsController.cs" />
     <Compile Include="Controllers\PORenameController.cs" />
     <Compile Include="Controllers\UpdateStatsController.cs" />
+    <Compile Include="Extensions\DbCommandExtensions.cs" />
     <Compile Include="Models\AcceptStatsLog.cs" />
     <Compile Include="Models\PORename.cs" />
     <Compile Include="Utilities\DBFunctions.cs" />
@@ -183,7 +187,7 @@
     <Folder Include="Views\Rename\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Apsim.Shared\APSIM.Shared.csproj">
+    <ProjectReference Include="..\..\..\ApsimX\APSIM.Shared\APSIM.Shared.csproj">
       <Project>{e243ae8d-35e3-4397-b180-ef1e8a91ae8c}</Project>
       <Name>APSIM.Shared</Name>
     </ProjectReference>

@@ -1,0 +1,81 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Collector", "APSIM.PerformanceTests.Collector\APSIM.PerformanceTests.Collector.csproj", "{D53509C0-EA48-47A6-8CA1-A11B480CF42A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "..\ApsimX\Models\Models.csproj", "{A3E10705-F2BB-4182-A19C-7F63222584DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.Shared", "..\ApsimX\APSIM.Shared\APSIM.Shared.csproj", "{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Service", "APSIM.PerformanceTests.Service\APSIM.PerformanceTests.Service\APSIM.PerformanceTests.Service.csproj", "{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Portal", "APSIM.PerformanceTests.Portal\APSIM.PerformanceTests.Portal\APSIM.PerformanceTests.Portal.csproj", "{AE6E791B-6946-4273-9B4A-F012845AFF76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Tests", "APSIM.PerformanceTests.Tests\APSIM.PerformanceTests.Tests.csproj", "{DE662D68-2EEF-4394-BA5F-4362174665A7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		ApsimInfo|Any CPU = ApsimInfo|Any CPU
+		CsiroApsim|Any CPU = CsiroApsim|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D53509C0-EA48-47A6-8CA1-A11B480CF42A}.ApsimInfo|Any CPU.ActiveCfg = Release|Any CPU
+		{D53509C0-EA48-47A6-8CA1-A11B480CF42A}.ApsimInfo|Any CPU.Build.0 = Release|Any CPU
+		{D53509C0-EA48-47A6-8CA1-A11B480CF42A}.CsiroApsim|Any CPU.ActiveCfg = Release|Any CPU
+		{D53509C0-EA48-47A6-8CA1-A11B480CF42A}.CsiroApsim|Any CPU.Build.0 = Release|Any CPU
+		{D53509C0-EA48-47A6-8CA1-A11B480CF42A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D53509C0-EA48-47A6-8CA1-A11B480CF42A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D53509C0-EA48-47A6-8CA1-A11B480CF42A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D53509C0-EA48-47A6-8CA1-A11B480CF42A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3E10705-F2BB-4182-A19C-7F63222584DF}.ApsimInfo|Any CPU.ActiveCfg = Release|Any CPU
+		{A3E10705-F2BB-4182-A19C-7F63222584DF}.ApsimInfo|Any CPU.Build.0 = Release|Any CPU
+		{A3E10705-F2BB-4182-A19C-7F63222584DF}.CsiroApsim|Any CPU.ActiveCfg = Release|Any CPU
+		{A3E10705-F2BB-4182-A19C-7F63222584DF}.CsiroApsim|Any CPU.Build.0 = Release|Any CPU
+		{A3E10705-F2BB-4182-A19C-7F63222584DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3E10705-F2BB-4182-A19C-7F63222584DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3E10705-F2BB-4182-A19C-7F63222584DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3E10705-F2BB-4182-A19C-7F63222584DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.ApsimInfo|Any CPU.ActiveCfg = DebugAnyCPU|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.ApsimInfo|Any CPU.Build.0 = DebugAnyCPU|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.CsiroApsim|Any CPU.ActiveCfg = DebugAnyCPU|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.CsiroApsim|Any CPU.Build.0 = DebugAnyCPU|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}.ApsimInfo|Any CPU.ActiveCfg = ApsimInfo|Any CPU
+		{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}.ApsimInfo|Any CPU.Build.0 = ApsimInfo|Any CPU
+		{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}.CsiroApsim|Any CPU.ActiveCfg = CsiroApsim|Any CPU
+		{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}.CsiroApsim|Any CPU.Build.0 = CsiroApsim|Any CPU
+		{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.ApsimInfo|Any CPU.ActiveCfg = ApsimInfo|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.ApsimInfo|Any CPU.Build.0 = ApsimInfo|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.CsiroApsim|Any CPU.ActiveCfg = CsiroApsim|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.CsiroApsim|Any CPU.Build.0 = CsiroApsim|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE6E791B-6946-4273-9B4A-F012845AFF76}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{DE662D68-2EEF-4394-BA5F-4362174665A7}.ApsimInfo|Any CPU.ActiveCfg = Release|Any CPU
+		{DE662D68-2EEF-4394-BA5F-4362174665A7}.ApsimInfo|Any CPU.Build.0 = Release|Any CPU
+		{DE662D68-2EEF-4394-BA5F-4362174665A7}.CsiroApsim|Any CPU.ActiveCfg = Release|Any CPU
+		{DE662D68-2EEF-4394-BA5F-4362174665A7}.CsiroApsim|Any CPU.Build.0 = Release|Any CPU
+		{DE662D68-2EEF-4394-BA5F-4362174665A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE662D68-2EEF-4394-BA5F-4362174665A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE662D68-2EEF-4394-BA5F-4362174665A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE662D68-2EEF-4394-BA5F-4362174665A7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8BF0DFEE-1087-4F96-BDDB-CAF9B3FDDA40}
+	EndGlobalSection
+EndGlobal
