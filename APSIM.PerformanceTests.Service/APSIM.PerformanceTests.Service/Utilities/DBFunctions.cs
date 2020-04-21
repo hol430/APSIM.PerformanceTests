@@ -331,7 +331,7 @@ namespace APSIM.PerformanceTests.Service
                     bool passedTests = true;
 
                     string sql = "INSERT INTO PredictedObservedTests " +
-                                 "(PredictedObservedDetailsID, Variable, Test, Accepted, Current, Difference, PassedTest, AcceptedPredictedObservedTestsID, IsImprovement, SortOrder, DifferencePercent)\n" +
+                                 "(PredictedObservedDetailsID, Variable, Test, Accepted, [Current], Difference, PassedTest, AcceptedPredictedObservedTestsID, IsImprovement, SortOrder, DifferencePercent)\n" +
                                  "VALUES (@PredictedObservedDetailsID, @Variable, @Test, @Accepted, @Current, @Difference, @PassedTest, @AcceptedPredictedObservedTestsID, @IsImprovement, @SortOrder, @DifferencePercent);";
                     using (DbCommand commandENQ = sqlCon.CreateCommand(sql))
                     {
