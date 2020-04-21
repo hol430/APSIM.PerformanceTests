@@ -348,7 +348,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
 
                             foreach (DataRow row in poDetail.Data.Rows)
                             {
-                                int simulationsID = GetSimulationID(connection, ApsimID, (int)row["SimulationID"]);
+                                int simulationsID = GetSimulationID(connection, ApsimID, Convert.ToInt32(row["SimulationID"]));
                                 command.Parameters["@SimulationsID"].Value = simulationsID;
                                 command.Parameters["@MatchValue"].Value = row[poDetail.FieldNameUsedForMatch];
 

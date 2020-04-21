@@ -71,6 +71,31 @@ namespace APSIM.PerformanceTests.Tests
         }
 
         /// <summary>
+        /// Test acceptance of certain variables being of the long (Int64) type.
+        /// </summary>
+        [Test]
+        public void TestPostApsimFileWithLongSimulationID()
+        {
+            ApsimFile file = GetSimpleApsimFile();
+
+            DataTable poData = new DataTable("PredictedObserved");
+            poData.Columns.Add("SimulationID", typeof(long));
+            poData.Columns.Add("Predicted.GrainWt", typeof(double));
+            poData.Columns.Add("Observed.GrainWt", typeof(double));
+            poData.Columns.Add("xval", typeof(double));
+            poData.Rows.Add(1, 0.9, 1.1, 0.1);
+            poData.Rows.Add(2, 0.5, 1.0, 0.1);
+            file.PredictedObserved.ElementAt(0).Data = poData;
+
+            foreach (DbConnection connection in populousConnections)
+            {
+                ApsimFilesController.InsertApsimFile(connection, file, out _, out _);
+                using (DbCommand command = connection.CreateCommand(Utilities.Limit(connection, "SELECT SimulationsID FROM PredictedObservedValues", 1)))
+                    Assert.AreEqual(1, command.ExecuteScalar());
+            }
+        }
+
+        /// <summary>
         /// This test adds a simple apsimfile to an empty DB.
         /// </summary>
         [Test]
