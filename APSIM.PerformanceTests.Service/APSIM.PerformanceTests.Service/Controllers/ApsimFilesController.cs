@@ -278,8 +278,8 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     strSQL = "INSERT INTO PredictedObservedDetails ("
                     + "ApsimFilesID, TableName, PredictedTableName, ObservedTableName, FieldNameUsedForMatch, FieldName2UsedForMatch, FieldName3UsedForMatch, HasTests) "
                     + "VALUES (@ApsimFilesID, @TableName, @PredictedTableName, @ObservedTableName, @FieldNameUsedForMatch, @FieldName2UsedForMatch, @FieldName3UsedForMatch, 1); "
-                    + "SELECT ID FROM PredictedObservedDetails ORDER BY ID DESC LIMIT 1;";
-
+                    + "SELECT ID FROM PredictedObservedDetails ORDER BY ID DESC";
+                    strSQL = Utilities.Limit(connection, strSQL, 1);
                     using (DbCommand commandES = connection.CreateCommand())
                     {
                         commandES.CommandText = strSQL;
