@@ -262,7 +262,7 @@ namespace APSIM.PerformanceTests.Service
                     string strSQL = "SELECT Variable, Test, [Current] as 'Accepted', ID As 'AcceptedPredictedObservedTestsID' "
                             + " FROM PredictedObservedTests "
                             + " WHERE PredictedObservedDetailsID = @PredictedObservedDetailsID "
-                            + " ORDER BY Variable, Test, 4";
+                            + " ORDER BY Variable, LOWER(Test)";
 
                     using (DbCommand commandER = connection.CreateCommand(strSQL))
                     {
