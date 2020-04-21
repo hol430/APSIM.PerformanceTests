@@ -328,9 +328,9 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     command.AddParamWithValue("MatchName3", poDetail.FieldName3UsedForMatch);
 
                     command.AddParamWithValue("@SimulationsID", 0);
-                    command.AddParamWithValue("@MatchValue", null);
-                    command.AddParamWithValue("@MatchValue2", null);
-                    command.AddParamWithValue("@MatchValue3", null);
+                    command.AddParamWithValue("@MatchValue", DBNull.Value);
+                    command.AddParamWithValue("@MatchValue2", DBNull.Value);
+                    command.AddParamWithValue("@MatchValue3", DBNull.Value);
 
                     command.AddParamWithValue("@ValueName", "");
                     command.AddParamWithValue("@PredictedValue", 0d);

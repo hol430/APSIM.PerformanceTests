@@ -345,7 +345,7 @@ namespace APSIM.PerformanceTests.Service
                         commandENQ.AddParamWithValue("@AcceptedPredictedObservedTestsID", 0);//int
                         commandENQ.AddParamWithValue("@IsImprovement", 0);//int
                         commandENQ.AddParamWithValue("@SortOrder", 0);//int
-                        commandENQ.AddParamWithValue("@DifferencePercent", null);
+                        commandENQ.AddParamWithValue("@DifferencePercent", DBNull.Value);
 
                         foreach (DataRow row in dtTests.Rows)
                         {
@@ -378,7 +378,7 @@ namespace APSIM.PerformanceTests.Service
                                     commandENQ.Parameters["@DifferencePercent"].Value = diffPercent;
                                 }
                                 else
-                                    commandENQ.Parameters["@DifferencePercent"].Value = null;
+                                    commandENQ.Parameters["@DifferencePercent"].Value = DBNull.Value;
 
                                 commandENQ.ExecuteNonQuery();
                             }
