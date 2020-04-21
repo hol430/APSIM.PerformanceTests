@@ -78,7 +78,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CreateTables.sql" />
+    <EmbeddedResource Include="CreateTables.sqlserver" />
+    <EmbeddedResource Include="CreateTables.sqlite" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

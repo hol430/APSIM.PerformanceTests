@@ -1,0 +1,71 @@
+CREATE TABLE AcceptStatsLogs (
+  ID INTEGER PRIMARY KEY NOT NULL IDENTITY(1,1),
+  PullRequestId INTEGER NOT NULL,
+  SubmitPerson VARCHAR(max) NOT NULL,
+  SubmitDate DATETIME NOT NULL,
+  LogPerson VARCHAR(max) NOT NULL,
+  LogReason VARCHAR(max) NOT NULL,
+  LogStatus BIT NOT NULL,
+  LogAcceptDate DATETIME,
+  StatsPullRequestId INTEGER,
+  FileCount INTEGER
+);
+CREATE TABLE ApsimFiles (
+  ID INTEGER PRIMARY KEY NOT NULL IDENTITY(1,1),
+  PullRequestId INTEGER NOT NULL,
+  FileName VARCHAR(max) NOT NULL,
+  FullFileName VARCHAR(max) NOT NULL,
+  RunDate DATETIME NOT NULL,
+  StatsAccepted BIT,
+  IsMerged BIT,
+  SubmitDetails VARCHAR(max),
+  AcceptedPullRequestId INTEGER,
+  AcceptedRunDate DATETIME
+);
+CREATE TABLE PredictedObservedDetails (
+  ID INTEGER PRIMARY KEY NOT NULL IDENTITY(1,1),
+  ApsimFilesID INTEGER NOT NULL,
+  TableName VARCHAR(max) NOT NULL,
+  PredictedTableName VARCHAR(max) NOT NULL,
+  ObservedTableName VARCHAR(max) NOT NULL,
+  FieldNameUsedForMatch VARCHAR(max),
+  FieldName2UsedForMatch VARCHAR(max),
+  FieldName3UsedForMatch VARCHAR(max),
+  PassedTests FLOAT,
+  HasTests INTEGER,
+  AcceptedPredictedObservedDetailsID INTEGER
+);
+CREATE TABLE PredictedObservedTests (
+  ID INTEGER PRIMARY KEY NOT NULL IDENTITY(1,1),
+  PredictedObservedDetailsID INTEGER NOT NULL,
+  Variable VARCHAR(max) NOT NULL,
+  Test VARCHAR(max),
+  Accepted FLOAT,
+  [Current] FLOAT,
+  [Difference] FLOAT,
+  PassedTest BIT,
+  AcceptedPredictedObservedTestsID INTEGER,
+  IsImprovement BIT,
+  SortOrder INTEGER,
+  DifferencePercent FLOAT
+);
+CREATE TABLE PredictedObservedValues (
+  ID INTEGER PRIMARY KEY NOT NULL IDENTITY(1,1),
+  PredictedObservedDetailsID INTEGER NOT NULL,
+  SimulationsID INTEGER NOT NULL,
+  MatchName VARCHAR(max) NOT NULL,
+  MatchValue FLOAT NOT NULL,
+  MatchName2 VARCHAR(max),
+  MatchValue2 FLOAT,
+  MatchName3 VARCHAR(max),
+  MatchValue3 FLOAT,
+  ValueName VARCHAR(max) NOT NULL,
+  PredictedValue FLOAT,
+  ObservedValue FLOAT
+);
+CREATE TABLE Simulations (
+  ID INTEGER PRIMARY KEY NOT NULL IDENTITY(1,1),
+  ApsimFilesID INTEGER NOT NULL,
+  Name VARCHAR(max) NOT NULL,
+  OriginalSimulationID INTEGER NOT NULL
+);

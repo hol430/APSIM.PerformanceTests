@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Linq;
 using System.Text;
@@ -13,28 +14,98 @@ namespace APSIM.PerformanceTests.Tests
 {
     public static class Utility
     {
+        public static SqlConnection CreateSqlServerDB()
+        {
+            var connection = new SqlConnection(@"Server = (localdb)\LocalDBApp1; Integrated Security = true;");
+            connection.Open();
+
+            string dbName = Guid.NewGuid().ToString().Replace("-", "");
+            using (DbCommand command = connection.CreateCommand($"CREATE DATABASE [{dbName}];"))// GO; USE [{dbName}]; GO;"))
+                command.ExecuteNonQuery();
+            using (DbCommand command = connection.CreateCommand($"USE [{dbName}];"))
+                command.ExecuteNonQuery();
+
+            Initialise(connection);
+
+            return connection;
+        }
+
         /// <summary>
         /// Creates, opens and returns a connection to an
         /// in-memory SQLite database with the standard
         /// APSIM.PerformanceTests schema.
         /// </summary>
         /// <returns></returns>
-        public static SQLiteConnection CreateSQLiteConnection()
+        public static SQLiteConnection CreateSQLiteDB()
         {
             var connection = new SQLiteConnection("Data Source=:memory:");
             connection.Open();
-
-            string sql = ReflectionUtilities.GetResourceAsString("APSIM.PerformanceTests.Tests.CreateTables.sql");
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-                command.ExecuteNonQuery();
+            Initialise(connection);
 
             return connection;
         }
 
-        public static SQLiteConnection CreatePopulatedDB()
+        public static SqlConnection CreatePopulatedSqlServerDB()
         {
-            SQLiteConnection connection = CreateSQLiteConnection();
+            SqlConnection connection = CreateSqlServerDB();
+            Populate(connection);
+            return connection;
+        }
 
+        internal static void CloseDB(DbConnection connection)
+        {
+            if (connection is SqlConnection)
+            {
+                string dbName;
+                using (DbCommand command = connection.CreateCommand("SELECT DB_NAME();"))
+                    dbName = (string)command.ExecuteScalar();
+                using (DbCommand command = connection.CreateCommand($"USE MASTER; DROP DATABASE [{dbName}];"))
+                    command.ExecuteNonQuery();
+            }
+            connection.Close();
+        }
+
+        public static SQLiteConnection CreatePopulatedSQLiteDB()
+        {
+            SQLiteConnection connection = CreateSQLiteDB();
+            Populate(connection);
+            return connection;
+        }
+
+        /// <summary>
+        /// Insert DataTable into a database. This assumes that
+        /// the table already exists in the database.
+        /// </summary>
+        /// <param name="connection">Connection to the database.</param>
+        /// <param name="table">Table to be inserted.</param>
+        public static void InsertDataIntoDatabase(DbConnection connection, DataTable table)
+        {
+            string[] colNames = table.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
+            string[] paramNames = colNames.Select(n => "@" + n).ToArray();
+            string[] escapedColNames = colNames.Select(c => $"[{c}]").ToArray();
+            string sql = $"INSERT INTO {table.TableName} ({string.Join(", ", escapedColNames)})\n" +
+                         $"VALUES ({string.Join(", ", paramNames)});";
+
+            using (DbCommand command = connection.CreateCommand(sql))
+            {
+                foreach (string param in paramNames)
+                    command.AddParamWithValue(param, null);
+
+                foreach (DataRow row in table.Rows)
+                {
+                    foreach (DataColumn col in table.Columns)
+                    {
+                        string paramName = "@" + col.ColumnName;
+                        command.Parameters[paramName].Value = row[col.ColumnName];
+                    }
+
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        private static void Populate(DbConnection connection)
+        {
             DataTable simulations = TableFactory.CreateEmptySimulationsTable();
             simulations.Rows.Add(1, "sim1", 1);
             simulations.Rows.Add(1, "sim2", 2);
@@ -66,39 +137,20 @@ namespace APSIM.PerformanceTests.Tests
             poTests.Rows.Add(1, "GrainWt", "MAE", null, 0.35, null, 0, null, null, 1, null);
             poTests.Rows.Add(1, "GrainWt", "RSR", null, 5.385165, null, 0, null, null, 1, null);
             InsertDataIntoDatabase(connection, poTests);
-
-            return connection;
         }
 
-        /// <summary>
-        /// Insert DataTable into a database. This assumes that
-        /// the table already exists in the database.
-        /// </summary>
-        /// <param name="connection">Connection to the database.</param>
-        /// <param name="table">Table to be inserted.</param>
-        public static void InsertDataIntoDatabase(DbConnection connection, DataTable table)
+        private static void Initialise(SQLiteConnection connection)
         {
-            string[] colNames = table.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
-            string[] paramNames = colNames.Select(n => "@" + n).ToArray();
-            string sql = $"INSERT INTO {table.TableName} ({string.Join(", ", colNames)})\n" +
-                         $"VALUES ({string.Join(", ", paramNames)});";
-
+            string sql = ReflectionUtilities.GetResourceAsString("APSIM.PerformanceTests.Tests.CreateTables.sqlite");
             using (DbCommand command = connection.CreateCommand(sql))
-            {
-                foreach (string param in paramNames)
-                    command.AddParamWithValue(param, null);
+                command.ExecuteNonQuery();
+        }
 
-                foreach (DataRow row in table.Rows)
-                {
-                    foreach (DataColumn col in table.Columns)
-                    {
-                        string paramName = "@" + col.ColumnName;
-                        command.Parameters[paramName].Value = row[col.ColumnName];
-                    }
-
-                    command.ExecuteNonQuery();
-                }
-            }
+        private static void Initialise(SqlConnection connection)
+        {
+            string sql = ReflectionUtilities.GetResourceAsString("APSIM.PerformanceTests.Tests.CreateTables.sqlserver");
+            using (DbCommand command = connection.CreateCommand(sql))
+                command.ExecuteNonQuery();
         }
     }
 }
