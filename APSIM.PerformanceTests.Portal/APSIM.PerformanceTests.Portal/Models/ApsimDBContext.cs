@@ -36,9 +36,9 @@ namespace APSIM.PerformanceTests.Portal.Models
             //string file = @"D:\Websites\dbConnect.txt";  //for the apsim server (apsimdev.apsim.info)
             //string file = @"E:\Sites\APSIM-Sites\dbConnect.txt";      //for the csiro server
             string connectionString = string.Empty;
-//#if DEBUG
-//            file = @"C:\Dev\PerformanceTests\dbConnect.txt";
-//#endif
+#if DEBUG
+            file = @"C:\Dev\PerformanceTests\dbConnect.txt";
+#endif
             try
             {
                 connectionString = File.ReadAllText(file) + ";Database=\"APSIM.PerformanceTests\"";

@@ -69,3 +69,13 @@ CREATE TABLE Simulations (
   Name VARCHAR(max) NOT NULL,
   OriginalSimulationID INTEGER NOT NULL
 );
+CREATE TYPE PredictedObservedTestsTableType AS TABLE(
+	[Variable] [nvarchar](100) NOT NULL,
+	[Test] [nvarchar](100) NOT NULL,
+	[Accepted] [float] NULL,
+	[Current] [float] NULL,
+	[Difference] [float] NULL,
+	[PassedTest] [bit] NULL,
+	[AcceptedPredictedObservedTestsID] [int] NULL,
+	[IsImprovement] [bit] NULL
+);

@@ -31,7 +31,7 @@ namespace APSIM.PerformanceTests.Tests
 
             populousConnections = new DbConnection[]
             {
-                Utility.CreatePopulatedSQLiteDB(),
+                //Utility.CreatePopulatedSQLiteDB(),
                 Utility.CreatePopulatedSqlServerDB(),
             };
         }
@@ -338,7 +338,8 @@ namespace APSIM.PerformanceTests.Tests
             {
                 DataTable poTests = TableFactory.CreateEmptyPredictedObservedTestsTable();
                 //PredictedObservedDetailsID, Variable, Test, Accepted, Current, Difference, PassedTest, AcceptedPredictedObservedTestsID, IsImprovement, SortOrder, DifferencePercent
-                poTests.Rows.Add(1, "TestVar", "n", 1, 2, 3, 0, null, 0, 0, 100);
+                poTests.Rows.Add(1,          "TestVar", "n",  1,        2,       3,          0,          null,                             0,             0,         100);
+                poTests.Rows.Add(1,          "TestVar", "n",  1,        2,       3,          1,          null,                             0,             0,         100);
                 DBFunctions.AddPredictedObservedTestsData(connection, null, 1, null, poTests);
 
                 poTests = new DataTable();
@@ -346,7 +347,7 @@ namespace APSIM.PerformanceTests.Tests
                     using (DbDataReader reader = command.ExecuteReader())
                         poTests.Load(reader);
 
-                Assert.AreEqual(12, poTests.Rows.Count);
+                Assert.AreEqual(13, poTests.Rows.Count);
                 DataRow row = poTests.Rows[11];
                 Assert.AreEqual(1, row["PredictedObservedDetailsID"]);
                 Assert.AreEqual("TestVar", row["Variable"]);
@@ -369,7 +370,7 @@ namespace APSIM.PerformanceTests.Tests
                 Assert.AreEqual(1, poDetails.Rows.Count);
                 row = poDetails.Rows[0];
                 Assert.AreEqual(1, row["ID"]);
-                Assert.AreEqual(0, row["PassedTests"]);
+                Assert.AreEqual(50, row["PassedTests"]); // This should be a percent!
                 Assert.AreEqual(1, row["HasTests"]);
             }
         }

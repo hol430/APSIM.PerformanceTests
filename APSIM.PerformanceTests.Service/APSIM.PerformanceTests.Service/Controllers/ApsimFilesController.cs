@@ -163,7 +163,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         commandENQ.AddParamWithValue("@PullRequestID", apsimfile.PullRequestId);
                         commandENQ.AddParamWithValue("@RunDate", apsimfile.RunDate);
 
-                        commandENQ.ExecuteNonQuery();
+                        commandENQ.ExecuteNonQuery(); // 86 seconds
                     }
                     Utilities.WriteToLogFile("    Removed original Pull Request Data.");
                 }
@@ -206,7 +206,7 @@ namespace APSIM.PerformanceTests.Service.Controllers
                     //this should return the IDENTITY value for this record (which is required for the next update)
                     ErrMessageHelper = "Filename: " + apsimfile.FileName;
 
-                    ApsimID = Convert.ToInt32(commandES.ExecuteScalar());
+                    ApsimID = Convert.ToInt32(commandES.ExecuteScalar()); // fast
                     apsimfile.ID = ApsimID;
                     ErrMessageHelper = "Filename: " + apsimfile.FileName + "- ApsimID: " + ApsimID;
                     Utilities.WriteToLogFile(string.Format("    Filename {0} inserted into ApsimFiles successfully!", apsimfile.FileName));
@@ -226,31 +226,17 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 try
                 {
                     Utilities.WriteToLogFile("    Inserting Simulation details for " + apsimfile.FileName);
-                    using (DbCommand commandENQ = connection.CreateCommand())
+                    using (DbCommand commandENQ = connection.CreateCommand("INSERT INTO Simulations (ApsimFilesID, Name, OriginalSimulationID) SELECT @ApsimID, Name, ID FROM @Simulations;"))
                     {
-                        commandENQ.CommandText = @"INSERT INTO Simulations (ApsimFilesID, Name, OriginalSimulationID) "
-                                                + "VALUES(@ApsimFilesID, @Name, @OriginalSimulationID)";
-                        DbParameter param = commandENQ.CreateParameter();
-                        param.ParameterName = "@ApsimFilesID";
-                        commandENQ.Parameters.Add(param);
+                        commandENQ.AddParamWithValue("@ApsimID", apsimfile.ID);
+                        DbParameter simulations = commandENQ.CreateParameter();
+                        if (simulations is SqlParameter)
+                            (simulations as SqlParameter).TypeName = "SimulationDataTableType";
+                        simulations.ParameterName = "@Simulations";
+                        simulations.Value = apsimfile.Simulations;
+                        commandENQ.Parameters.Add(simulations);
 
-                        param = commandENQ.CreateParameter();
-                        param.ParameterName = "@Name";
-                        commandENQ.Parameters.Add(param);
-
-                        param = commandENQ.CreateParameter();
-                        param.ParameterName = "@OriginalSimulationID";
-                        commandENQ.Parameters.Add(param);
-
-                        foreach (DataRow row in apsimfile.Simulations.Rows)
-                        {
-                            commandENQ.Parameters[0].Value = apsimfile.ID;
-                            commandENQ.Parameters[1].Value = row["Name"];
-                            commandENQ.Parameters[2].Value = row["ID"];
-
-                            commandENQ.ExecuteNonQuery();
-                        }
-
+                        commandENQ.ExecuteNonQuery(); // ~2s with table-value parameter. ~10m with individual inserts
                         ErrMessageHelper = "- Simualtion Data for " + apsimfile.FileName;
 
                         Utilities.WriteToLogFile(string.Format("    Filename {0} Simulation Data imported successfully!", apsimfile.FileName));
@@ -313,61 +299,88 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 //--------------------------------------------------------------------------------------
                 Utilities.WriteToLogFile(string.Format("    PredictedObserved Data Values for {0}.{1} - import started!", apsimfile.FileName, poDetail.DatabaseTableName));
 
-                //need to find the first (and then each instance thereafter) of a field name being with Observed,
-                //the get the corresponding Predicted field name, and then create a new table definition based on this
-                //data,
-                using (DbCommand command = connection.CreateCommand())
+                for (int i = 0; i < poDetail.Data.Columns.Count; i++)
                 {
-                    command.CommandText = "INSERT INTO PredictedObservedValues "
-                                        + "(PredictedObservedDetailsID, SimulationsID, MatchName, MatchValue, MatchName2, MatchValue2, MatchName3, MatchValue3, ValueName, PredictedValue, ObservedValue) "
-                                        + "VALUES(@PredictedObservedDetailsID, @SimulationsID, @MatchName, @MatchValue, @MatchName2, @MatchValue2, @MatchName3, @MatchValue3, @ValueName, @PredictedValue, @ObservedValue)";
-
-                    command.AddParamWithValue("@PredictedObservedDetailsID", predictedObservedID);
-                    command.AddParamWithValue("@MatchName", poDetail.FieldNameUsedForMatch);
-                    command.AddParamWithValue("MatchName2", poDetail.FieldName2UsedForMatch);
-                    command.AddParamWithValue("MatchName3", poDetail.FieldName3UsedForMatch);
-
-                    command.AddParamWithValue("@SimulationsID", 0);
-                    command.AddParamWithValue("@MatchValue", DBNull.Value);
-                    command.AddParamWithValue("@MatchValue2", DBNull.Value);
-                    command.AddParamWithValue("@MatchValue3", DBNull.Value);
-
-                    command.AddParamWithValue("@ValueName", "");
-                    command.AddParamWithValue("@PredictedValue", 0d);
-                    command.AddParamWithValue("@ObservedValue", 0d);
-
-                    for (int i = 0; i < poDetail.Data.Columns.Count; i++)
+                    string observedColumnName = poDetail.Data.Columns[i].ColumnName.Trim();
+                    if (observedColumnName.StartsWith("Observed"))
                     {
-                        string observedColumnName = poDetail.Data.Columns[i].ColumnName.Trim();
-                        if (observedColumnName.StartsWith("Observed."))
+                        //get the corresponding Predicted Column Name
+                        int dotPosn = observedColumnName.IndexOf('.');
+                        string valueName = observedColumnName.Substring(dotPosn + 1);
+                        string predictedColumnName = "Predicted." + valueName;
+
+                        //need to find the first (and then each instance thereafter) of a field name being with Observed,
+                        //the get the corresponding Predicted field name, and then create a new table definition based on this
+                        //data,
+                        using (DbCommand command = connection.CreateCommand())
                         {
-                            // Get the corresponding predicted column name.
-                            string valueName = observedColumnName.Replace("Observed.", "");
-                            string predictedColumnName = $"Predicted.{valueName}";
-                            command.Parameters["@ValueName"].Value = valueName;
+                            command.CommandText = @"INSERT INTO [dbo].[PredictedObservedValues] ([PredictedObservedDetailsID], [SimulationsID], [MatchName], [MatchValue], [MatchName2], [MatchValue2], [MatchName3], [MatchValue3], [ValueName], [PredictedValue], [ObservedValue])
+	                                        SELECT @PredictedObservedID, s.[ID], @MatchName, p.[MatchValue], @MatchName2, p.[MatchValue2], @MatchName3, p.[MatchValue3], @ValueName, p.[PredictedValue], p.[ObservedValue]
+	                                        FROM @PredictedOabservedData p INNER JOIN [dbo].[Simulations] s 
+	                                        ON s.[OriginalSimulationID] = p.[SimulationID]
+	                                        WHERE s.[ApsimFilesID] = @ApsimFilesID
+	                                        AND p.[PredictedValue] IS NOT NULL
+	                                        AND p.[ObservedValue] IS NOT NULL;";
 
-                            foreach (DataRow row in poDetail.Data.Rows)
+                            command.AddParamWithValue("@PredictedObservedID", predictedObservedID);
+                            command.AddParamWithValue("@MatchName", poDetail.FieldNameUsedForMatch);
+                            command.AddParamWithValue("@MatchName2", (object)poDetail.FieldName2UsedForMatch ?? DBNull.Value);
+                            command.AddParamWithValue("@MatchName3", (object)poDetail.FieldName3UsedForMatch ?? DBNull.Value);
+                            command.AddParamWithValue("@ValueName", valueName);
+                            command.AddParamWithValue("@ApsimFilesID", apsimfile.ID);
+
+                            DataTable poData = new DataTable();
+                            poData.Columns.Add("SimulationID", typeof(int));
+                            poData.Columns.Add("MatchValue", typeof(string));
+                            poData.Columns.Add("MatchValue2", typeof(string));
+                            poData.Columns.Add("MatchValue3", typeof(string));
+                            poData.Columns.Add("PredictedValue", poDetail.Data.Columns[predictedColumnName].DataType);
+                            poData.Columns.Add("ObservedValue", poDetail.Data.Columns[observedColumnName].DataType);
+
+                            poData = poDetail.Data.AsEnumerable().Select(r =>
                             {
-                                int simulationsID = GetSimulationID(connection, ApsimID, Convert.ToInt32(row["SimulationID"]));
-                                command.Parameters["@SimulationsID"].Value = simulationsID;
-                                command.Parameters["@MatchValue"].Value = row[poDetail.FieldNameUsedForMatch];
+                                var row = poData.NewRow();
+                                foreach (DataColumn column in poData.Columns)
+                                {
+                                    if (column.ColumnName == "MatchValue")
+                                        row[column.ColumnName] = r[poDetail.FieldNameUsedForMatch];
+                                    else if (column.ColumnName == "MatchValue2")
+                                    {
+                                        if (!string.IsNullOrEmpty(poDetail.FieldName2UsedForMatch))
+                                            row[column.ColumnName] = r[poDetail.FieldName2UsedForMatch];
+                                    }
+                                    else if (column.ColumnName == "MatchValue3")
+                                    {
+                                        if (!string.IsNullOrEmpty(poDetail.FieldName3UsedForMatch))
+                                            row[column.ColumnName] = r[poDetail.FieldName3UsedForMatch];
+                                    }
+                                    else if (column.ColumnName == "PredictedValue")
+                                        row[column.ColumnName] = r[predictedColumnName];
+                                    else if (column.ColumnName == "ObservedValue")
+                                        row[column.ColumnName] = r[observedColumnName];
+                                    else
+                                        row[column.ColumnName] = r[column.ColumnName];
+                                }
+                                return row;
+                            }).CopyToDataTable();
 
-                                // MatchValue2 and 3 are already set to null.
-                                if (!string.IsNullOrEmpty(poDetail.FieldName2UsedForMatch))
-                                    command.Parameters["@MatchValue2"].Value = row[poDetail.FieldName2UsedForMatch];
+                            object[] simulationIDs = poData.AsEnumerable().Select(r => r["SimulationID"]).ToArray();
 
-                                if (!string.IsNullOrEmpty(poDetail.FieldName3UsedForMatch))
-                                    command.Parameters["@MatchValue3"].Value = row[poDetail.FieldName3UsedForMatch];
+                            DbParameter tableParam = command.CreateParameter();
+                            tableParam.ParameterName = "@PredictedOabservedData";
+                            tableParam.Value = poData;
+                            if (tableParam is SqlParameter)
+                                (tableParam as SqlParameter).TypeName = "PredictedObservedDataThreeTableType";
+                            command.Parameters.Add(tableParam);
 
-                                command.Parameters["@PredictedValue"].Value = row[predictedColumnName];
-                                command.Parameters["@ObservedValue"].Value = row[observedColumnName];
+                            Type dataType = poData.Columns["PredictedValue"].DataType;
+                            bool validColumn = dataType != typeof(string) && dataType != typeof(bool) && dataType != typeof(DateTime); // so a char is a testable piece of data but string is not?
 
+                            if (validColumn)
                                 command.ExecuteNonQuery();
-                            }
                         }
                     }
                 }
-
                 //Need to run the testing procecedure here, and then save the test data
                 if (poDetail.Data.Rows.Count > 0)
                 {

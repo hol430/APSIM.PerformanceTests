@@ -328,62 +328,60 @@ namespace APSIM.PerformanceTests.Service
             {
                 try
                 {
-                    bool passedTests = true;
-
-                    string sql = "INSERT INTO PredictedObservedTests " +
-                                 "(PredictedObservedDetailsID, Variable, Test, Accepted, [Current], Difference, PassedTest, AcceptedPredictedObservedTestsID, IsImprovement, SortOrder, DifferencePercent)\n" +
-                                 "VALUES (@PredictedObservedDetailsID, @Variable, @Test, @Accepted, @Current, @Difference, @PassedTest, @AcceptedPredictedObservedTestsID, @IsImprovement, @SortOrder, @DifferencePercent);";
+                    string sql = @"INSERT INTO [dbo].[PredictedObservedTests] (
+			                       [PredictedObservedDetailsID], [Variable], [Test], [Accepted], [Current], [Difference], [PassedTest],
+			                       [AcceptedPredictedObservedTestsID], [IsImprovement], [SortOrder])
+		                           SELECT @PredictedObservedID, [Variable], [Test], [Accepted], [Current], [Difference], [PassedTest],
+			                       [AcceptedPredictedObservedTestsID], [IsImprovement], 
+			                       (CASE WHEN [Test] = 'n' THEN 0 ELSE 1 END) as [SortOrder]
+		                           FROM @Tests
+		                           WHERE [Test] != 'Name'
+                                   AND [Current] IS NOT NULL
+                                   AND [Accepted] IS NOT NULL; ";
                     using (DbCommand commandENQ = sqlCon.CreateCommand(sql))
                     {
-                        commandENQ.AddParamWithValue("@PredictedObservedDetailsID", currentPODetailsID);
-                        commandENQ.AddParamWithValue("@Variable", "");
-                        commandENQ.AddParamWithValue("@Test", "");
-                        commandENQ.AddParamWithValue("@Accepted", 0d);
-                        commandENQ.AddParamWithValue("@Current", 0d);
-                        commandENQ.AddParamWithValue("@Difference", 0d);
-                        commandENQ.AddParamWithValue("@PassedTest", 0);//int
-                        commandENQ.AddParamWithValue("@AcceptedPredictedObservedTestsID", 0);//int
-                        commandENQ.AddParamWithValue("@IsImprovement", 0);//int
-                        commandENQ.AddParamWithValue("@SortOrder", 0);//int
-                        commandENQ.AddParamWithValue("@DifferencePercent", DBNull.Value);
+                        commandENQ.AddParamWithValue("@PredictedObservedID", currentPODetailsID);
+                        DbParameter tableParam = commandENQ.CreateParameter();
+                        tableParam.ParameterName = "@Tests";
 
-                        foreach (DataRow row in dtTests.Rows)
-                        {
-                            string test = (string)row["Test"];
-                            int passedTest = row["PassedTest"] == DBNull.Value ? 0 : int.Parse(row["PassedTest"].ToString());
-                            if ((string)row["Test"] != "Name")
-                            {
-                                if (passedTest == 0)
-                                    passedTests = false;
+                        // We don't want to send all columns over to the DB.
+                        // Well, in the long run, it would be tidier. But for
+                        // now, let's just reproduce the old behaviour.
+                        tableParam.Value = new DataView(dtTests).ToTable(false, "Variable", "Test", "Accepted", "Current", "Difference", "PassedTest", "AcceptedPredictedObservedTestsID", "IsImprovement");
+                        if (tableParam is SqlParameter)
+                            (tableParam as SqlParameter).TypeName = "PredictedObservedTestsTableType";
+                        commandENQ.Parameters.Add(tableParam);
 
-                                commandENQ.Parameters["@Variable"].Value = row["Variable"];
-                                commandENQ.Parameters["@Test"].Value = test;
-                                commandENQ.Parameters["@Accepted"].Value = row["Accepted"];
-                                commandENQ.Parameters["@Current"].Value = row["Current"];
-                                commandENQ.Parameters["@Difference"].Value = row["Difference"];
-                                commandENQ.Parameters["@PassedTest"].Value = row["PassedTest"];
-                                commandENQ.Parameters["@AcceptedPredictedObservedTestsID"].Value = row["AcceptedPredictedObservedTestsID"];
-                                commandENQ.Parameters["@IsImprovement"].Value = row["IsImprovement"];
-                                commandENQ.Parameters["@SortOrder"].Value = test == "n" ? 0 : 1;
-
-                                if (row["Accepted"] != DBNull.Value && row["Difference"] != DBNull.Value)
-                                {
-                                    double accepted = (double)row["Accepted"];
-                                    double difference = (double)row["Difference"];
-
-                                    double diffPercent = 0;
-                                    if (accepted != 0 && difference != 0)
-                                        diffPercent = 100.0 * difference / accepted;
-
-                                    commandENQ.Parameters["@DifferencePercent"].Value = diffPercent;
-                                }
-                                else
-                                    commandENQ.Parameters["@DifferencePercent"].Value = DBNull.Value;
-
-                                commandENQ.ExecuteNonQuery();
-                            }
-                        }
+                        commandENQ.ExecuteNonQuery();
                     }
+
+                    // really?
+                    using (DbCommand command = sqlCon.CreateCommand())
+                    {
+                        command.CommandText = @"UPDATE [dbo].[PredictedObservedTests]
+		                                        SET [DifferencePercent] = ABS(100 * ([Difference]/[Accepted]))
+		                                        WHERE [PredictedObservedDetailsID] = @PredictedObservedID
+		                                        AND [Difference] IS NOT NULL AND [Difference] != 0
+		                                        AND [Accepted] IS NOT NULL;";
+                        command.AddParamWithValue("@PredictedObservedID", currentPODetailsID);
+                        command.ExecuteNonQuery();
+                    }
+
+                    string[] testsToConsider = new[] // really?!
+                    {
+                        "n",
+                        "R2",
+                        "RMSE",
+                        "NSE",
+                        "RSR",
+                    };
+
+                    IEnumerable<DataRow> data = dtTests.AsEnumerable().Where(r => testsToConsider.Contains(r["Test"]));
+                    // todo: why is PassedTest sometimes set to null?
+                    data = data.Where(r => r["PassedTest"] != null && !Convert.IsDBNull(r["PassedTest"]));
+                    int totalTests = data.Count();
+                    int totalPassed = data.Where(r => Convert.ToInt32(r["PassedTest"]) == 1).Count();
+                    double percentPassed = 100.0 * totalPassed / totalTests;
 
                     // Update the PredictedObservedDetails table and set the PassedTests field appropriately.
                     sql = "UPDATE PredictedObservedDetails " +
@@ -392,7 +390,7 @@ namespace APSIM.PerformanceTests.Service
                           "WHERE  ID          = @PredictedObservedID";
                     using (DbCommand command = sqlCon.CreateCommand(sql))
                     {
-                        command.AddParamWithValue("@PassedTests", passedTests ? 1 : 0);
+                        command.AddParamWithValue("@PassedTests", percentPassed); // really?!?!?!
                         command.AddParamWithValue("@PredictedObservedID", currentPODetailsID);
 
                         command.ExecuteNonQuery();
