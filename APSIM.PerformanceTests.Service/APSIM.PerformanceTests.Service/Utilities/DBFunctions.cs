@@ -336,8 +336,8 @@ namespace APSIM.PerformanceTests.Service
 			                       (CASE WHEN [Test] = 'n' THEN 0 ELSE 1 END) as [SortOrder]
 		                           FROM @Tests
 		                           WHERE [Test] != 'Name'
-                                   AND [Current] IS NOT NULL
-                                   AND [Accepted] IS NOT NULL; ";
+                                   AND ([Current] IS NOT NULL
+                                   OR [Accepted] IS NOT NULL);";
                     using (DbCommand commandENQ = sqlCon.CreateCommand(sql))
                     {
                         commandENQ.AddParamWithValue("@PredictedObservedID", currentPODetailsID);
