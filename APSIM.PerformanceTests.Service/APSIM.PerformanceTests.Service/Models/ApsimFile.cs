@@ -4,6 +4,7 @@ using System.Data;
 
 namespace APSIM.PerformanceTests.Models
 {
+    [Serializable]
     public class ApsimFile
     {
         public int ID { get; set; }
@@ -23,6 +24,7 @@ namespace APSIM.PerformanceTests.Models
 
     }
 
+    [Serializable]
     public class PredictedObservedDetails
     {
         public int ID { get; set; }
