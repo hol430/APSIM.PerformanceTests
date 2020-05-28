@@ -54,11 +54,11 @@ CREATE TABLE PredictedObservedValues (
   PredictedObservedDetailsID INTEGER NOT NULL,
   SimulationsID INTEGER NOT NULL,
   MatchName VARCHAR(max) NOT NULL,
-  MatchValue FLOAT NOT NULL,
+  MatchValue VARCHAR(max) NOT NULL,
   MatchName2 VARCHAR(max),
-  MatchValue2 FLOAT,
+  MatchValue2 VARCHAR(max),
   MatchName3 VARCHAR(max),
-  MatchValue3 FLOAT,
+  MatchValue3 VARCHAR(max),
   ValueName VARCHAR(max) NOT NULL,
   PredictedValue FLOAT,
   ObservedValue FLOAT
@@ -79,3 +79,43 @@ CREATE TYPE PredictedObservedTestsTableType AS TABLE(
 	[AcceptedPredictedObservedTestsID] [int] NULL,
 	[IsImprovement] [bit] NULL
 );
+
+CREATE TYPE SimulationDataTableType AS TABLE(
+	[ID] [int] NOT NULL,
+	[Name] [nvarchar](100) NOT NULL
+);
+
+CREATE TYPE PredictedObservedDataTableType AS TABLE(
+	[SimulationID] [int] NOT NULL,
+	[MatchValue] [nvarchar](100) NOT NULL,
+	[PredictedValue] [float] NULL,
+	[ObservedValue] [float] NULL
+);
+
+CREATE TYPE PredictedObservedDataTwoTableType AS TABLE(
+	[SimulationID] [int] NOT NULL,
+	[MatchValue] [nvarchar](100) NOT NULL,
+	[MatchValue2] [nvarchar](100) NULL,
+	[PredictedValue] [float] NULL,
+	[ObservedValue] [float] NULL
+);
+
+CREATE TYPE PredictedObservedDataThreeTableType AS TABLE(
+	[SimulationID] [int] NOT NULL,
+	[MatchValue] [nvarchar](100) NOT NULL,
+	[MatchValue2] [nvarchar](100) NULL,
+	[MatchValue3] [nvarchar](100) NULL,
+	[PredictedValue] [float] NULL,
+	[ObservedValue] [float] NULL
+);
+
+--CREATE TYPE PredictedObservedTestsTableType AS TABLE(
+--	[Variable] [nvarchar](100) NOT NULL,
+--	[Test] [nvarchar](100) NOT NULL,
+--	[Accepted] [float] NULL,
+--	[Current] [float] NULL,
+--	[Difference] [float] NULL,
+--	[PassedTest] [bit] NULL,
+--	[AcceptedPredictedObservedTestsID] [int] NULL,
+--	[IsImprovement] [bit] NULL
+--);
