@@ -40,7 +40,10 @@ namespace APSIM.PerformanceTests.Service.Controllers
                 if (acceptLog.LogPerson == authenCode)
                 {
                     using (SqlConnection connection = new SqlConnection(Utilities.GetConnectionString()))
+                    {
+                        connection.Open();
                         DBFunctions.UpdateAsStatsAccepted(connection, "Update", acceptLog);
+                    }
                     UpdateAcceptedStatsforPullRequest(currentPullRequestID, acceptedPullRequestID);
                 }
             }
