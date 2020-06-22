@@ -376,6 +376,55 @@ namespace APSIM.PerformanceTests.Tests
         }
 
         /// <summary>
+        /// Tests the <see cref="DBFunctions.AddPredictedObservedTestsData(DbConnection, string, int, string, DataTable)"/> function.
+        /// This function ensures that a test can fail r2, but pass rmse and still passes overall (aka who cares about r2).
+        /// </summary>
+        [Test]
+        public void TestAddPOTestsData2()
+        {
+            foreach (DbConnection connection in populousConnections)
+            {
+                // We failed the r2 test, but passed the n test. r2 should not be considered in overall pass/fail status.
+                DataTable poTests = TableFactory.CreateEmptyPredictedObservedTestsTable();
+                //PredictedObservedDetailsID, Variable, Test, Accepted, Current, Difference, PassedTest, AcceptedPredictedObservedTestsID, IsImprovement, SortOrder, DifferencePercent
+                poTests.Rows.Add(1,          "TestVar", "R2", 1,        2,       3,          0,          null,                             0,             0,         100);
+                poTests.Rows.Add(1,          "TestVar", "n",  1,        2,       3,          1,          null,                             0,             0,         100);
+                DBFunctions.AddPredictedObservedTestsData(connection, null, 1, null, poTests);
+
+                poTests = new DataTable();
+                using (DbCommand command = connection.CreateCommand("SELECT * FROM PredictedObservedTests"))
+                    using (DbDataReader reader = command.ExecuteReader())
+                        poTests.Load(reader);
+
+                Assert.AreEqual(13, poTests.Rows.Count);
+                DataRow row = poTests.Rows[11];
+                Assert.AreEqual(1, row["PredictedObservedDetailsID"]);
+                Assert.AreEqual("TestVar", row["Variable"]);
+                Assert.AreEqual("R2", row["Test"]);
+                Assert.AreEqual(1, row["Accepted"]);
+                Assert.AreEqual(2, row["Current"]);
+                Assert.AreEqual(3, row["Difference"]);
+                Assert.AreEqual(false, row["PassedTest"]);
+                Assert.AreEqual(DBNull.Value, row["AcceptedPredictedObservedTestsID"]);
+                Assert.AreEqual(false, row["IsImprovement"]);
+                Assert.AreEqual(1, row["SortOrder"]);
+                Assert.AreEqual(3, row["Difference"]);
+                Assert.AreEqual(300, row["DifferencePercent"]);
+
+                DataTable poDetails = new DataTable();
+                using (DbCommand command = connection.CreateCommand("SELECT * FROM PredictedObservedDetails"))
+                    using (DbDataReader reader = command.ExecuteReader())
+                        poDetails.Load(reader);
+
+                Assert.AreEqual(1, poDetails.Rows.Count);
+                row = poDetails.Rows[0];
+                Assert.AreEqual(1, row["ID"]);
+                Assert.AreEqual(100, row["PassedTests"]); // This should be a percent!
+                Assert.AreEqual(1, row["HasTests"]);
+            }
+        }
+
+        /// <summary>
         /// Tests the <see cref="DBFunctions.UpdatePredictedObservedDetails(DbConnection, int, int)"/> function.
         /// </summary>
         [Test]
