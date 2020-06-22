@@ -370,7 +370,6 @@ namespace APSIM.PerformanceTests.Service
                     string[] testsToConsider = new[] // really?!
                     {
                         "n",
-                        "R2",
                         "RMSE",
                         "NSE",
                         "RSR",
