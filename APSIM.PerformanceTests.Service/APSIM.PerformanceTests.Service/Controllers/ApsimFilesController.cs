@@ -309,6 +309,9 @@ namespace APSIM.PerformanceTests.Service.Controllers
                         string valueName = observedColumnName.Substring(dotPosn + 1);
                         string predictedColumnName = "Predicted." + valueName;
 
+                        if (!poDetail.Data.Columns.Contains(predictedColumnName))
+                            continue;
+
                         //need to find the first (and then each instance thereafter) of a field name being with Observed,
                         //the get the corresponding Predicted field name, and then create a new table definition based on this
                         //data,
