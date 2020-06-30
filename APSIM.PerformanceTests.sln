@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.29519.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Collector", "APSIM.PerformanceTests.Collector\APSIM.PerformanceTests.Collector.csproj", "{D53509C0-EA48-47A6-8CA1-A11B480CF42A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "..\ApsimX\Models\Models.csproj", "{A3E10705-F2BB-4182-A19C-7F63222584DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Models", "..\ApsimX\Models\Models.csproj", "{A3E10705-F2BB-4182-A19C-7F63222584DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.Shared", "..\ApsimX\APSIM.Shared\APSIM.Shared.csproj", "{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "APSIM.Shared", "..\ApsimX\APSIM.Shared\APSIM.Shared.csproj", "{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Service", "APSIM.PerformanceTests.Service\APSIM.PerformanceTests.Service\APSIM.PerformanceTests.Service.csproj", "{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}"
 EndProject
@@ -39,10 +39,10 @@ Global
 		{A3E10705-F2BB-4182-A19C-7F63222584DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3E10705-F2BB-4182-A19C-7F63222584DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3E10705-F2BB-4182-A19C-7F63222584DF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.ApsimInfo|Any CPU.ActiveCfg = DebugAnyCPU|Any CPU
-		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.ApsimInfo|Any CPU.Build.0 = DebugAnyCPU|Any CPU
-		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.CsiroApsim|Any CPU.ActiveCfg = DebugAnyCPU|Any CPU
-		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.CsiroApsim|Any CPU.Build.0 = DebugAnyCPU|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.ApsimInfo|Any CPU.ActiveCfg = Release|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.ApsimInfo|Any CPU.Build.0 = Release|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.CsiroApsim|Any CPU.ActiveCfg = Release|Any CPU
+		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.CsiroApsim|Any CPU.Build.0 = Release|Any CPU
 		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
