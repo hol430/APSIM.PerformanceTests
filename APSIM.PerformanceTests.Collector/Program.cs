@@ -1,4 +1,5 @@
-﻿using APSIM.PerformanceTests.Models;
+﻿using Newtonsoft.Json;
+using APSIM.PerformanceTests.Models;
 using Models.Core;
 using Models.Core.ApsimFile;
 using Models.PostSimulationTools;
@@ -189,6 +190,7 @@ namespace APSIM.PerformanceTests.Collector
             apsimFileName = apsimInstance.FileName;
             try
             {
+                string json = JsonConvert.SerializeObject(apsimInstance);
                 //this will call the service on www..apsim.info.au
                 HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/apsimfiles", apsimInstance);
                 response.EnsureSuccessStatusCode();
@@ -272,7 +274,7 @@ namespace APSIM.PerformanceTests.Collector
 
             string searchDir = ConfigurationManager.AppSettings["searchDirectory"].ToString();
 #if DEBUG
-            searchDir = @"C:/ApsimX/Tests/Validation/FodderBeet";
+            searchDir = "C:/ApsimX/Tests/UnderReview/Chickpea";
 #endif
 
             string[] filePaths = searchDir.Split(';');
@@ -362,7 +364,7 @@ namespace APSIM.PerformanceTests.Collector
             }
 
             List<PredictedObservedDetails> predictedObservedDetailList = new List<PredictedObservedDetails>();
-            foreach (PredictedObserved poModel in sims.FindAllDescendants<PredictedObserved>())
+            foreach (PredictedObserved poModel in Apsim.ChildrenRecursively(sims, typeof(PredictedObserved)))
             {
                 PredictedObservedDetails instance = new PredictedObservedDetails()
                 {

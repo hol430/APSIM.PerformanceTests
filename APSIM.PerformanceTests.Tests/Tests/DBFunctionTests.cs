@@ -17,17 +17,46 @@ namespace APSIM.PerformanceTests.Tests
     [TestFixture]
     public class DBFunctionTests
     {
+        private DbConnection[] emptyConnections;
+        private DbConnection[] populousConnections;
+
+        [SetUp]
+        public void CreateConnections()
+        {
+            emptyConnections = new DbConnection[]
+            {
+                Utility.CreateSQLiteDB(),
+                Utility.CreateSqlServerDB(),
+            };
+
+            populousConnections = new DbConnection[]
+            {
+                //Utility.CreatePopulatedSQLiteDB(),
+                Utility.CreatePopulatedSqlServerDB(),
+            };
+        }
+
+        [TearDown]
+        public void CloseConnections()
+        {
+            foreach (DbConnection connection in emptyConnections)
+                Utility.CloseDB(connection);
+
+            foreach (DbConnection connection in populousConnections)
+                Utility.CloseDB(connection);
+        }
+
         /// <summary>
         /// Tests the <see cref="DBFunctions.GetFileCount(DbConnection, int)"/> function.
         /// </summary>
         [Test]
         public void TestGetFileCount()
         {
-            using (SQLiteConnection connection = Utility.CreateSQLiteConnection())
+            foreach (DbConnection connection in emptyConnections)
                 // todo: why is this 0?
                 Assert.AreEqual(0, DBFunctions.GetFileCount(connection, 1));
 
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 Assert.AreEqual(0, DBFunctions.GetFileCount(connection, 0));
                 Assert.AreEqual(1, DBFunctions.GetFileCount(connection, 1));
@@ -60,10 +89,10 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestGetAcceptedFileCount()
         {
-            using (SQLiteConnection connection = Utility.CreateSQLiteConnection())
+            foreach (DbConnection connection in emptyConnections)
                 Assert.Throws<Exception>(() => DBFunctions.GetAcceptedFileCount(connection));
 
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 Assert.Throws<Exception>(() => DBFunctions.GetAcceptedFileCount(connection));
 
@@ -82,10 +111,13 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestGetPercentPassed()
         {
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 // For now, throw if pull request not found.
-                Assert.Throws<Exception>(() => DBFunctions.GetPercentPassed(connection, 0));
+                if (connection is SQLiteConnection)
+                    Assert.Throws<Exception>(() => DBFunctions.GetPercentPassed(connection, 0));
+                else
+                    Assert.Throws<System.Data.SqlClient.SqlException>(() => DBFunctions.GetPercentPassed(connection, 0));
 
                 // 0 out of 1 tables passed the tests.
                 Assert.AreEqual(0, DBFunctions.GetPercentPassed(connection, 1));
@@ -114,13 +146,13 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestGetApsimFilesRelatedPredictedObservedDetailsData()
         {
-            using (SQLiteConnection connection = Utility.CreateSQLiteConnection())
+            foreach (DbConnection connection in emptyConnections)
             {
                 List<ApsimFile> apsimFiles = DBFunctions.GetApsimFilesRelatedPredictedObservedData(connection, 1);
                 Assert.AreEqual(0, apsimFiles.Count);
             }
 
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 Assert.AreEqual(0, DBFunctions.GetApsimFilesRelatedPredictedObservedData(connection, 0).Count);
                 List<ApsimFile> apsimFiles = DBFunctions.GetApsimFilesRelatedPredictedObservedData(connection, 1);
@@ -163,7 +195,7 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestGetPODetailsID()
         {
-            using (SQLiteConnection connection = Utility.CreateSQLiteConnection())
+            foreach (DbConnection connection in emptyConnections)
             {
                 PredictedObservedDetails details = new PredictedObservedDetails();
                 Assert.AreEqual(0, DBFunctions.GetAcceptedPredictedObservedDetailsId(connection, 0, null, details));
@@ -179,7 +211,7 @@ namespace APSIM.PerformanceTests.Tests
                 Assert.AreEqual(0, DBFunctions.GetAcceptedPredictedObservedDetailsId(connection, 1, "wheat.apsimx", details));
             }
 
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 PredictedObservedDetails details = new PredictedObservedDetails();
                 Assert.AreEqual(0, DBFunctions.GetAcceptedPredictedObservedDetailsId(connection, 0, null, details));
@@ -202,7 +234,7 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestGetPOTests()
         {
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 DataTable result = DBFunctions.GetPredictedObservedTestsData(connection, 1);
 
@@ -228,51 +260,51 @@ namespace APSIM.PerformanceTests.Tests
 
                 row = result.Rows[3];
                 Assert.AreEqual("GrainWt", row["Variable"]);
+                Assert.AreEqual("n", row["Test"]);
+                Assert.AreEqual(2, row["Accepted"]);
+                Assert.AreEqual(1, row["AcceptedPredictedObservedTestsID"]);
+
+                row = result.Rows[4];
+                Assert.AreEqual("GrainWt", row["Variable"]);
                 Assert.AreEqual("NSE", row["Test"]);
                 Assert.AreEqual(-57, row["Accepted"]);
                 Assert.AreEqual(8, row["AcceptedPredictedObservedTestsID"]);
 
-                row = result.Rows[4];
+                row = result.Rows[5];
                 Assert.AreEqual("GrainWt", row["Variable"]);
                 Assert.AreEqual("R2", row["Test"]);
                 Assert.AreEqual(1, row["Accepted"]);
                 Assert.AreEqual(6, row["AcceptedPredictedObservedTestsID"]);
 
-                row = result.Rows[5];
+                row = result.Rows[6];
                 Assert.AreEqual("GrainWt", row["Variable"]);
                 Assert.AreEqual("RMSE", row["Test"]);
                 Assert.AreEqual(0.380789, row["Accepted"]);
                 Assert.AreEqual(7, row["AcceptedPredictedObservedTestsID"]);
 
-                row = result.Rows[6];
+                row = result.Rows[7];
                 Assert.AreEqual("GrainWt", row["Variable"]);
                 Assert.AreEqual("RSR", row["Test"]);
                 Assert.AreEqual(5.385165, row["Accepted"]);
                 Assert.AreEqual(11, row["AcceptedPredictedObservedTestsID"]);
 
-                row = result.Rows[7];
+                row = result.Rows[8];
                 Assert.AreEqual("GrainWt", row["Variable"]);
                 Assert.AreEqual("SEintercept", row["Test"]);
                 Assert.AreEqual(0, row["Accepted"]);
                 Assert.AreEqual(5, row["AcceptedPredictedObservedTestsID"]);
 
-                row = result.Rows[8];
+                row = result.Rows[9];
                 Assert.AreEqual("GrainWt", row["Variable"]);
                 Assert.AreEqual("SEslope", row["Test"]);
                 Assert.AreEqual(0, row["Accepted"]);
                 Assert.AreEqual(4, row["AcceptedPredictedObservedTestsID"]);
 
-                row = result.Rows[9];
+                row = result.Rows[10];
                 Assert.AreEqual("GrainWt", row["Variable"]);
                 Assert.AreEqual("Slope", row["Test"]);
                 Assert.AreEqual(4, row["Accepted"]);
                 Assert.AreEqual(2, row["AcceptedPredictedObservedTestsID"]);
-
-                row = result.Rows[10];
-                Assert.AreEqual("GrainWt", row["Variable"]);
-                Assert.AreEqual("n", row["Test"]);
-                Assert.AreEqual(2, row["Accepted"]);
-                Assert.AreEqual(1, row["AcceptedPredictedObservedTestsID"]);
             }
         }
 
@@ -282,7 +314,7 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestGetPOValues()
         {
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 DataTable result = DBFunctions.GetPredictedObservedValues(connection, 1);
 
@@ -302,11 +334,12 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestAddPOTestsData()
         {
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 DataTable poTests = TableFactory.CreateEmptyPredictedObservedTestsTable();
                 //PredictedObservedDetailsID, Variable, Test, Accepted, Current, Difference, PassedTest, AcceptedPredictedObservedTestsID, IsImprovement, SortOrder, DifferencePercent
-                poTests.Rows.Add(1, "TestVar", "n", 1, 2, 3, 0, null, 0, 0, 100);
+                poTests.Rows.Add(1,          "TestVar", "n",  1,        2,       3,          0,          null,                             0,             0,         100);
+                poTests.Rows.Add(1,          "TestVar", "n",  1,        2,       3,          1,          null,                             0,             0,         100);
                 DBFunctions.AddPredictedObservedTestsData(connection, null, 1, null, poTests);
 
                 poTests = new DataTable();
@@ -314,7 +347,7 @@ namespace APSIM.PerformanceTests.Tests
                     using (DbDataReader reader = command.ExecuteReader())
                         poTests.Load(reader);
 
-                Assert.AreEqual(12, poTests.Rows.Count);
+                Assert.AreEqual(13, poTests.Rows.Count);
                 DataRow row = poTests.Rows[11];
                 Assert.AreEqual(1, row["PredictedObservedDetailsID"]);
                 Assert.AreEqual("TestVar", row["Variable"]);
@@ -337,7 +370,56 @@ namespace APSIM.PerformanceTests.Tests
                 Assert.AreEqual(1, poDetails.Rows.Count);
                 row = poDetails.Rows[0];
                 Assert.AreEqual(1, row["ID"]);
-                Assert.AreEqual(0, row["PassedTests"]);
+                Assert.AreEqual(50, row["PassedTests"]); // This should be a percent!
+                Assert.AreEqual(1, row["HasTests"]);
+            }
+        }
+
+        /// <summary>
+        /// Tests the <see cref="DBFunctions.AddPredictedObservedTestsData(DbConnection, string, int, string, DataTable)"/> function.
+        /// This function ensures that a test can fail r2, but pass rmse and still passes overall (aka who cares about r2).
+        /// </summary>
+        [Test]
+        public void TestAddPOTestsData2()
+        {
+            foreach (DbConnection connection in populousConnections)
+            {
+                // We failed the r2 test, but passed the n test. r2 should not be considered in overall pass/fail status.
+                DataTable poTests = TableFactory.CreateEmptyPredictedObservedTestsTable();
+                //PredictedObservedDetailsID, Variable, Test, Accepted, Current, Difference, PassedTest, AcceptedPredictedObservedTestsID, IsImprovement, SortOrder, DifferencePercent
+                poTests.Rows.Add(1,          "TestVar", "R2", 1,        2,       3,          0,          null,                             0,             0,         100);
+                poTests.Rows.Add(1,          "TestVar", "n",  1,        2,       3,          1,          null,                             0,             0,         100);
+                DBFunctions.AddPredictedObservedTestsData(connection, null, 1, null, poTests);
+
+                poTests = new DataTable();
+                using (DbCommand command = connection.CreateCommand("SELECT * FROM PredictedObservedTests"))
+                    using (DbDataReader reader = command.ExecuteReader())
+                        poTests.Load(reader);
+
+                Assert.AreEqual(13, poTests.Rows.Count);
+                DataRow row = poTests.Rows[11];
+                Assert.AreEqual(1, row["PredictedObservedDetailsID"]);
+                Assert.AreEqual("TestVar", row["Variable"]);
+                Assert.AreEqual("R2", row["Test"]);
+                Assert.AreEqual(1, row["Accepted"]);
+                Assert.AreEqual(2, row["Current"]);
+                Assert.AreEqual(3, row["Difference"]);
+                Assert.AreEqual(false, row["PassedTest"]);
+                Assert.AreEqual(DBNull.Value, row["AcceptedPredictedObservedTestsID"]);
+                Assert.AreEqual(false, row["IsImprovement"]);
+                Assert.AreEqual(1, row["SortOrder"]);
+                Assert.AreEqual(3, row["Difference"]);
+                Assert.AreEqual(300, row["DifferencePercent"]);
+
+                DataTable poDetails = new DataTable();
+                using (DbCommand command = connection.CreateCommand("SELECT * FROM PredictedObservedDetails"))
+                    using (DbDataReader reader = command.ExecuteReader())
+                        poDetails.Load(reader);
+
+                Assert.AreEqual(1, poDetails.Rows.Count);
+                row = poDetails.Rows[0];
+                Assert.AreEqual(1, row["ID"]);
+                Assert.AreEqual(100, row["PassedTests"]); // This should be a percent!
                 Assert.AreEqual(1, row["HasTests"]);
             }
         }
@@ -348,7 +430,7 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestUpdatePODetails()
         {
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 DBFunctions.UpdatePredictedObservedDetails(connection, 2, 1);
                 // There's only 1 record in the table.
@@ -364,7 +446,7 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestUpdateApsimFileAcceptedDetails()
         {
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 DateTime date = new DateTime(2020, 1, 2);
                 DBFunctions.UpdateApsimFileAcceptedDetails(connection, 1, 2, date);
@@ -377,7 +459,10 @@ namespace APSIM.PerformanceTests.Tests
                 DataRow row = apsimFiles.Rows[0];
                 Assert.AreEqual(1, row["PullRequestId"]);
                 Assert.AreEqual(2, row["AcceptedPullRequestId"]);
-                Assert.AreEqual(date.ToString("yyyy-MM-dd HH:mm:ss"), row["AcceptedRunDate"]);
+                if (connection is SQLiteConnection) // fixme
+                    Assert.AreEqual(date.ToString("yyyy-MM-dd HH:mm:ss"), row["AcceptedRunDate"]);
+                else
+                    Assert.AreEqual(date, row["AcceptedRunDate"]);
             }
         }
 
@@ -387,7 +472,7 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestAcceptStats()
         {
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 AcceptStatsLog log = new AcceptStatsLog()
                 {
@@ -445,10 +530,10 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestGetLatestPullRequestRunDate()
         {
-            using (DbConnection connection = Utility.CreateSQLiteConnection())
+            using (DbConnection connection = Utility.CreateSQLiteDB())
                 Assert.Throws<Exception>(() => DBFunctions.GetLatestRunDateForPullRequest(connection, 1));
 
-            using (DbConnection connection = Utility.CreatePopulatedDB())
+            using (DbConnection connection = Utility.CreatePopulatedSQLiteDB())
             {
                 Assert.Throws<Exception>(() => DBFunctions.GetLatestRunDateForPullRequest(connection, 0));
                 Assert.AreEqual(new DateTime(2020, 1, 1), DBFunctions.GetLatestRunDateForPullRequest(connection, 1));
@@ -461,7 +546,7 @@ namespace APSIM.PerformanceTests.Tests
         [Test]
         public void TestRenamePOTable()
         {
-            using (SQLiteConnection connection = Utility.CreatePopulatedDB())
+            foreach (DbConnection connection in populousConnections)
             {
                 DBFunctions.RenamePOTable(connection, "wheat.apsimx", "PredictedObserved", "foo");
 

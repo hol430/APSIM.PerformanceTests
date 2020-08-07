@@ -534,7 +534,8 @@ namespace APSIM.PerformanceTests.Portal
             string returnStr = string.Empty;
             try
             {
-                returnStr = Math.Round((double)dvalue, digits).ToString();
+                if (dvalue != null)
+                    returnStr = Math.Round((double)dvalue, digits).ToString();
             }
             catch (Exception)
             {
@@ -561,11 +562,13 @@ namespace APSIM.PerformanceTests.Portal
                 //   3642        should become 3642.00  if decPos = 0, then round dvalue to 2 decimal places
                 if (decPos > 0)
                 {
-                    returnStr = Math.Round((double)dvalue, digits - decPos).ToString();
+                    if (dvalue != null)
+                        returnStr = Math.Round((double)dvalue, digits - decPos).ToString();
                 }
                 else
                 {
-                    returnStr = Math.Round((double)dvalue, digits).ToString();
+                    if (dvalue != null)
+                        returnStr = Math.Round((double)dvalue, digits).ToString();
                 }
 
                 if (returnStr.Length >= (digits + 1))

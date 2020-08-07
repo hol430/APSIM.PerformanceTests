@@ -18,7 +18,6 @@ namespace APSIM.PerformanceTests.Tests
             DataTable table = new DataTable("_Simulations");
             table.Columns.Add("ID", typeof(int));
             table.Columns.Add("Name", typeof(string));
-            table.Columns.Add("FolderName", typeof(string));
 
             return table;
         }
