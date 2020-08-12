@@ -185,7 +185,7 @@ namespace APSIM.PerformanceTests.Collector
         /// <param name="apsimInstance"></param>
         static async Task PostApsimRun(ApsimFile apsimInstance)
         {
-            WriteToLogFile(string.Format("    Calling httpClient with ApsimFile {0}", apsimInstance.FileName));
+            WriteToLogFile(string.Format("    Calling httpClient with ApsimFile {0} dated {1}", apsimInstance.FileName, apsimInstance.RunDate));
             string apsimFileName = string.Empty;
             apsimFileName = apsimInstance.FileName;
             try
@@ -364,7 +364,7 @@ namespace APSIM.PerformanceTests.Collector
             }
 
             List<PredictedObservedDetails> predictedObservedDetailList = new List<PredictedObservedDetails>();
-            foreach (PredictedObserved poModel in Apsim.ChildrenRecursively(sims, typeof(PredictedObserved)))
+            foreach (PredictedObserved poModel in sims.FindAllDescendants<PredictedObserved>())
             {
                 PredictedObservedDetails instance = new PredictedObservedDetails()
                 {
