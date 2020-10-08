@@ -9,9 +9,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "..\ApsimX\Models\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.Shared", "..\ApsimX\APSIM.Shared\APSIM.Shared.csproj", "{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Service", "APSIM.PerformanceTests.Service\APSIM.PerformanceTests.Service\APSIM.PerformanceTests.Service.csproj", "{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Service", "APSIM.PerformanceTests.Service\APSIM.PerformanceTests.Service.csproj", "{7A0D8E6A-FF82-4CBE-A03A-0E741CA2F552}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Portal", "APSIM.PerformanceTests.Portal\APSIM.PerformanceTests.Portal\APSIM.PerformanceTests.Portal.csproj", "{AE6E791B-6946-4273-9B4A-F012845AFF76}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Portal", "APSIM.PerformanceTests.Portal\APSIM.PerformanceTests.Portal.csproj", "{AE6E791B-6946-4273-9B4A-F012845AFF76}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSIM.PerformanceTests.Tests", "APSIM.PerformanceTests.Tests\APSIM.PerformanceTests.Tests.csproj", "{DE662D68-2EEF-4394-BA5F-4362174665A7}"
 EndProject

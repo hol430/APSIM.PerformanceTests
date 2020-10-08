@@ -1,0 +1,324 @@
+﻿
+/*Div Style Definitions - DEFAULT*/
+#GridDataDiv {
+    overflow: auto; 
+    /*border: 1px solid black;*/ 
+    width: 900px; 
+    height: 500px;
+}
+#GridDataDiv_SimFiles {
+    overflow: auto; 
+    /*border: 1px solid black;*/ 
+    width: 1000px; 
+    height: 500px;
+}
+#GridDataDiv_POValues {
+    overflow: auto; 
+    /*border: 1px solid black;*/ 
+    width: 1000px; 
+    height: 500px;
+    border: 1px solid black;
+}
+
+#GridDataDiv_POTests {
+    overflow: auto; 
+    /*border: 1px solid black;*/ 
+    width: 870px; 
+    height: 400px;
+    border: 1px solid black;
+}
+
+#GridDataDiv_POTestsDiffs {
+    overflow: auto; 
+    /*border: 1px solid black;*/ 
+    width: 870px; 
+    height: 400px;
+    border: 1px solid black;
+}
+
+#footer {
+    position: fixed;
+    bottom: 0px;
+}
+
+ .modalBackground {
+      background-color: White;
+      filter: alpha(opacity=50);
+      opacity: 0.7;
+}
+.modalPopup {
+    background-color: #FFFFFF;
+    border-width: 3px;
+    border-style: solid;
+    border-color: black;
+    padding-top: 10px;
+    padding-left: 10px;
+    width: 500px;
+    height: 250px;
+}
+
+.GridHeader, .GridHeader_Left, .GridHeader_Row1, .GridHeader_Row2 {
+    background: #004844;
+    color: White;
+    font-family:  Verdana;
+    font-size: 12px;
+    font-weight: bold;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+.GridHeader_Left, .GridHeader_Row1, .GridHeader_Row2 {
+    border-left: 1px solid lightgray; 
+}
+
+.GridHeader_Row1, .GridHeader_Row2 {
+    text-align: center; 
+    padding-top: 5px ;
+    padding-bottom: 5px ;
+}
+
+.GridHeader_Row1 {
+    border-bottom: 1px solid lightgray; 
+}
+
+
+/*Class Style Definitions*/
+.GridViewStyle {    
+    text-decoration: none;
+    font-family:  Verdana;
+    font-size: 13px;
+    background-color: White; 
+}
+
+.GridViewStyle_DropDown {    
+    text-decoration: none;
+    font-family:  Verdana;
+    font-size: 11px;
+    background-color: White; 
+}
+
+.GridViewStyle_POValues {    
+    text-decoration: none;
+    font-family:  Verdana;
+    font-size: 12px;
+    background-color: White;
+}
+        
+.GridViewHeaderStyle {
+    font-family:  Verdana;
+    font-size: 13px;
+	color: White;
+	background: #004844 url(Images/gridheader.jpg) repeat-x;
+}
+.GridViewHeaderStyle_DropDown {
+    font-family:  Verdana;
+    font-size: 11px;
+    font-weight: bold;
+	color: White;
+	background: #004844 url(Images/gridheader.jpg) repeat-x;
+}
+
+.GridViewHeaderStyle_POValues {
+    font-family:  Verdana;
+    font-size: 12px;
+    font-weight: bold;
+	color: White;
+	background: #004844 url(Images/gridheader.jpg) repeat-x;
+}
+
+.GridViewRowStyle {
+    height: 25px;
+}
+
+.invisibleColumn
+{
+    display: none;
+    width: 0px;
+}
+
+
+.dropDown {
+    border-radius: 4px;
+    border: 1px solid #AAAAAA;
+    padding: 5px 10px 5px 5px;
+}
+
+.RAlign {
+    text-align: right;
+}
+
+
+.PageHeaderTable {
+    width:100%; 
+}
+.PageHeaderLeft {
+    width:auto; 
+    text-align: left;
+}
+.PageHeaderRight {
+    width:400px; 
+    text-align: right;
+    padding-top: 15px;
+}
+.PageHeaderBar {
+    height: 12px;
+    margin-left: 5px;
+    margin-right: 5px;
+    background-color: #004844;
+    width: 100%;
+}
+.Footer {
+    font-family:  Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 9px;
+    color: #004844;
+}
+
+.SectionTitles {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.ScreenLabel {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+}
+.ScreenText {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+}
+.ScreenDetails {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 13px;
+}
+
+.PassedTests {
+    color: green;
+}
+.FailedTests {
+    color: orangered;
+}
+.Reset {
+    color: black;
+}
+
+
+.TGR_Table {
+    padding-left: 15px;
+    border-collapse: collapse;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 13px;
+}
+
+
+.TGCell_SimHeader {
+    width: 40px;
+}
+
+.TGCell_POHeader {
+    border-bottom: 1px solid black;
+    padding-top: 15px;
+    padding-bottom: 2px;
+    font-weight: bold;
+}
+
+.TGCell_SimName {
+    border-bottom: 1px solid black;
+    padding-left: 3px;
+    padding-top: 10px;
+    padding-bottom: 2px;
+    text-align: left;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.TGCell_POName {
+    border-bottom: 1px solid black;
+    padding-left: 3px;
+    text-align: left;
+    width: 200px;
+}
+
+.TGCell_Variable {
+    padding-left: 3px;
+    text-align: left;
+    text-decoration: none;
+}
+
+.TGCell_Variable a {
+    text-decoration: none;
+    color: black;
+}
+
+.TGCell_TestHeader {
+    border-bottom: 1px solid black;
+    padding-top: 15px;
+    padding-bottom: 2px;
+    width: 60px;
+    text-align: center;
+    font-weight: bold;
+}
+.TG_CellSpace_Header {
+    border-bottom: 1px solid black;
+    width: 15px;
+}
+
+.TGCell_Num_RMSE {
+    text-align: right;
+    width: 60px;
+}
+.TGCell_Num_Other {
+    text-align: right;
+    width: 45px;
+}
+.TGCell_Num_OtherL {
+    text-align: left;
+    width: 45px;
+}
+.TG_CellTick {
+    text-align: left;
+    width: 35px;
+}
+.TG_CellSpace {
+    width: 15px;
+}
+
+
+
+.PR_Table {
+    margin-left: 30px;
+    border-collapse: collapse;
+    text-align: center;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 13px;
+}
+.PR_Message {
+    margin-left: 30px;
+}
+.PR_TopRow {
+    border-top: 2px solid black;
+    border-bottom: 1px solid black;
+}
+.PR_2ndRow {
+    border-top: 1px solid black;
+}
+.PR_EndRow {
+    border-bottom: 2px solid black;
+}
+
+.PR_Cell_Header {
+    padding-top: 10px;
+    padding-bottom: 2px;
+    font-weight: bold;
+}
+.PR_Cell_Other {
+    padding-top: 3px;
+}
+
+.PR_Cell1 {
+    width: 30px;
+}
+.PR_Cell2 {
+    width: 190px;
+}
