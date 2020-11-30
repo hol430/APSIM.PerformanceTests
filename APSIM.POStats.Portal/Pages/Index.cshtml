@@ -1,0 +1,114 @@
+﻿@page "{pullRequestNumber:int=2204}"
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+    ViewData["ID"] = @Model.PullRequest.Id;
+}
+@using APSIM.POStats.Shared;
+@using APSIM.POStats.Shared.Comparison;
+
+<div class="text-left">
+    <h1 class="display-4">Predicted / Observed Stats</h1>
+    <p>Number: @Model.PullRequest.Number</p>
+    <p>Author: @Model.PullRequest.Author</p>
+    <p>Date created: @Model.PullRequest.DateRun</p>
+
+    <div>
+        <br />
+        <table>
+            <tr>
+                <td colspan="4">General performance ratings for recommended statistics.</td>
+            </tr>
+            <tr class="ratings-table-heading">
+                <td class="ratings-table-column">&nbsp;</td>
+                <td class="ratings-table-column">Performance Rating</td>
+                <td class="ratings-table-column">RSR</td>
+                <td class="ratings-table-column">NSE</td>
+            </tr>
+            <tr class="ratings-table-row">
+                <td class="ratings-table-column">***</td>
+                <td class="ratings-table-column">Very Good</td>
+                <td class="ratings-table-column">0.00 ≤ RSR ≤ 0.50</td>
+                <td class="ratings-table-column">0.75 < NSE ≤ 1.00</td>
+            </tr>
+            <tr class="ratings-table-row">
+                <td class="ratings-table-column">**</td>
+                <td class="ratings-table-column">Good</td>
+                <td class="ratings-table-column">0.50 < RSR ≤ 0.60</td>
+                <td class="ratings-table-column">0.65 < NSE ≤ 0.75</td>
+            </tr>
+            <tr class="ratings-table-row">
+                <td class="ratings-table-column">*</td>
+                <td class="ratings-table-column">Satisfactory</td>
+                <td class="ratings-table-column">0.60 < RSR ≤ 0.70</td>
+                <td class="ratings-table-column">0.50 < NSE ≤ 0.65</td>
+            </tr>
+            <tr class="ratings-table-bottomrow">
+                <td class="ratings-table-column">&nbsp;</td>
+                <td class="ratings-table-column">Unsatisfactory</td>
+                <td class="ratings-table-column">RSR > 0.70</td>
+                <td class="ratings-table-column">NSE ≤ 0.50</td>
+            </tr>
+        </table>
+        <br />
+        <strong>Changes are only considered significant if they differ from the accepted stat by more than 1%.</strong>
+        <br />
+        <br />
+
+        <table class="stats-table">
+            @foreach (var file in ApsimFileComparison.GetFiles(Model.PullRequest))
+            {
+                <tr></tr>
+                <tr>
+                    <td class="stats-table-heading" colspan="18">
+                        <b>@Html.Raw(IndexModel.EmitFileName(file))</b>
+                    </td>
+                </tr>
+                @foreach (var table in file.GetTables())
+                {
+                    <tr>
+                        <td class=".stats-variablename">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                        <td class="stats-table-heading" colspan="2"><i>@Html.Raw(IndexModel.EmitTableName(@table))</i></td>
+                        <td class="stats-heading">&nbsp;&nbsp;</td>
+                        <td class="stats-heading" colspan="3">n</td>
+                        <td class="stats-heading">&nbsp;&nbsp;</td>
+                        <td class="stats-heading" colspan="3">RMSE</td>
+                        <td class="stats-heading">&nbsp;&nbsp;</td>
+                        <td class="stats-heading" colspan="3">NSE</td>
+                        <td class="stats-heading">&nbsp;&nbsp;</td>
+                        <td class="stats-heading" colspan="3">RSR</td>
+                    </tr>
+
+                    @foreach (var variable in table.GetVariables())
+                    {
+                        <tr>
+                            <td class="stats-variablename">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                            <td class="stats-variablename">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                            <td class="stats-variablename"><a asp-page="/Chart" asp-route-id="@variable.Id">@Html.Raw(IndexModel.EmitVariableName(@variable))</a></td>
+                            <td class="stats-cell">&nbsp;&nbsp;</td>
+
+                            <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.CurrentN, isAccepted:false))</td>
+                            <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.AcceptedN, isAccepted: true))</td>
+                            <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(variable.NStatus))</td>
+                            <td class="stats-cell">&nbsp;&nbsp;</td>
+
+                            <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(variable.CurrentRMSE, 0, 6, isAccepted: false))</td>
+                            <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(variable.AcceptedRMSE, 0, 6, isAccepted: true))</td>
+                            <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(variable.RMSEStatus))</td>
+                            <td class="stats-cell">&nbsp;&nbsp;</td>
+
+                            <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.CurrentNSE, 3, 0, isAccepted: false))</td>
+                            <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.AcceptedNSE, 3, 0, isAccepted: true))</td>
+                            <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(variable.NSEStatus))@VariableFunctions.NSERating(variable.AcceptedNSE)</td>
+                            <td class="stats-cell">&nbsp;&nbsp;</td>
+
+                            <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.CurrentRSR, 3, 0, isAccepted: false))</td>
+                            <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.AcceptedRSR, 3, 0, isAccepted: true))</td>
+                            <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(variable.RSRStatus))@VariableFunctions.RSRRating(variable.AcceptedNSE)</td>
+                        </tr>
+                    }
+                }
+            }
+        </table>
+    </div>
+</div>

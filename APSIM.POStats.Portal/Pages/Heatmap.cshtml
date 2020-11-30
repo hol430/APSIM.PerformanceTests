@@ -1,0 +1,55 @@
+﻿@page
+@model HeatmapModel
+@{
+    ViewData["Title"] = "Heatmap";
+}
+
+<div id="chart"></div>
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', { 'packages': ['treemap'] });
+    google.charts.setOnLoadCallback(drawChart);
+    var data;
+    function drawChart() {
+        var jsonData = $.ajax({
+                url: "/Heatmap?handler=ChartData&id=@Model.PullRequest.Id",
+                dataType: "json",
+                async: false
+        }).responseText;
+
+        data = new google.visualization.DataTable(jsonData);
+        var tree = new google.visualization.TreeMap(document.getElementById('chart'));
+
+        var options = {
+            highlightOnMouseOver: false,
+            maxDepth: 1,
+            maxPostDepth: 2,
+            minHighlightColor: '#8c6bb1',
+            midHighlightColor: '#9ebcda',
+            maxHighlightColor: '#edf8fb',
+            minColor: '#ff0000',  // red
+            midColor: '#000000',  // black
+            maxColor: '#00ff00',  // green
+            headerHeight: 15,
+            showScale: true,
+            height: 500,
+            useWeightedAverageForAggregation: true,
+            generateTooltip: showStaticTooltip
+        };
+
+        tree.draw(data, options);
+    }
+
+    function showStaticTooltip(row, size, value) {
+        var st = data.getValue(row, 0);
+
+        var words = st.split(' ');
+        if (words.length == 2)
+            return '<div style="background:#fd9; padding:10px; border-style:solid">' +
+                '<a href="@Model.BaseUrl/Chart/?id=' + words[1] + '">' + words[0] + '</a></div>';
+        else
+            return '<div style="background:#fd9; padding:10px; border-style:solid">' + st + '</a></div>';
+    }
+</script>
+

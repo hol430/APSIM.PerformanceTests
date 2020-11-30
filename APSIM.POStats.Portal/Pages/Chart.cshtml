@@ -1,0 +1,69 @@
+﻿@page
+@model ChartModel
+@using APSIM.POStats.Shared;
+@{
+    <div class="container">
+        <div id="chart" class="float-left"></div>
+        <div id="stats" class="float-right">
+            <table>
+                <tr>
+                    <td class="stats-cell">"N"</td>
+                    <td class="stats-cell">@Html.Raw(IndexModel.EmitNumber(@Model.Variable.CurrentN, isAccepted: false))</td>
+                    <td class="stats-cell">@Html.Raw(IndexModel.EmitNumber(@Model.Variable.AcceptedN, isAccepted: true))</td>
+                    <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(@Model.Variable.NStatus))</td>
+                    <td class="stats-cell">&nbsp;&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="stats-cell">"RMSE"</td>
+                    <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@Model.Variable.CurrentRMSE, 0, 6, isAccepted: false))</td>
+                    <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@Model.Variable.AcceptedRMSE, 0, 6, isAccepted: true))</td>
+                    <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(@Model.Variable.RMSEStatus))</td>
+                    <td class="stats-cell">&nbsp;&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="stats-cell">"NSE"</td>
+                    <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@Model.Variable.CurrentNSE, 3, 0, isAccepted: false))</td>
+                    <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@Model.Variable.AcceptedNSE, 3, 0, isAccepted: true))</td>
+                    <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(@Model.Variable.NSEStatus))@VariableFunctions.NSERating(@Model.Variable.AcceptedNSE)</td>
+                    <td class="stats-cell">&nbsp;&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="stats-cell">"RSR"</td>
+                    <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@Model.Variable.CurrentRSR, 3, 0, isAccepted: false))</td>
+                    <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@Model.Variable.AcceptedRSR, 3, 0, isAccepted: true))</td>
+                    <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(@Model.Variable.RSRStatus))@VariableFunctions.RSRRating(@Model.Variable.AcceptedNSE)</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script type="text/javascript">
+
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+            var jsonData = $.ajax({
+                url: "/Chart?handler=ChartData&id=@Model.Id",
+                dataType: "json",
+                async: false
+            }).responseText;
+            var data = new google.visualization.DataTable(jsonData);
+            var options = {
+                'title': '@Model.Name',
+                'width': 600,
+                'height': 600,
+                hAxis: { title: 'Observed'/*, minValue: 0, maxValue: 800*/ },
+                vAxis: { title: 'Predicted'/*, minValue: 0, maxValue: 800*/ },
+                legend: { position: 'right' },
+                trendlines: { 0: {} },    // Draw a trendline for data series 0.
+                series: {
+                    2: { lineWidth: 1, pointSize: 0 } // Series 2 (1:1) is a line.
+                }
+            };
+
+            var chart = new google.visualization.ScatterChart(document.getElementById('chart'));
+            chart.draw(data, options);
+        }
+    </script>
+}

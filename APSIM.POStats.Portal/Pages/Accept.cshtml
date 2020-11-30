@@ -1,0 +1,13 @@
+﻿@page
+@model AcceptModel
+@{
+    ViewData["Title"] = "Accept stats?";
+
+    <p>If you want to accept the stats for pull request #@Model.PullRequestId please enter the admin password below.</p>
+    <form method="post">
+        <div>
+            <label for="Password">Password:</label>
+            <input type="password" name="Password" value="" />
+        </div>
+    </form>
+}

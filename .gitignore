@@ -40,3 +40,4 @@ APSIM.PerformanceTests.Tests/.vs/
 .vscode/
 **/bin/
 **/obj/
+Vault.json

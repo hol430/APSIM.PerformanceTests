@@ -1,0 +1,85 @@
+{
+  "$type": "Models.Core.Simulations, Models",
+  "ExplorerWidth": 250,
+  "Version": 67,
+  "Name": "Simulations",
+  "Children": [
+    {
+      "$type": "Models.Storage.DataStore, Models",
+      "useFirebird": false,
+      "CustomFileName": null,
+      "Name": "DataStore",
+      "Children": [
+        {
+          "$type": "Models.PostSimulationTools.ExcelInput, Models",
+          "FileNames": [
+            "ObservedAll.xlsx"
+          ],
+          "SheetNames": [
+            "ObservedAveragedAnnual"
+          ],
+          "Name": "ObservedAveAnnual",
+          "Children": [],
+          "IncludeInDocumentation": false,
+          "Enabled": true,
+          "ReadOnly": false
+        },
+        {
+          "$type": "Models.PostSimulationTools.PredictedObserved, Models",
+          "PredictedTableName": "PO1",
+          "ObservedTableName": "ObservedAveragedAnnual",
+          "FieldNameUsedForMatch": "Date",
+          "FieldName2UsedForMatch": null,
+          "FieldName3UsedForMatch": null,
+          "AllColumns": false,
+          "Name": "PO1",
+          "Children": [],
+          "IncludeInDocumentation": false,
+          "Enabled": true,
+          "ReadOnly": false
+        },
+        {
+          "$type": "Models.PostSimulationTools.PredictedObserved, Models",
+          "PredictedTableName": "PO2",
+          "ObservedTableName": "ObservedAnnual",
+          "FieldNameUsedForMatch": null,
+          "FieldName2UsedForMatch": null,
+          "FieldName3UsedForMatch": null,
+          "AllColumns": false,
+          "Name": "PO2",
+          "Children": [],
+          "IncludeInDocumentation": false,
+          "Enabled": true,
+          "ReadOnly": false
+        }
+      ],
+      "IncludeInDocumentation": true,
+      "Enabled": true,
+      "ReadOnly": false
+    },
+    {
+      "$type": "Models.Core.Folder, Models",
+      "ShowPageOfGraphs": true,
+      "Name": "Folder1",
+      "Children": [
+        {
+          "$type": "Models.PostSimulationTools.PredictedObserved, Models",
+          "PredictedTableName": "PO3",
+          "ObservedTableName": "ObservedAnnual",
+          "FieldNameUsedForMatch": null,
+          "FieldName2UsedForMatch": null,
+          "FieldName3UsedForMatch": null,
+          "AllColumns": false,
+          "Name": "PO3",
+          "Children": [],
+          "IncludeInDocumentation": false,
+          "Enabled": true,
+          "ReadOnly": false
+        }
+      ]
+    }
+  ],
+  "IncludeInDocumentation": true,
+  "Enabled": true,
+  "ReadOnly": false
+}
