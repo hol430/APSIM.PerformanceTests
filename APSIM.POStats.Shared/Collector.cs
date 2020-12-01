@@ -41,7 +41,7 @@ namespace APSIM.POStats.Shared
                 {
                     var apsimFile = new ApsimFile()
                     {
-                        FileName = Path.GetFileNameWithoutExtension(fi.FullName),
+                        Name = Path.GetFileNameWithoutExtension(fi.FullName),
                         PullRequest = pullRequest,
                         PullRequestId = pullRequest.Id,
                         Tables = GetTablesFromFile(fi.FullName)

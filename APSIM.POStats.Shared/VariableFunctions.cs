@@ -37,7 +37,7 @@ namespace APSIM.POStats.Shared
         /// <returns>Return accepted variable or null if not found.</returns>
         public static Variable GetAccepted(Variable variable)
         {
-            var acceptedTable = variable.Table.AcceptedTable;
+            var acceptedTable = FindAcceptedTable(variable.Table);
             if (acceptedTable != null)
                 return acceptedTable.Variables.Find(v => v.Name == variable.Name);
             return null;
@@ -112,5 +112,17 @@ namespace APSIM.POStats.Shared
             return new VariableComparison(currentVariable, acceptedVariable);
         }
 
+        /// <summary>Searches for the corresponding accepted table.</summary>
+        private static Table FindAcceptedTable(Table table)
+        {
+            var pullRequest = table.ApsimFile.PullRequest;
+            if (pullRequest.AcceptedPullRequest != null)
+            {
+                var acceptedFile = pullRequest.AcceptedPullRequest.Files.Find(f => f.Name == table.ApsimFile.Name);
+                if (acceptedFile != null)
+                    return acceptedFile.Tables.Find(t => t.Name == table.Name);
+            }
+            return null;
+        }
     }
 }

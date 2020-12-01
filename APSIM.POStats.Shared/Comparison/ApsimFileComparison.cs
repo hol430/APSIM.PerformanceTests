@@ -20,7 +20,7 @@ namespace APSIM.POStats.Shared.Comparison
         }
 
         /// <summary>Name of file.</summary>
-        public string Name { get { if (current != null) return current.FileName; else return accepted.FileName; } }
+        public string Name { get { if (current != null) return current.Name; else return accepted.Name; } }
 
         public enum StatusType
         {
@@ -78,7 +78,7 @@ namespace APSIM.POStats.Shared.Comparison
             var files = new List<ApsimFileComparison>();
             foreach (var currentFile in pullRequest.Files)
             {
-                var acceptedFile = pullRequest.AcceptedPullRequest?.Files.Find(f => f.FileName == currentFile.FileName);
+                var acceptedFile = pullRequest.AcceptedPullRequest?.Files.Find(f => f.Name == currentFile.Name);
                 files.Add(new ApsimFileComparison(currentFile, acceptedFile));
             }
 

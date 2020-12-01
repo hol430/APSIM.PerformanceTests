@@ -18,16 +18,16 @@ namespace APSIM.POStats.Tests
             {
                 Files = new List<ApsimFile>()
                 {
-                    new ApsimFile() { FileName = "file1" },
-                    new ApsimFile() { FileName = "file3" }
+                    new ApsimFile() { Name = "file1" },
+                    new ApsimFile() { Name = "file3" }
                 }
             };
             var currentPullRequest = new PullRequest()
             {
                 Files = new List<ApsimFile>()
                 {
-                    new ApsimFile() { FileName = "file2" },
-                    new ApsimFile() { FileName = "file3" }
+                    new ApsimFile() { Name = "file2" },
+                    new ApsimFile() { Name = "file3" }
                 },
                 AcceptedPullRequest = acceptedPullRequest
             };
@@ -50,7 +50,7 @@ namespace APSIM.POStats.Tests
                 {
                     new ApsimFile() 
                     { 
-                        FileName = "file1",
+                        Name = "file1",
                         Tables = new List<Table>()
                         { 
                             new Table() { Name = "table1" },
@@ -65,7 +65,7 @@ namespace APSIM.POStats.Tests
                 {
                     new ApsimFile()
                     {
-                        FileName = "file1",
+                        Name = "file1",
                         Tables = new List<Table>()
                         {
                             new Table() { Name = "table2" },
@@ -95,7 +95,7 @@ namespace APSIM.POStats.Tests
                 {
                     new ApsimFile()
                     {
-                        FileName = "file1",
+                        Name = "file1",
                         Tables = new List<Table>()
                         {
                             new Table() { Name = "table2" },
@@ -123,7 +123,7 @@ namespace APSIM.POStats.Tests
                 {
                     new ApsimFile()
                     {
-                        FileName = "file1",
+                        Name = "file1",
                         Tables = new List<Table>()
                         {
                             new Table() 
@@ -159,7 +159,7 @@ namespace APSIM.POStats.Tests
                 {
                     new ApsimFile()
                     {
-                        FileName = "file1",
+                        Name = "file1",
                         Tables = new List<Table>()
                         {
                             new Table()
@@ -221,7 +221,7 @@ namespace APSIM.POStats.Tests
                 {
                     new ApsimFile()
                     {
-                        FileName = "file1",
+                        Name = "file1",
                         Tables = new List<Table>()
                         {
                             new Table()

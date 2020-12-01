@@ -118,7 +118,7 @@ namespace MigrateData
                     }
 
                     var newFile = new ApsimFile();
-                    newFile.FileName = file.FileName;
+                    newFile.Name = file.FileName;
                     newFile.PullRequestId = newPullRequest.Id;
                     newFile.Tables = new List<Table>();
 

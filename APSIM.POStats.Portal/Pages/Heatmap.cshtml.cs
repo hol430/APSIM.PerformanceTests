@@ -52,9 +52,9 @@ namespace APSIM.POStats.Portal.Pages
             // Add a root node called 'stats'
             AddRow(gdt, "Stats", null, 0);
 
-            foreach (var file in pullRequest.Files.OrderBy(f => f.FileName))
+            foreach (var file in pullRequest.Files.OrderBy(f => f.Name))
             {
-                AddRow(gdt, file.FileName, "Stats", 0);
+                AddRow(gdt, file.Name, "Stats", 0);
 
                 foreach (var table in file.Tables.OrderBy(t => t.Name))
                 {
@@ -62,10 +62,10 @@ namespace APSIM.POStats.Portal.Pages
                     {
                         var accepted = VariableFunctions.GetAccepted(current);
                         var comparison = VariableFunctions.Compare(accepted, current);
-                        AddRow(gdt, $"{file.FileName}.{table.Name}.{current.Name}.N {current.Id}", file.FileName,    CalculateHeatmapScale(comparison.NPercentDifference));
-                        AddRow(gdt, $"{file.FileName}.{table.Name}.{current.Name}.RMSE {current.Id}", file.FileName, CalculateHeatmapScale(comparison.RMSEPercentDifference));
-                        AddRow(gdt, $"{file.FileName}.{table.Name}.{current.Name}.NSE {current.Id}", file.FileName,  CalculateHeatmapScale(comparison.NSEPercentDifference));
-                        AddRow(gdt, $"{file.FileName}.{table.Name}.{current.Name}.RSR {current.Id}", file.FileName,  CalculateHeatmapScale(comparison.RSRPercentDifference));
+                        AddRow(gdt, $"{file.Name}.{table.Name}.{current.Name}.N {current.Id}", file.Name,    CalculateHeatmapScale(comparison.NPercentDifference));
+                        AddRow(gdt, $"{file.Name}.{table.Name}.{current.Name}.RMSE {current.Id}", file.Name, CalculateHeatmapScale(comparison.RMSEPercentDifference));
+                        AddRow(gdt, $"{file.Name}.{table.Name}.{current.Name}.NSE {current.Id}", file.Name,  CalculateHeatmapScale(comparison.NSEPercentDifference));
+                        AddRow(gdt, $"{file.Name}.{table.Name}.{current.Name}.RSR {current.Id}", file.Name,  CalculateHeatmapScale(comparison.RSRPercentDifference));
                     }
                 }
             }
