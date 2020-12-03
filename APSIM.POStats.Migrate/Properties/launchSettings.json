@@ -2,7 +2,7 @@
   "profiles": {
     "APSIM.POStats.Migrate": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\Files\\Repos\\APSIM.PerformanceTests\\olddbConnect.txt\" \"C:\\Files\\Repos\\APSIM.PerformanceTests\\newdbConnect.txt\" \"C:\\Files\\Repos\\APSIM.PerformanceTests\\PullRequestIdsToMigrate.txt\""
+      "commandLineArgs": "\"C:\\Files\\Repos\\APSIM.PerformanceTests\\PullRequestIdsToMigrate.txt\""
     }
   }
 }

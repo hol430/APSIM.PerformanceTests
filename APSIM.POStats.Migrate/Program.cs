@@ -26,22 +26,18 @@ namespace MigrateData
         {
             try
             {
-                if (args.Length != 2 && args.Length != 3)
-                    throw new Exception("Usage: APSIM.POStats.Migrate FromConnectionFile ToConnectionFile [PRIdsFile]");
-                if (!File.Exists(args[0]))
-                    throw new Exception($"Cannot find file {args[0]}");
-                if (!File.Exists(args[1]))
-                    throw new Exception($"Cannot find file {args[1]}");
+                if (args.Length > 1)
+                    throw new Exception("Usage: APSIM.POStats.Migrate [PRIdsFile]");
 
-                var fromConnectionString = File.ReadAllText(args[0]);
-                var toConnectionString = File.ReadAllText(args[1]);
+                var fromConnectionString = Vault.Read("OLDDB");
+                var toConnectionString = Vault.Read("NEWDB");
 
                 var pullRequestIds = new List<int>();
-                if (args.Length == 3)
+                if (args.Length == 1)
                 {
-                    if (!File.Exists(args[2]))
-                        throw new Exception($"Cannot find file {args[2]}");
-                    File.ReadAllText(args[2])
+                    if (!File.Exists(args[0]))
+                        throw new Exception($"Cannot find file {args[0]}");
+                    File.ReadAllText(args[0])
                         .Split('\n')
                         .ToList()
                         .ForEach(st => { if (st != string.Empty) pullRequestIds.Add(Convert.ToInt32(st)); });
@@ -96,12 +92,30 @@ namespace MigrateData
             // Create the destination database if necessary.
             destinationDb.Database.EnsureCreated();
 
+            // Loop through all pull requests in source and migrate them to destination.
             var stopWatch = Stopwatch.StartNew();
             int numDone = 0;
+            bool isNewPR = false;
             foreach (var pullRequestId in pullRequestIds)
             {
-                var newPullRequest = new PullRequest();
-                newPullRequest.Id = pullRequestId;
+                PullRequest newPullRequest = destinationDb.PullRequests.FirstOrDefault(pr => pr.Number == pullRequestId);
+                if (newPullRequest == null)
+                {
+                    newPullRequest = new PullRequest();
+                    newPullRequest.Number = pullRequestId;
+                }
+                else
+                {
+                    // Remove existing data.
+                    newPullRequest.Files.Clear();
+                    destinationDb.SaveChanges();
+                }
+
+                // See if this pull request was 'accepted'. If so then set the accept date in the new pull request.
+                var sourceAcceptLog = sourceDb.AcceptStatsLogs.FirstOrDefault(a => a.PullRequestId == pullRequestId);
+                if (sourceAcceptLog != null)
+                    newPullRequest.DateStatsAccepted = sourceAcceptLog.LogAcceptDate;
+
                 newPullRequest.Files = new List<ApsimFile>();
                 Console.WriteLine($"Processing pull request {pullRequestId}");
 
@@ -122,58 +136,29 @@ namespace MigrateData
                     newFile.PullRequestId = newPullRequest.Id;
                     newFile.Tables = new List<Table>();
 
-                    // Iterate through all details records for the matching pull request file.
+                    // Iterate through all the details records and create a 'Variable' instance
+                    // for each variable.
+
                     foreach (var details in file.PredictedObservedDetails)
                     {
+                        // Create a new table.
                         var newTable = new Table();
                         newTable.Name = details.TableName;
                         newTable.Variables = new List<Variable>();
-
-                        // Iterate through all the predicted / observed values for the details record.
-                        Variable newVariable = null;
-                        foreach (var value in details.PredictedObservedValues.Where(v => v.PredictedValue != null &&
-                                                                                         v.ObservedValue != null &&
-                                                                                         !double.IsNaN((double)v.PredictedValue) &&
-                                                                                         !double.IsNaN((double)v.ObservedValue))
-                                                                             .OrderBy(v => v.ValueName))
-                        {
-                            // Determine if we need to create a new variable instance.
-                            if (newVariable == null || newVariable.Name != value.ValueName)
-                            {
-                                // Yes we need to create a new variable. Do we need to save the existing one first?
-                                SaveVariable(newTable, newVariable);
-
-                                newVariable = new Variable();
-                                newVariable.Name = value.ValueName;
-                                newVariable.Data = new List<VariableData>();
-                            }
-
-                            // Create a label from simulation name and match data.
-                            string label = "Simulation: " + value.Simulations.Name;
-                            if (value.MatchName != null)
-                                label += $", {value.MatchName}: {FormatValue(value.MatchValue)}";
-                            if (value.MatchName2 != null)
-                                label += $", {value.MatchName2}: {FormatValue(value.MatchValue2)}";
-                            if (value.MatchName3 != null)
-                                label += $", {value.MatchName3}: {FormatValue(value.MatchValue3)}";
-
-                            // Add a new predicted / observed data pair to the new variable.
-                            newVariable.Data.Add(new VariableData()
-                            {
-                                Label = label,
-                                Predicted = value.PredictedValue.Value,
-                                Observed = value.ObservedValue.Value
-                            });
-                        }
-                        // Do we need to save the existing variable we were filling with data?
-                        SaveVariable(newTable, newVariable);
-
                         newFile.Tables.Add(newTable);
+
+                        // Read stats from old db. There are situations where stats are present but
+                        // the predicted / observed data is not present - not sure why - bug in old code?
+                        ReadPredictedObservedTests(sourceDb, newTable, details);
+
+                        // Read predicted / observed data.
+                        ReadVariableData(details, newTable);
                     }
 
                     newPullRequest.Files.Add(newFile);
                 }
-                if (newPullRequest != null && newPullRequest.Files.Count > 0)
+
+                if (isNewPR && newPullRequest != null && newPullRequest.Files.Count > 0)
                     destinationDb.PullRequests.Add(newPullRequest);
 
                 // Save to database.
@@ -188,30 +173,145 @@ namespace MigrateData
             // Hook up accepted pull request ids
             foreach (var destinationPullRequest in destinationDb.PullRequests)
             {
-                Console.WriteLine($"Checking pull request {destinationPullRequest.Id} for it's accepted PR.");
+                Console.WriteLine($"Checking pull request {destinationPullRequest.Number} for it's accepted PR.");
 
-                if (destinationPullRequest.AcceptedPullRequestID == null)
+                if (destinationPullRequest.AcceptedPullRequestId == null)
                 {
                     // See if the accepted pr id should have a value.
-                    var sourcePullRequest = sourceDb.ApsimFiles.FirstOrDefault(f => f.PullRequestId == destinationPullRequest.Id);
+                    var sourcePullRequest = sourceDb.ApsimFiles.FirstOrDefault(f => f.PullRequestId == destinationPullRequest.Number);
                     if (sourcePullRequest.AcceptedPullRequestId != 0)
                     {
                         // This pull request in the source db has an accepted pull request so attach the destination pull request
                         // to the appropriate accepted pull request.
 
                         // Does the destination DB have the accepted PR?
-                        var destinationAcceptedPullRequest = destinationDb.PullRequests.FirstOrDefault(pr => pr.Id == sourcePullRequest.AcceptedPullRequestId);
+                        var destinationAcceptedPullRequest = destinationDb.PullRequests.FirstOrDefault(pr => pr.Number == sourcePullRequest.AcceptedPullRequestId);
                         if (destinationAcceptedPullRequest == null)
-                            Console.WriteLine($"ERROR: Pull request { destinationPullRequest.Id} is supposed to have an accepted pull request of {sourcePullRequest.AcceptedPullRequestId}. Cannot find this accepted pull request.");
+                            Console.WriteLine($"ERROR: Pull request { destinationPullRequest.Number} is supposed to have an accepted pull request of {sourcePullRequest.AcceptedPullRequestId}. Cannot find this accepted pull request.");
                         else
                         {
-                            Console.WriteLine($"Updating accepted PR in pull request {destinationPullRequest.Id}.");
-                            destinationPullRequest.AcceptedPullRequestID = sourcePullRequest.AcceptedPullRequestId;
+                            Console.WriteLine($"Updating accepted PR in pull request {destinationPullRequest.Number}.");
+                            destinationPullRequest.AcceptedPullRequestId = sourcePullRequest.AcceptedPullRequestId;
                         }
                     }
                 }
             }
             destinationDb.SaveChanges();
+        }
+
+        /// <summary>
+        /// Read in all stats.
+        /// </summary>
+        /// <remarks>
+        /// PredictedObservedTests looks like this:
+        /// Variable	    Test	    Accepted	Current
+        /// BiomassWt       n	        9	        9
+        /// BiomassWt       Slope	    0.844029	0.844029
+        /// BiomassWt       Intercept	216.358988	216.3589
+        /// BiomassWt       SEslope	    0.310942	0.310942
+        /// BiomassWt       SEintercept	138.231511	138.2315
+        /// BiomassWt       R2	        0.51281	    0.51281	
+        /// BiomassWt       RMSE	    317.065809	317.0658
+        /// BiomassWt       NSE	        0.02354	    0.02354	
+        /// BiomassWt       ME	        168.367032	168.3670
+        /// BiomassWt       MAE	        170.004948	170.0049
+        /// BiomassWt       RSR	        0.931646	0.931646
+        /// Distance	    n	        103	103	0	1	
+        /// Distance	    Slope	    0.996537	0.996537
+        /// Distance	    Intercept	0.70538	    0.70538	
+        /// </remarks
+        private static void ReadPredictedObservedTests(OldStatsDbContext sourceDb, Table newTable, APSIM.POStats.Migrate.OldModels.PredictedObservedDetails details)
+        {
+            Variable newVariable = null;
+            foreach (var testRecord in sourceDb.PredictedObservedTests.Where(t => t.PredictedObservedDetailsID == details.ID)
+                                                                .OrderBy(t => t.Variable))
+            {
+                // Determine if we need to create a new variable instance.
+                if (newVariable == null || newVariable.Name != testRecord.Variable)
+                {
+                    // Yes we need to create a new variable. Do we need to save the existing one first?
+                    newVariable = new Variable();
+                    newVariable.Name = testRecord.Variable;
+                    newVariable.Data = new List<VariableData>();
+                    newTable.Variables.Add(newVariable);
+                }
+                if (testRecord.Current != null)
+                {
+                    if (testRecord.Test == "n")
+                        newVariable.N = Convert.ToInt32(testRecord.Current);
+                    else if (testRecord.Test == "RMSE")
+                        newVariable.RMSE = (double) testRecord.Current;
+                    else if (testRecord.Test == "NSE")
+                        newVariable.NSE = (double)testRecord.Current;
+                    else if (testRecord.Test == "RSR")
+                        newVariable.RSR = (double)testRecord.Current;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Read data from all variables from 
+        /// </summary>
+        /// <remarks>
+        /// e.g. of PredictedObservedValues table.
+        /// SimulationsID	MatchName	MatchValue	MatchName2	MatchValue2	MatchName3	MatchValue3	ValueName	PredictedValue	ObservedValue
+        /// 11082080	    Zone         TreeRow        Date	22/03/2004      NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone         TreeRow        Date	28/05/2004      NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone         TreeRow        Date	13/08/2004      NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone         TreeRow        Date	17/09/2004      NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone         TreeRow        Date	18/10/2004      NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone         TreeRow        Date	24/11/2004      NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone         TreeRow        Date	15/12/2004      NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone         TreeRow        Date	13/01/2005      NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone         TreeRow        Date	10/02/2005      NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone         TreeRow        Date	15/03/2005      NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone         TreeRow        Date	29/07/2005      NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone         TreeRow        Date	4/10/2005       NULL    NULL        Distance	0	                0
+        /// 11082080	    Zone        	5m	        Date	22/03/2004      NULL    NULL        Distance	5	                5
+        /// 11082080	    Zone        	5m	        Date	28/05/2004      NULL    NULL        Distance	5	                5
+        /// 11082080	    Zone        	5m	        Date	13/08/2004      NULL    NULL        Distance	5	                5
+        /// </remarks>
+        /// <param name="details"></param>
+        /// <param name="newTable"></param>
+        private static void ReadVariableData(APSIM.POStats.Migrate.OldModels.PredictedObservedDetails details, Table newTable)
+        {
+            Variable variable = null;
+            foreach (var value in details.PredictedObservedValues.Where(v => v.PredictedValue != null &&
+                                                                             v.ObservedValue != null &&
+                                                                             !double.IsNaN((double)v.PredictedValue) &&
+                                                                             !double.IsNaN((double)v.ObservedValue))
+                                                                 .OrderBy(v => v.ValueName))
+            {
+                // Determine if we need to create a new variable instance.
+                if (variable == null || variable.Name != value.ValueName)
+                {
+                    if (variable != null)
+                        VariableFunctions.EnsureStatsAreCalculated(variable);
+
+                    variable = newTable.Variables.FirstOrDefault(v => v.Name == value.ValueName);
+                    if (variable == null)
+                        throw new Exception($"Cannot find variable {value.ValueName} while reading table {newTable.Name}");
+                }
+
+                // Create a label from simulation name and match data.
+                string label = "Simulation: " + value.Simulations.Name;
+                if (value.MatchName != null)
+                    label += $", {value.MatchName}: {FormatValue(value.MatchValue)}";
+                if (value.MatchName2 != null)
+                    label += $", {value.MatchName2}: {FormatValue(value.MatchValue2)}";
+                if (value.MatchName3 != null)
+                    label += $", {value.MatchName3}: {FormatValue(value.MatchValue3)}";
+
+                // Add a new predicted / observed data pair to the new variable.
+                variable.Data.Add(new VariableData()
+                {
+                    Label = label,
+                    Predicted = value.PredictedValue.Value,
+                    Observed = value.ObservedValue.Value
+                });
+            }
+            if (variable != null)
+                VariableFunctions.EnsureStatsAreCalculated(variable);
         }
 
         /// <summary>
@@ -242,15 +342,6 @@ namespace MigrateData
                 destinationDBOptions.UseLazyLoadingProxies().UseSqlServer(connectionString);
 
             return new OldStatsDbContext(destinationDBOptions.Options);
-        }
-
-        private static void SaveVariable(Table newTable, Variable newVariable)
-        {
-            if (newVariable != null)
-            {
-                VariableFunctions.EnsureStatsAreCalculated(newVariable);
-                newTable.Variables.Add(newVariable);
-            }
         }
 
         private static string FormatValue(string matchValue)

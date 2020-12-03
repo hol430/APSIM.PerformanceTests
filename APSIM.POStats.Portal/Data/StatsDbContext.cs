@@ -1,6 +1,8 @@
 ﻿using APSIM.POStats.Shared;
 using APSIM.POStats.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
 
 namespace APSIM.POStats.Portal.Data
 {
@@ -16,6 +18,14 @@ namespace APSIM.POStats.Portal.Data
         public StatsDbContext(DbContextOptions<StatsDbContext> options)
          : base(options)
         {
+        }
+
+        /// <summary>Get the most recent accepted pull request.</summary>
+        public PullRequest GetMostRecentAcceptedPullRequest()
+        {
+            var acceptedPRs = PullRequests.Where(pr => pr.DateStatsAccepted != null)
+                                          .OrderBy(pr => pr.DateStatsAccepted);
+            return acceptedPRs.Last();
         }
 
         /// <summary>

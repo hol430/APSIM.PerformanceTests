@@ -11,7 +11,7 @@ namespace APSIM.POStats.Migrate.OldData
         }
 
         //these are in the database
-        //public virtual DbSet<AcceptStatsLog> AcceptStatsLogs { get; set; }
+        public virtual DbSet<AcceptStatsLogs> AcceptStatsLogs { get; set; }
         public virtual DbSet<ApsimFiles> ApsimFiles { get; set; }
         public virtual DbSet<PredictedObservedDetails> PredictedObservedDetails { get; set; }
         public virtual DbSet<PredictedObservedTests> PredictedObservedTests { get; set; }

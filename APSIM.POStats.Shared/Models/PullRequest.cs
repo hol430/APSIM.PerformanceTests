@@ -9,8 +9,9 @@ namespace APSIM.POStats.Shared.Models
         public int Number { get; set; }
         public string Author { get; set; }
         public DateTime DateRun { get; set; }
-        public int? AcceptedPullRequestID { get; set; }
+        public DateTime? DateStatsAccepted { get; set; }
         public virtual List<ApsimFile> Files { get; set; }
+        public int? AcceptedPullRequestId { get; set; }
         public virtual PullRequest AcceptedPullRequest { get; set; }
     }
 }

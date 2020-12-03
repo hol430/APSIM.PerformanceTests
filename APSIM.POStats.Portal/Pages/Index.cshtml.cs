@@ -27,6 +27,9 @@ namespace APSIM.POStats.Portal.Pages
             statsDb = stats;
         }
 
+        /// <summary>The Url for the web site.</summary>
+        public string BaseUrl { get { return $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}"; } }
+
         /// <summary>Invoked when page is first loaded.</summary>
         /// <param name="pullRequestNumber">The pull request to work with.</param>
         public void OnGet(int pullRequestNumber)

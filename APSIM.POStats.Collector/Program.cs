@@ -1,5 +1,6 @@
 ﻿using APSIM.POStats.Shared;
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 
@@ -34,15 +35,41 @@ namespace APSIM.POStats.Collector
                 string author = args[2];
                 string searchDir = args[3];
 
-                var pullReqest = Shared.Collector.RetrieveData(pullId, runDate, author, searchDir);
+                var pullRequest = Shared.Collector.RetrieveData(pullId, runDate, author, searchDir);
 
-                var t = await WebUtilities.PostAsync(Vault.Read("CollectorURL"), pullReqest);
-                if (t != string.Empty)
-                    throw new Exception(t);
+                // Send POStats data to web api. Sometimes it fails so try a number of times.
+                var stopwatch = Stopwatch.StartNew();
+                int maxNumAttempts = 3;
+                int numAttempts = 0;
+                bool fail = true;
+                string errorMessage = null;
+                while (fail && numAttempts < maxNumAttempts)
+                {
+                    try
+                    {
+                        Console.WriteLine("Sending POStats data to web api...");
+                        if (numAttempts > 0)
+                            Console.WriteLine("Retrying....");
+                        numAttempts++;
+                        errorMessage = await WebUtilities.PostAsync(Vault.Read("CollectorURL"), pullRequest);
+                    }
+                    catch (Exception err)
+                    {
+                        errorMessage = err.ToString();
+                    }
+                    fail = errorMessage != string.Empty;
+                }
+                Console.WriteLine($"Elapsed time to send data to web api: {stopwatch.Elapsed.TotalSeconds} seconds");
+
+                if (fail && errorMessage != string.Empty)
+                    throw new Exception(errorMessage);
+                else
+                    Console.WriteLine("Collector completed successfully");
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ERROR: " + ex.ToString());
+                Console.WriteLine("Collector ERROR: " + ex.ToString());
                 return 1;
             }
             return 0;

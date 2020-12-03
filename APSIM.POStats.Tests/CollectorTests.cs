@@ -77,6 +77,10 @@ namespace APSIM.POStats.Tests
             Assert.AreEqual("PO1", pullRequest.Files[0].Tables[0].Name);
             Assert.AreEqual(1, pullRequest.Files[0].Tables[0].Variables.Count);
             Assert.AreEqual("A", pullRequest.Files[0].Tables[0].Variables[0].Name);
+            Assert.AreEqual(2, pullRequest.Files[0].Tables[0].Variables[0].N);
+            Assert.AreEqual(1, pullRequest.Files[0].Tables[0].Variables[0].RMSE);
+            Assert.AreEqual(0.96, pullRequest.Files[0].Tables[0].Variables[0].NSE);
+            Assert.AreEqual(0.1414213562373095, pullRequest.Files[0].Tables[0].Variables[0].RSR);
             Assert.AreEqual(2, pullRequest.Files[0].Tables[0].Variables[0].Data.Count);
             Assert.AreEqual(11.0, pullRequest.Files[0].Tables[0].Variables[0].Data[0].Observed);
             Assert.AreEqual(10.0, pullRequest.Files[0].Tables[0].Variables[0].Data[0].Predicted);
@@ -89,6 +93,11 @@ namespace APSIM.POStats.Tests
             Assert.AreEqual("PO2", pullRequest.Files[0].Tables[1].Name);
             Assert.AreEqual(1, pullRequest.Files[0].Tables[1].Variables.Count);
             Assert.AreEqual("A", pullRequest.Files[0].Tables[1].Variables[0].Name);
+            Assert.AreEqual(2, pullRequest.Files[0].Tables[1].Variables[0].N);
+            Assert.AreEqual(10, pullRequest.Files[0].Tables[1].Variables[0].RMSE);
+            Assert.AreEqual(0.96, pullRequest.Files[0].Tables[1].Variables[0].NSE);
+            Assert.AreEqual(0.1414213562373095, pullRequest.Files[0].Tables[1].Variables[0].RSR);
+
             Assert.AreEqual(2, pullRequest.Files[0].Tables[1].Variables[0].Data.Count);
             Assert.AreEqual(110.0, pullRequest.Files[0].Tables[1].Variables[0].Data[0].Observed);
             Assert.AreEqual(100.0, pullRequest.Files[0].Tables[1].Variables[0].Data[0].Predicted);

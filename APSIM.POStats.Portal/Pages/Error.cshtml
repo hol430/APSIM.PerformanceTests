@@ -9,7 +9,10 @@
 @if (Model.ShowRequestId)
 {
     <p>
-        <strong>@Model.ExceptionMessage</strong>
+        <strong>@Model.ExceptionThrown.Message</strong>
+    </p>
+    <p>
+        @Model.ExceptionThrown.ToString()
     </p>
 }
 

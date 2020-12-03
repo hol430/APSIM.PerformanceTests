@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -35,19 +36,21 @@ namespace APSIM.POStats.Shared
             string errorMessages = string.Empty;
             string currentPath = filePath.Trim();
             DirectoryInfo info = new DirectoryInfo(@currentPath);
-            foreach (FileInfo fi in info.GetFiles("*.apsimx", SearchOption.AllDirectories))
+            foreach (FileInfo fileInfo in info.GetFiles("*.apsimx", SearchOption.AllDirectories))
             {
                 try
                 {
+                    var stopwatch = Stopwatch.StartNew();
                     var apsimFile = new ApsimFile()
                     {
-                        Name = Path.GetFileNameWithoutExtension(fi.FullName),
+                        Name = Path.GetFileNameWithoutExtension(fileInfo.FullName),
                         PullRequest = pullRequest,
                         PullRequestId = pullRequest.Id,
-                        Tables = GetTablesFromFile(fi.FullName)
+                        Tables = GetTablesFromFile(fileInfo.FullName)
                     };
                     if (apsimFile.Tables.Count > 0)
                         pullRequest.Files.Add(apsimFile);
+                    Console.WriteLine($"Read PO data from {fileInfo.FullName} in {stopwatch.Elapsed.Seconds} second(s).");
                 }
                 catch (Exception ex)
                 {
@@ -146,6 +149,10 @@ namespace APSIM.POStats.Shared
 
                             // Remove variables that have no data.
                             newTable.Variables.RemoveAll(v => v.Data.Count == 0);
+
+                            // Calculate stats.
+                            foreach (var variable in newTable.Variables)
+                                VariableFunctions.EnsureStatsAreCalculated(variable);
 
                             // Only add the table to the return list if it has variables.
                             if (newTable.Variables.Count > 0)

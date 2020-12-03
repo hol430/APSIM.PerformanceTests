@@ -17,7 +17,7 @@ namespace APSIM.POStats.Portal.Pages
 
         public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
-        public string ExceptionMessage { get; private set; }
+        public Exception ExceptionThrown { get; private set; }
 
         private readonly ILogger<ErrorModel> _logger;
 
@@ -33,7 +33,7 @@ namespace APSIM.POStats.Portal.Pages
             var exceptionHandlerPathFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
             if (exceptionHandlerPathFeature?.Error is Exception)
             {
-                ExceptionMessage = (exceptionHandlerPathFeature.Error as Exception).Message;
+                ExceptionThrown = exceptionHandlerPathFeature.Error;
             }
         }
     }

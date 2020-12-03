@@ -1,4 +1,4 @@
-﻿@page "{pullRequestNumber:int=2204}"
+﻿@page "{pullRequestNumber:int=5901}"
 @model IndexModel
 @{
     ViewData["Title"] = "Home";
@@ -12,6 +12,10 @@
     <p>Number: @Model.PullRequest.Number</p>
     <p>Author: @Model.PullRequest.Author</p>
     <p>Date created: @Model.PullRequest.DateRun</p>
+    @if (Model.PullRequest.AcceptedPullRequest != null)
+    {
+        <p>Accepted pull request: <a href="@Model.BaseUrl/@Model.PullRequest.AcceptedPullRequest.Number">@Model.PullRequest.AcceptedPullRequest.Number</a></p>
+    }
 
     <div>
         <br />
@@ -87,7 +91,7 @@
                             <td class="stats-variablename"><a asp-page="/Chart" asp-route-id="@variable.Id">@Html.Raw(IndexModel.EmitVariableName(@variable))</a></td>
                             <td class="stats-cell">&nbsp;&nbsp;</td>
 
-                            <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.CurrentN, isAccepted:false))</td>
+                            <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.CurrentN, isAccepted: false))</td>
                             <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.AcceptedN, isAccepted: true))</td>
                             <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(variable.NStatus))</td>
                             <td class="stats-cell">&nbsp;&nbsp;</td>
