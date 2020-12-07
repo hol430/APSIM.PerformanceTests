@@ -7,10 +7,10 @@ namespace APSIM.POStats.Shared.Comparison
     public class ApsimFileComparison
     {
         /// <summary>The current file.</summary>
-        private ApsimFile current = null;
+        private readonly ApsimFile current = null;
 
         /// <summary>The accepted file.</summary>
-        private ApsimFile accepted = null;
+        private readonly ApsimFile accepted = null;
 
         /// <summary>Constructor.</summary>
         public ApsimFileComparison(ApsimFile currentFile, ApsimFile acceptedFile)

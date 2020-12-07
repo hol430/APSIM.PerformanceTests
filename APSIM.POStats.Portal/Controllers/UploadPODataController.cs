@@ -41,10 +41,14 @@ namespace APSIM.POStats.Portal.Controllers
                 // Send PR to database.
                 statsDb.PullRequests.Add(pullRequest);
                 statsDb.SaveChanges();
+
+                // Send pass/fail to gitHub
+                bool isPass = PullRequestPassFail.IsPass(pullRequest);
+                GitHub.SetStatus(pullRequest.Number, isPass);
             }
             catch (Exception err)
             {
-                return $"Error from POStats web api: {err.ToString()}";
+                return $"Error from POStats web api: {err}";
             }
             return null;
         }

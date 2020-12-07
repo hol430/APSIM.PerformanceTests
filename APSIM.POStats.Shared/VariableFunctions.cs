@@ -17,7 +17,7 @@ namespace APSIM.POStats.Shared
         {
             if (variable.N == 0 && variable.Data.Count > 0)
             {
-                GetData(variable, out double[] predicted, out double[] observed, out string[] labels);
+                GetData(variable, out double[] predicted, out double[] observed, out _);
                 var stats = MathUtilities.CalcRegressionStats(variable.Name, predicted, observed);
                 if (!double.IsNaN(stats.n) && !double.IsInfinity(stats.n))
                     variable.N = stats.n;

@@ -83,6 +83,12 @@ namespace APSIM.POStats.Shared
         /// <summary>RSR of observed data points in accepted.</summary>
         public double AcceptedRSR => (accepted == null) ? double.NaN : accepted.RSR;
 
+        /// <summary>Return overall pass fail status.</summary>
+        public bool IsPass => (NStatus == Status.Pass || NStatus == Status.Same) &&
+                              (RMSEStatus == Status.Pass || RMSEStatus == Status.Same) &&
+                              (NSEStatus == Status.Pass || NSEStatus == Status.Same) &&
+                              (RSRStatus == Status.Pass || RSRStatus == Status.Same);
+
         /// <summary>How does current N compare to accepted N?</summary>
         public Status NStatus => CalculateState(NPercentDifference);
        

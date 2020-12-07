@@ -28,13 +28,17 @@ namespace APSIM.POStats.Shared
             }
         }
 
-        private static void SetStatus(int pullRequestID, bool pass)
+        /// <summary>
+        /// Set the GitHub status.
+        /// </summary>
+        /// <param name="pullRequestNumber">The pull request number.</param>
+        /// <param name="pass">Set the status to pass?</param>
+        public static void SetStatus(int pullRequestNumber, bool pass)
         {
             GitHubClient github = new GitHubClient(new ProductHeaderValue("ApsimX"));
-            //string token = GetGitHubToken();
-            string token = "asfd";
+            string token = Vault.Read("GitHubToken");
             github.Credentials = new Credentials(token);
-            Task<Octokit.PullRequest> pullRequestTask = github.PullRequest.Get("APSIMInitiative", "ApsimX", pullRequestID);
+            Task<Octokit.PullRequest> pullRequestTask = github.PullRequest.Get("APSIMInitiative", "ApsimX", pullRequestNumber);
             pullRequestTask.Wait();
             Octokit.PullRequest pullRequest = pullRequestTask.Result;
             Uri statusURL = new System.Uri(pullRequest.StatusesUrl);
@@ -48,13 +52,13 @@ namespace APSIM.POStats.Shared
                 stateFormatted = "Pass";
             }
 
-            string urlStr = string.Format("https://apsim.csiro.au/APSIM.PerformanceTests/Default.aspx?PULLREQUEST={0}", pullRequestID);
+            string urlStr = string.Format("https://apsimdev.apsim.info/APSIM.POStats/{0}", pullRequestNumber);
 
             string body = "{" + Environment.NewLine +
                           "  \"state\": \"" + state + "\"," + Environment.NewLine +
                           "  \"target_url\": \"" + urlStr + "\"," + Environment.NewLine +
                           "  \"description\": \"" + stateFormatted + "\"," + Environment.NewLine +
-                          "  \"context\": \"APSIM.PerformanceTests\"" + Environment.NewLine +
+                          "  \"context\": \"APSIM.POStats\"" + Environment.NewLine +
                           "}";
 
             ASCIIEncoding encoding = new ASCIIEncoding();
@@ -76,7 +80,7 @@ namespace APSIM.POStats.Shared
     public class GitHubPullRequestDetails
     {
         /// <summary>The OctoKit pullrequest instance;</summary>
-        private Octokit.PullRequest pullRequest;
+        private readonly Octokit.PullRequest pullRequest;
 
         /// <summary>Constructor.</summary>
         /// <param name="result">A pull request instance.</param>

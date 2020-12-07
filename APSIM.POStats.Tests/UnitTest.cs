@@ -49,8 +49,7 @@ namespace APSIM.POStats.Tests
                     (11.5,   10.6)
                 })
             };
-
-            VariableFunctions.GetData(v, out double[] predicted, out double[] observed, out string[] labels);
+            VariableFunctions.GetData(v, out double[] predicted, out double[] observed, out _);
             Assert.AreEqual(new double[] { 11.0, 52.0, 11.5 }, predicted);
             Assert.AreEqual(new double[] { 15.2, 1.7, 10.6 }, observed);
         }
@@ -72,6 +71,15 @@ namespace APSIM.POStats.Tests
                 });
             }
             return data;
+        }
+
+        /// <summary>
+        /// Make sure the GitHub status works.
+        /// </summary>
+        [Test]
+        public void TestGitHubSetStatus()
+        {
+            //GitHub.SetStatus(5901, false);
         }
     }
 }
