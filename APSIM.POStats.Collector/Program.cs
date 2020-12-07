@@ -1,5 +1,6 @@
 ﻿using APSIM.POStats.Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -18,14 +19,14 @@ namespace APSIM.POStats.Collector
             try
             {
                 //Test that something has been passed
-                if (args.Length != 4)
+                if (args.Length < 4)
                 {
                     Console.WriteLine("Arguments required are: ");
                     Console.WriteLine("  1. (int) Pull Request Id");
                     Console.WriteLine("  2. (datetime) Date");
                     Console.WriteLine("  3. (string) UserID");
-                    Console.WriteLine("  4. (string) Directories(csv)");
-                    Console.WriteLine(@"  Example: APSIM.POStats.Collector 1111 2016.12.01-06:33 hol353 c:\Apsimx\Tests");
+                    Console.WriteLine("  4. (string) Directories (space separated)");
+                    Console.WriteLine(@"  Example: APSIM.POStats.Collector 1111 2016.12.01-06:33 hol353 c:\Apsimx\Tests c:\Apsimx\UnderReview");
                     return 1;
                 }
 
@@ -33,9 +34,11 @@ namespace APSIM.POStats.Collector
                 int pullId = Convert.ToInt32(args[0]);
                 DateTime runDate = DateTime.ParseExact(args[1], "yyyy.MM.dd-HH:mm", CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal);
                 string author = args[2];
-                string searchDir = args[3];
+                var searchDirectories = new List<string>();
+                for (int i = 3; i < args.Length; i++)
+                    searchDirectories.Add(args[i]);
 
-                var pullRequest = Shared.Collector.RetrieveData(pullId, runDate, author, searchDir);
+                var pullRequest = Shared.Collector.RetrieveData(pullId, runDate, author, searchDirectories);
 
                 // Send POStats data to web api. Sometimes it fails so try a number of times.
                 var stopwatch = Stopwatch.StartNew();

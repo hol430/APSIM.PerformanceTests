@@ -23,7 +23,8 @@ namespace APSIM.POStats.Shared
         /// <param name="pullId"></param>
         /// <param name="runDate"></param>
         /// <param name="submitDetails"></param>
-        public static PullRequest RetrieveData(int pullId, DateTime runDate, string submitDetails, string filePath)
+        /// <param name="filePaths">A collection of file paths to search.</param>
+        public static PullRequest RetrieveData(int pullId, DateTime runDate, string submitDetails, IEnumerable<string> filePaths)
         {
             var pullRequest = new PullRequest()
             {
@@ -34,27 +35,30 @@ namespace APSIM.POStats.Shared
             };
 
             string errorMessages = string.Empty;
-            string currentPath = filePath.Trim();
-            DirectoryInfo info = new DirectoryInfo(@currentPath);
-            foreach (FileInfo fileInfo in info.GetFiles("*.apsimx", SearchOption.AllDirectories))
+            foreach (var filePath in filePaths)
             {
-                try
+                string currentPath = filePath.Trim();
+                DirectoryInfo info = new DirectoryInfo(@currentPath);
+                foreach (FileInfo fileInfo in info.GetFiles("*.apsimx", SearchOption.AllDirectories))
                 {
-                    var stopwatch = Stopwatch.StartNew();
-                    var apsimFile = new ApsimFile()
+                    try
                     {
-                        Name = Path.GetFileNameWithoutExtension(fileInfo.FullName),
-                        PullRequest = pullRequest,
-                        PullRequestId = pullRequest.Id,
-                        Tables = GetTablesFromFile(fileInfo.FullName)
-                    };
-                    if (apsimFile.Tables.Count > 0)
-                        pullRequest.Files.Add(apsimFile);
-                    Console.WriteLine($"Read PO data from {fileInfo.FullName} in {stopwatch.Elapsed.Seconds} second(s).");
-                }
-                catch (Exception ex)
-                {
-                    errorMessages += ex.ToString();
+                        var stopwatch = Stopwatch.StartNew();
+                        var apsimFile = new ApsimFile()
+                        {
+                            Name = Path.GetFileNameWithoutExtension(fileInfo.FullName),
+                            PullRequest = pullRequest,
+                            PullRequestId = pullRequest.Id,
+                            Tables = GetTablesFromFile(fileInfo.FullName)
+                        };
+                        if (apsimFile.Tables.Count > 0)
+                            pullRequest.Files.Add(apsimFile);
+                        Console.WriteLine($"Read PO data from {fileInfo.FullName} in {stopwatch.Elapsed.Seconds} second(s).");
+                    }
+                    catch (Exception ex)
+                    {
+                        errorMessages += ex.ToString();
+                    }
                 }
             }
             if (errorMessages.Length > 0)

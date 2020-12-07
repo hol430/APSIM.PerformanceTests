@@ -69,7 +69,7 @@ namespace APSIM.POStats.Tests
                 ));
             database.Close();
 
-            var pullRequest = Collector.RetrieveData(1234, new DateTime(2000, 1, 1), null, path);
+            var pullRequest = Collector.RetrieveData(1234, new DateTime(2000, 1, 1), null, new string[] { path });
             Assert.AreEqual(1, pullRequest.Files.ToList().Count);
             Assert.AreEqual(2, pullRequest.Files[0].Tables.Count);
 
@@ -123,7 +123,7 @@ namespace APSIM.POStats.Tests
                 ));
             database.Close();
 
-            var pullRequest = Collector.RetrieveData(1234, new DateTime(2000, 1, 1), null, path);
+            var pullRequest = Collector.RetrieveData(1234, new DateTime(2000, 1, 1), null, new string[] { path });
             Assert.AreEqual(0, pullRequest.Files.ToList().Count);
         }
 
@@ -142,7 +142,7 @@ namespace APSIM.POStats.Tests
                 ));
             database.Close();
 
-            var pullRequest = Collector.RetrieveData(1234, new DateTime(2000, 1, 1), null, path);
+            var pullRequest = Collector.RetrieveData(1234, new DateTime(2000, 1, 1), null, new string[] { path });
             Assert.AreEqual(0, pullRequest.Files.ToList().Count);
         }
 
@@ -161,7 +161,7 @@ namespace APSIM.POStats.Tests
                 ));
             database.Close();
 
-            var pullRequest = Collector.RetrieveData(1234, new DateTime(2000, 1, 1), null, path);
+            var pullRequest = Collector.RetrieveData(1234, new DateTime(2000, 1, 1), null, new string[] { path });
             Assert.AreEqual(1, pullRequest.Files.ToList().Count);
             Assert.AreEqual(1, pullRequest.Files[0].Tables.Count);
 
@@ -189,7 +189,7 @@ namespace APSIM.POStats.Tests
                 ));
             database.Close();
 
-            var pullRequest = Collector.RetrieveData(1234, new DateTime(2000, 1, 1), null, path);
+            var pullRequest = Collector.RetrieveData(1234, new DateTime(2000, 1, 1), null, new string[] { path });
             Assert.AreEqual(1, pullRequest.Files.ToList().Count);
             Assert.AreEqual(1, pullRequest.Files[0].Tables.Count);
 
