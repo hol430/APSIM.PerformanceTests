@@ -124,6 +124,13 @@ namespace APSIM.POStats.Shared
                                         {
                                             var predictedValue = reader[$"Predicted.{columnName}"];
                                             var observedValue = reader[$"Observed.{columnName}"];
+
+                                            // If the predicted or observed value is an integer, convert to double.
+                                            if (predictedValue is int || predictedValue is Int64)
+                                                predictedValue = Convert.ToDouble(predictedValue);
+                                            if (observedValue is int || observedValue is Int64)
+                                                observedValue = Convert.ToDouble(observedValue);
+                                            
                                             if (predictedValue is double)
                                             {
                                                 double observedValueAsDouble = double.NaN;

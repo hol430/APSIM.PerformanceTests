@@ -200,6 +200,42 @@ namespace APSIM.POStats.Tests
             Assert.AreEqual(2, pullRequest.Files[0].Tables[0].Variables[0].Data.Count);
         }
 
+        /// <summary>Ensures the collector will find integer predicted / observed numbers.</summary>
+        [Test]
+        public void EnsureCollectorFindsIntegers()
+        {
+            SqliteUtilities.CreateTable(database, DataTableUtilities.FromCSV("_Simulations",
+                "ID,Name" + Environment.NewLine +
+                " 1,Sim1" + Environment.NewLine
+                ));
+
+            SqliteUtilities.CreateTable(database, DataTableUtilities.FromCSV("PO1",
+                "SimulationID,Date,Predicted.A,Observed.A" + Environment.NewLine +
+                " 1,2000-01-01, 10, 11" + Environment.NewLine +
+                " 1,2000-01-02, 20, 21" + Environment.NewLine
+                ));
+            database.Close();
+
+            var pullRequest = Collector.RetrieveData(1234, new DateTime(2000, 1, 1), null, new string[] { path });
+            Assert.AreEqual(1, pullRequest.Files.ToList().Count);
+            Assert.AreEqual(1, pullRequest.Files[0].Tables.Count);
+
+            // Table 1.
+            Assert.AreEqual("PO1", pullRequest.Files[0].Tables[0].Name);
+            Assert.AreEqual(1, pullRequest.Files[0].Tables[0].Variables.Count);
+            Assert.AreEqual("A", pullRequest.Files[0].Tables[0].Variables[0].Name);
+            Assert.AreEqual(2, pullRequest.Files[0].Tables[0].Variables[0].N);
+            Assert.AreEqual(1, pullRequest.Files[0].Tables[0].Variables[0].RMSE);
+            Assert.AreEqual(0.96, pullRequest.Files[0].Tables[0].Variables[0].NSE);
+            Assert.AreEqual(0.1414213562373095, pullRequest.Files[0].Tables[0].Variables[0].RSR);
+            Assert.AreEqual(2, pullRequest.Files[0].Tables[0].Variables[0].Data.Count);
+            Assert.AreEqual(11.0, pullRequest.Files[0].Tables[0].Variables[0].Data[0].Observed);
+            Assert.AreEqual(10.0, pullRequest.Files[0].Tables[0].Variables[0].Data[0].Predicted);
+            Assert.AreEqual("Simulation: Sim1, Date: 2000-01-01", pullRequest.Files[0].Tables[0].Variables[0].Data[0].Label);
+            Assert.AreEqual(21.0, pullRequest.Files[0].Tables[0].Variables[0].Data[1].Observed);
+            Assert.AreEqual(20.0, pullRequest.Files[0].Tables[0].Variables[0].Data[1].Predicted);
+            Assert.AreEqual("Simulation: Sim1, Date: 2000-01-02", pullRequest.Files[0].Tables[0].Variables[0].Data[1].Label);
+        }
 
     }
 }
