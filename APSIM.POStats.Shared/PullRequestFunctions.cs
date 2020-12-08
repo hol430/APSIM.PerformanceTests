@@ -6,7 +6,7 @@ using System.Text;
 
 namespace APSIM.POStats.Shared
 {
-    public class PullRequestPassFail
+    public class PullRequestFunctions
     {
         /// <summary>
         /// Does the specified pull request pass?
@@ -33,5 +33,6 @@ namespace APSIM.POStats.Shared
             }
             return true;
         }
+
     }
 }

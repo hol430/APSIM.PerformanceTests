@@ -30,11 +30,10 @@ namespace APSIM.POStats.Portal.Pages
             statsDb = stats;
         }
 
-        /// <summary>The unique ID for the variable model.</summary>
-        public int Id { get; private set; }
-
         /// <summary>The variable name to chart.</summary>
         public string Name { get; private set; }
+
+        public int Id { get; private set; }
 
         /// <summary>The variable comparision.</summary>
         public VariableComparison Variable { get; private set; }
@@ -93,7 +92,7 @@ namespace APSIM.POStats.Portal.Pages
 
             // Add a 1:1 line
             double maxScale = Math.Max(MathUtilities.Max(predicted), MathUtilities.Max(observed));
-            gdt.AddColumn(new Column(ColumnType.Number, "1:1", "1:1"));      
+            gdt.AddColumn(new Column(ColumnType.Number, "1:1", "1:1"));
             var r2 = gdt.NewRow();
             r2.AddCell(new Cell(0, "1:1 line"));  // X
             r2.AddCell(new Cell(null, null));     // Y

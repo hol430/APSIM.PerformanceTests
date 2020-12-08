@@ -15,7 +15,7 @@ namespace APSIM.POStats.Portal.Pages
     public class IndexModel : PageModel
     {
         /// <summary>The database context.</summary>
-        private StatsDbContext statsDb;
+        private readonly StatsDbContext statsDb;
 
         /// <summary>The pull request being analysed.</summary>
         public PullRequest PullRequest { get; private set; }
@@ -67,7 +67,7 @@ namespace APSIM.POStats.Portal.Pages
             else if (numberSignificantFigures > 0)
                 st = MathUtilities.FormatSignificantDigits(number, numberSignificantFigures);
             else
-                st = number.ToString("F3");
+                st = number.ToString($"F{numDecimalPlaces}");
 
             if (isAccepted)
                 return "(" + st + ")";

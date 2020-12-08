@@ -13,7 +13,7 @@
     var data;
     function drawChart() {
         var jsonData = $.ajax({
-                url: "/Heatmap?handler=ChartData&id=@Model.PullRequest.Id",
+                url: location.pathname + "?handler=ChartData&id=@Model.PullRequest.Id",
                 dataType: "json",
                 async: false
         }).responseText;

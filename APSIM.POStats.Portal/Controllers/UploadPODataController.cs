@@ -43,7 +43,7 @@ namespace APSIM.POStats.Portal.Controllers
                 statsDb.SaveChanges();
 
                 // Send pass/fail to gitHub
-                bool isPass = PullRequestPassFail.IsPass(pullRequest);
+                bool isPass = PullRequestFunctions.IsPass(pullRequest);
                 GitHub.SetStatus(pullRequest.Number, isPass);
             }
             catch (Exception err)
