@@ -20,6 +20,12 @@ namespace APSIM.POStats.Shared
         /// 
         /// Returns true iff an error is encountered.
         /// </summary>
+        /// <remarks>
+        /// To get this collector to work when sending > 30Mb of data to api I had to change IIS setting:
+        /// In configuration editor on APSIM web site:
+        /// system->webServer->security->requestFiltering->maxAllowedContentLength = 60000000
+        /// </remarks>
+        /// 
         /// <param name="pullId"></param>
         /// <param name="runDate"></param>
         /// <param name="submitDetails"></param>

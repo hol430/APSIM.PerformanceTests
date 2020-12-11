@@ -27,6 +27,7 @@ namespace APSIM.POStats.Portal.Controllers
         /// <param name="pullRequest"></param>
         /// <returns></returns>
         [HttpPost]
+        [RequestSizeLimit(100_000_000)]
         public string Post([FromBody]PullRequest pullRequest)
         {
             try

@@ -89,6 +89,12 @@ namespace APSIM.POStats.Shared
                               (NSEStatus == Status.Pass || NSEStatus == Status.Same) &&
                               (RSRStatus == Status.Pass || RSRStatus == Status.Same);
 
+        /// <summary>Is this variable the same as the accepted variable?</summary>
+        public bool IsSame => NStatus == Status.Same &&
+                              RMSEStatus == Status.Same &&
+                              NSEStatus == Status.Same &&
+                              RSRStatus == Status.Same;
+
         /// <summary>How does current N compare to accepted N?</summary>
         public Status NStatus => CalculateState(NPercentDifference);
        
@@ -113,8 +119,7 @@ namespace APSIM.POStats.Shared
         /// <summary>RSR percentage difference between between the values.</summary>
         public double RSRPercentDifference { get; } = -double.NaN;
 
-
-
+        
         /// <summary>
         /// Compare two stat variables and return percentage difference. If the difference is positive,
         /// it is an improvement else it is a decline.

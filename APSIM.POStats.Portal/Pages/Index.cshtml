@@ -7,18 +7,35 @@
 @using APSIM.POStats.Shared;
 @using APSIM.POStats.Shared.Comparison;
 
+
+<script type="text/javascript">
+    var checkedChanged = function () {
+        alert("checkedChanged");
+    };
+</script>
+
 <div class="text-left">
     <h1 class="display-4">Predicted / Observed Stats</h1>
-    <p>Number: @Model.PullRequest.Number</p>
-    <p>Author: @Model.PullRequest.Author</p>
-    <p>Date created: @Model.PullRequest.DateRun</p>
-    @if (Model.PullRequest.AcceptedPullRequest != null)
-    {
-        <p>Accepted pull request: <a href="@Model.BaseUrl/@Model.PullRequest.AcceptedPullRequest.Number">@Model.PullRequest.AcceptedPullRequest.Number</a></p>
-    }
-
+    <form method="post">
+        <div>
+            <label for="PullRequestNumber">Number:</label>
+            <input name="PullRequestNumber" value="@Model.PullRequest.Number" readonly />
+        </div>
+        <div>
+            <label for="Author">Author:</label>
+            <input name="Author" value="@Model.PullRequest.Author" readonly />
+        </div>
+        <div>
+            <label for="DateCreated">Date created:</label>
+            <input name="DateCreated" value="@Model.PullRequest.DateRun" readonly />
+        </div>
+        <div>
+            <button name="toggle-button" type="submit">Toggle only show changed stats</button>
+        </div>
+    </form>
     <div>
         <br />
+
         <table>
             <tr>
                 <td colspan="4">General performance ratings for recommended statistics.</td>
@@ -60,7 +77,12 @@
         <br />
 
         <table class="stats-table">
-            @foreach (var file in ApsimFileComparison.GetFiles(Model.PullRequest))
+            @{
+                var files = PullRequestFunctions.GetFiles(Model.PullRequest);
+                if (Model.OnlyShowChangedStats)
+                    PullRequestFunctions.RemoveSame(files);
+            }
+            @foreach (var file in files)
             {
                 <tr></tr>
                 <tr>
@@ -68,7 +90,7 @@
                         <b>@Html.Raw(IndexModel.EmitFileName(file))</b>
                     </td>
                 </tr>
-                @foreach (var table in file.GetTables())
+                @foreach (var table in file.Tables)
                 {
                     <tr>
                         <td class=".stats-variablename">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
@@ -83,7 +105,7 @@
                         <td class="stats-heading" colspan="3">RSR</td>
                     </tr>
 
-                    @foreach (var variable in table.GetVariables())
+                    @foreach (var variable in table.Variables)
                     {
                         <tr>
                             <td class="stats-variablename">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>

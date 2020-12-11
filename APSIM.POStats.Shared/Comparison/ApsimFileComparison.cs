@@ -6,21 +6,22 @@ namespace APSIM.POStats.Shared.Comparison
 {
     public class ApsimFileComparison
     {
-        /// <summary>The current file.</summary>
-        private readonly ApsimFile current = null;
-
-        /// <summary>The accepted file.</summary>
-        private readonly ApsimFile accepted = null;
-
         /// <summary>Constructor.</summary>
         public ApsimFileComparison(ApsimFile currentFile, ApsimFile acceptedFile)
         {
-            current = currentFile;
-            accepted = acceptedFile;
+            Current = currentFile;
+            Accepted = acceptedFile;
+            Tables = GetTables();
         }
 
+        /// <summary>The current file.</summary>
+        public ApsimFile Current { get; private set; } = null;
+
+        /// <summary>The accepted file.</summary>
+        public ApsimFile Accepted { get; private set; } = null;
+
         /// <summary>Name of file.</summary>
-        public string Name { get { if (current != null) return current.Name; else return accepted.Name; } }
+        public string Name { get { if (Current != null) return Current.Name; else return Accepted.Name; } }
 
         public enum StatusType
         {
@@ -39,58 +40,56 @@ namespace APSIM.POStats.Shared.Comparison
         { 
             get 
             { 
-                if (current == null) 
+                if (Current == null) 
                     return StatusType.Missing; 
-                else if (accepted == null) return StatusType.New; 
+                else if (Accepted == null) return StatusType.New; 
                 else 
                     return StatusType.NoChange; 
             } 
         }
 
+        /// <summary>Is this file the same as the accepted file?</summary>
+        public bool IsSame
+        {
+            get
+            {
+                if (Current == null || Accepted == null)
+                    return false;
+
+                foreach (var table in Tables)
+                    if (!table.IsSame)
+                        return false;
+
+                return true;
+            }
+        }
+
         /// <summary>Get a list of all tables for this file.</summary>
-        public IEnumerable<TableComparison> GetTables()
+        public List<TableComparison> Tables { get; }
+
+
+        /// <summary>Find all tables for this file.</summary>
+        private List<TableComparison> GetTables()
         {
             var tables = new List<TableComparison>();
-            if (current != null)
+            if (Current != null)
             {
-                foreach (var currentTable in current.Tables)
+                foreach (var currentTable in Current.Tables)
                 {
-                    var acceptedTable = accepted?.Tables.Find(t => t.Name == currentTable.Name);
+                    var acceptedTable = Accepted?.Tables.Find(t => t.Name == currentTable.Name);
                     tables.Add(new TableComparison(currentTable, acceptedTable));
                 }
 
                 // Add in tables that are in the accepted file but not in the current file.
-                if (accepted != null)
+                if (Accepted != null)
                 {
-                    var tablesNotInCurrent = accepted.Tables.Except(tables.Select(t => t.Accepted));
+                    var tablesNotInCurrent = Accepted.Tables.Except(tables.Select(t => t.Accepted));
                     foreach (var acceptedTable in tablesNotInCurrent)
                         tables.Add(new TableComparison(null, acceptedTable));
                 }
             }
 
-            return tables.OrderBy(t => t.Name);
-        }
-
-        /// <summary>Get a list of all files for a pull request.</summary>
-        /// <param name="pullRequest">The pull request.</param>
-        public static IEnumerable<ApsimFileComparison> GetFiles(PullRequest pullRequest)
-        {
-            var files = new List<ApsimFileComparison>();
-            foreach (var currentFile in pullRequest.Files)
-            {
-                var acceptedFile = pullRequest.AcceptedPullRequest?.Files.Find(f => f.Name == currentFile.Name);
-                files.Add(new ApsimFileComparison(currentFile, acceptedFile));
-            }
-
-            // Add in files that are in the accepted PR but not in the current PR.
-            if (pullRequest.AcceptedPullRequest != null)
-            {
-                var filesNotInCurrent = pullRequest.AcceptedPullRequest.Files.Except(files.Select(f => f.accepted));
-                foreach (var acceptedFile in filesNotInCurrent)
-                    files.Add(new ApsimFileComparison(null, acceptedFile));
-            }
-
-            return files.OrderBy(f => f.Name);
+            return tables.OrderBy(t => t.Name).ToList();
         }
     }
 }

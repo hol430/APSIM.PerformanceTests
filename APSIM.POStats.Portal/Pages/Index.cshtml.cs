@@ -17,15 +17,18 @@ namespace APSIM.POStats.Portal.Pages
         /// <summary>The database context.</summary>
         private readonly StatsDbContext statsDb;
 
-        /// <summary>The pull request being analysed.</summary>
-        public PullRequest PullRequest { get; private set; }
-
         /// <summary>Constructor.</summary>
         /// <param name="stats">The database context.</param>
         public IndexModel(StatsDbContext stats)
         {
             statsDb = stats;
         }
+
+        /// <summary>Only show changed stats?</summary>
+        public bool OnlyShowChangedStats { get; set; } = false;
+
+        /// <summary>The pull request being analysed.</summary>
+        public PullRequest PullRequest { get; private set; }
 
         /// <summary>The Url for the web site.</summary>
         public string BaseUrl { get { return $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}"; } }
@@ -37,6 +40,15 @@ namespace APSIM.POStats.Portal.Pages
             PullRequest = statsDb.PullRequests.FirstOrDefault(pr => pr.Number == pullRequestNumber);
             if (PullRequest == null)
                 throw new Exception($"Cannot find pull request #{pullRequestNumber} in stats database");
+        }
+
+        public void OnPost()
+        {
+            int pullRequestNumber = Convert.ToInt32(Request.Form["PullRequestNumber"]);
+            PullRequest = statsDb.PullRequests.FirstOrDefault(pr => pr.Number == pullRequestNumber);
+            if (PullRequest == null)
+                throw new Exception($"Cannot find pull request #{pullRequestNumber} in stats database");
+            OnlyShowChangedStats = true;
         }
 
         /// <summary>Emit html to display tick/cross.</summary>
