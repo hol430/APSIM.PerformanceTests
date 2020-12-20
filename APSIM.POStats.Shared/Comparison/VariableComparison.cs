@@ -90,30 +90,29 @@ namespace APSIM.POStats.Shared
                               (RSRStatus == Status.Pass || RSRStatus == Status.Same);
 
         /// <summary>How does current N compare to accepted N?</summary>
-        public Status NStatus => CalculateState(NPercentDifference);
+        /// <remarks>Using CalculateNSEState(), because it assumes that the stat being reduced is bad</remarks>
+        public Status NStatus => CalculateNSEState(NPercentDifference);
        
         /// <summary>How does current RMSE compare to accepted RMSE?</summary>
         public Status RMSEStatus => CalculateState(RMSEPercentDifference);
 
         /// <summary>How does current NSE compare to accepted NSE?</summary>
-        public Status NSEStatus => CalculateState(NSEPercentDifference);
+        public Status NSEStatus => CalculateNSEState(NSEPercentDifference);
 
         /// <summary>How does current RSR compare to accepted RSR?</summary>
         public Status RSRStatus => CalculateState(RSRPercentDifference);
 
         /// <summary>N percentage difference between between the values.</summary>
-        public double NPercentDifference { get; } = -double.NaN;
+        public double NPercentDifference => MathUtilities.Divide(CurrentN - AcceptedN, AcceptedN, 0);
 
         /// <summary>RMSE percentage difference between between the values.</summary>
-        public double RMSEPercentDifference { get; } = -double.NaN;
+        public double RMSEPercentDifference => MathUtilities.Divide(CurrentRMSE - AcceptedRMSE, AcceptedRMSE, 0);
 
         /// <summary>NSE percentage difference between between the values.</summary>
-        public double NSEPercentDifference { get; } = -double.NaN;
+        public double NSEPercentDifference => MathUtilities.Divide(CurrentNSE - AcceptedNSE, AcceptedNSE, 0);
 
         /// <summary>RSR percentage difference between between the values.</summary>
-        public double RSRPercentDifference { get; } = -double.NaN;
-
-
+        public double RSRPercentDifference => MathUtilities.Divide(CurrentRSR - AcceptedRSR, AcceptedRSR, 0);
 
         /// <summary>
         /// Compare two stat variables and return percentage difference. If the difference is positive,
@@ -141,10 +140,34 @@ namespace APSIM.POStats.Shared
         }
 
         /// <summary>
-        /// Calculate a pass/fail state for a stat value based on percentage difference.
+        /// Calculate a pass/fail state for a non-NSE stat value based on percentage difference.
+        /// This assumes that a negative percent difference (e.g. cases where the stat has gone)
+        /// down is an improvement.
         /// </summary>
         /// <param name="percentDifference">The percent difference between from and to variables.</param>
         private Status CalculateState(double percentDifference)
+        {
+            if (current == null)
+                return Status.Missing;
+            else if (accepted == null)
+                return Status.New;
+            else if (double.IsNaN(percentDifference))
+                return Status.Fail;
+            else if (Math.Abs(percentDifference) <= 1)
+                return Status.Same;
+            else if (percentDifference > 0)
+                return Status.Fail;
+            else
+                return Status.Pass;
+        }
+
+        /// <summary>
+        /// Calculate a pass/fail state for a stat value based on percentage difference.
+        /// This assumes that a negative percent difference (e.g. cases where the stat has gone)
+        /// down is a failure. E.g. NSE.
+        /// </summary>
+        /// <param name="percentDifference">The percent difference between from and to variables.</param>
+        private Status CalculateNSEState(double percentDifference)
         {
             if (current == null)
                 return Status.Missing;
