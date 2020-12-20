@@ -108,7 +108,7 @@
 
                             <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.CurrentRSR, 3, 0, isAccepted: false))</td>
                             <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.AcceptedRSR, 3, 0, isAccepted: true))</td>
-                            <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(variable.RSRStatus))@VariableFunctions.RSRRating(variable.AcceptedNSE)</td>
+                            <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(variable.RSRStatus))@VariableFunctions.RSRRating(variable.AcceptedRSR)</td>
                         </tr>
                     }
                 }
