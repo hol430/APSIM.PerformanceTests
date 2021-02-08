@@ -16,23 +16,6 @@
 
 <div class="text-left">
     <h1 class="display-4">Predicted / Observed Stats</h1>
-    <form method="post">
-        <div>
-            <label for="PullRequestNumber">Number:</label>
-            <input name="PullRequestNumber" value="@Model.PullRequest.Number" readonly />
-        </div>
-        <div>
-            <label for="Author">Author:</label>
-            <input name="Author" value="@Model.PullRequest.Author" readonly />
-        </div>
-        <div>
-            <label for="DateCreated">Date created:</label>
-            <input name="DateCreated" value="@Model.PullRequest.DateRun" readonly />
-        </div>
-        <div>
-            <button name="toggle-button" type="submit">Toggle only show changed stats</button>
-        </div>
-    </form>
     <div>
         <br />
 
@@ -71,10 +54,40 @@
                 <td class="ratings-table-column">NSE ≤ 0.50</td>
             </tr>
         </table>
-        <br />
         <strong>Changes are only considered significant if they differ from the accepted stat by more than 1%.</strong>
         <br />
         <br />
+
+        <form method="post">
+            <div>
+                <label for="PullRequestNumber">Number:</label>
+                <input name="PullRequestNumber" value="@Model.PullRequest.Number" readonly />
+            </div>
+            <div>
+                <label for="Author">Author:</label>
+                <input name="Author" value="@Model.PullRequest.Author" readonly />
+            </div>
+            <div>
+                <label for="DateCreated">Date created:</label>
+                <input name="DateCreated" value="@Model.PullRequest.DateRun" readonly />
+            </div>
+            <br />
+            <br />
+            <div>
+                @if (Model.OnlyShowChangedStats)
+                {
+                    <input type="hidden" name="StatsLabel" value="Showing stats that have changed." readonly />
+                    <button name="toggle-button" type="submit">Show all stats instead</button>
+                }
+                else
+                {
+                    <input type="hidden" name="StatsLabel" value="Showing all stats." readonly />
+                    <button name="toggle-button" type="submit">Show changed stats instead</button>
+                }
+            </div>
+            <br />
+            <br />
+        </form>
 
         <table class="stats-table">
             @{

@@ -25,7 +25,7 @@ namespace APSIM.POStats.Portal.Pages
         }
 
         /// <summary>Only show changed stats?</summary>
-        public bool OnlyShowChangedStats { get; set; } = false;
+        public bool OnlyShowChangedStats { get; set; } = true;
 
         /// <summary>The pull request being analysed.</summary>
         public PullRequest PullRequest { get; private set; }
@@ -48,7 +48,9 @@ namespace APSIM.POStats.Portal.Pages
             PullRequest = statsDb.PullRequests.FirstOrDefault(pr => pr.Number == pullRequestNumber);
             if (PullRequest == null)
                 throw new Exception($"Cannot find pull request #{pullRequestNumber} in stats database");
-            OnlyShowChangedStats = true;
+
+            var statsLabel = Request.Form["StatsLabel"].ToString();
+            OnlyShowChangedStats = statsLabel == "Showing all stats.";
         }
 
         /// <summary>Emit html to display tick/cross.</summary>
