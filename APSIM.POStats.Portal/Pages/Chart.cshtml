@@ -28,14 +28,14 @@
                         <td class="stats-cell">"NSE"</td>
                         <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@Model.Variable.CurrentNSE, 3, 0, isAccepted: false))</td>
                         <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@Model.Variable.AcceptedNSE, 3, 0, isAccepted: true))</td>
-                        <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(@Model.Variable.NSEStatus))@VariableFunctions.NSERating(@Model.Variable.AcceptedNSE)</td>
+                        <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(@Model.Variable.NSEStatus))@VariableFunctions.NSERating(@Model.Variable.CurrentNSE)</td>
                         <td class="stats-cell">&nbsp;&nbsp;</td>
                     </tr>
                     <tr>
                         <td class="stats-cell">"RSR"</td>
                         <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@Model.Variable.CurrentRSR, 3, 0, isAccepted: false))</td>
                         <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@Model.Variable.AcceptedRSR, 3, 0, isAccepted: true))</td>
-                        <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(@Model.Variable.RSRStatus))@VariableFunctions.RSRRating(@Model.Variable.AcceptedNSE)</td>
+                        <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(@Model.Variable.RSRStatus))@VariableFunctions.RSRRating(@Model.Variable.CurrentNSE)</td>
                     </tr>
                 </table>
             </div>

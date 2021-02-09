@@ -72,7 +72,7 @@ namespace APSIM.POStats.Shared.Comparison
         private List<TableComparison> GetTables()
         {
             var tables = new List<TableComparison>();
-            if (Current != null)
+            if (Current != null && Current.Tables != null)
             {
                 foreach (var currentTable in Current.Tables)
                 {

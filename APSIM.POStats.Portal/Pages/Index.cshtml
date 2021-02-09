@@ -77,12 +77,12 @@
                 @if (Model.OnlyShowChangedStats)
                 {
                     <input type="hidden" name="StatsLabel" value="Showing stats that have changed." readonly />
-                    <button name="toggle-button" type="submit">Show all stats instead</button>
+                    <button name="toggle-button" type="submit">Show all stats</button>
                 }
                 else
                 {
                     <input type="hidden" name="StatsLabel" value="Showing all stats." readonly />
-                    <button name="toggle-button" type="submit">Show changed stats instead</button>
+                    <button name="toggle-button" type="submit">Show changed stats</button>
                 }
             </div>
             <br />
@@ -138,12 +138,12 @@
 
                             <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.CurrentNSE, 3, 0, isAccepted: false))</td>
                             <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.AcceptedNSE, 3, 0, isAccepted: true))</td>
-                            <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(variable.NSEStatus))@VariableFunctions.NSERating(variable.AcceptedNSE)</td>
+                            <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(variable.NSEStatus))@VariableFunctions.NSERating(variable.CurrentNSE)</td>
                             <td class="stats-cell">&nbsp;&nbsp;</td>
 
                             <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.CurrentRSR, 3, 0, isAccepted: false))</td>
                             <td class="stats-cell">&nbsp;@Html.Raw(IndexModel.EmitNumber(@variable.AcceptedRSR, 3, 0, isAccepted: true))</td>
-                            <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(variable.RSRStatus))@VariableFunctions.RSRRating(variable.AcceptedRSR)</td>
+                            <td class="stats-tick">@Html.Raw(IndexModel.EmitTickCross(variable.RSRStatus))@VariableFunctions.RSRRating(variable.CurrentRSR)</td>
                         </tr>
                     }
                 }

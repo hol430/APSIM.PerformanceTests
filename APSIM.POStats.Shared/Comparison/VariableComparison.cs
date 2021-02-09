@@ -46,10 +46,10 @@ namespace APSIM.POStats.Shared
             this.accepted = accepted;
             if (current != null && accepted != null)
             {
-                NPercentDifference = CompareVariable(current.N, accepted.N, true);
-                RMSEPercentDifference = CompareVariable(current.RMSE, accepted.RMSE, false);
-                NSEPercentDifference = CompareVariable(current.NSE, accepted.NSE, true);
-                RSRPercentDifference = CompareVariable(current.RSR, accepted.RSR, false);
+                NPercentDifference = CompareVariable(accepted.N, current.N, true);
+                RMSEPercentDifference = CompareVariable(accepted.RMSE, current.RMSE, false);
+                NSEPercentDifference = CompareVariable(accepted.NSE, current.NSE, true);
+                RSRPercentDifference = CompareVariable(accepted.RSR, current.RSR, false);
             }
         }
 
@@ -124,8 +124,8 @@ namespace APSIM.POStats.Shared
         /// Compare two stat variables and return percentage difference. If the difference is positive,
         /// it is an improvement else it is a decline.
         /// </summary>
-        /// <param name="fromValue">The current pull request stat.</param>
-        /// <param name="toValue">The accepted pull request stat.</param>
+        /// <param name="fromValue">The accepted pull request stat.</param>
+        /// <param name="toValue">The current pull request stat.</param>
         /// <param name="positiveDiffIsGood">Is a positive difference (to - from) a good thing?</param>
         /// <returns></returns>
         private static double CompareVariable(double fromValue, double toValue, bool positiveDiffIsGood)
@@ -135,7 +135,7 @@ namespace APSIM.POStats.Shared
 
             fromValue = Math.Round(fromValue, 6);
             toValue = Math.Round(toValue, 6);
-            var percentDifference = MathUtilities.Divide(toValue - fromValue, toValue, 0) * 100.0;
+            var percentDifference = MathUtilities.Divide(toValue - fromValue, Math.Abs(fromValue), 0) * 100.0;
 
             // Correct the sign of the difference so that a positive value is an improvement and 
             // a negative value is a decline.
