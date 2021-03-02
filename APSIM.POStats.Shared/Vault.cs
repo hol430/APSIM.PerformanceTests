@@ -18,17 +18,24 @@ namespace APSIM.POStats.Shared
                 vaultDirectory = Directory.GetParent(vaultDirectory).FullName;
                 vaultFileName = Path.Combine(vaultDirectory, "..", "Vault.json");
             }
-            if (!File.Exists(vaultFileName))
-                throw new Exception($"Cannot find application vault {vaultFileName}.");
-
-            // Read from vault.
-            var options = new JsonDocumentOptions { AllowTrailingCommas = true };
-            using (JsonDocument document = JsonDocument.Parse(File.ReadAllText(vaultFileName), options))
+            if (File.Exists(vaultFileName))
             {
-                if (!document.RootElement.TryGetProperty(key, out JsonElement element))
-                    throw new Exception($"Cannot find key {key} in vault");
-                return element.GetString();
+                // Read from vault.
+                var options = new JsonDocumentOptions { AllowTrailingCommas = true };
+                using (JsonDocument document = JsonDocument.Parse(File.ReadAllText(vaultFileName), options))
+                {
+                    if (!document.RootElement.TryGetProperty(key, out JsonElement element))
+                        throw new Exception($"Cannot find key {key} in vault");
+                    return element.GetString();
+                }
             }
+            else
+            {
+                string envVariable = Environment.GetEnvironmentVariable(key);
+                if (!string.IsNullOrEmpty(envVariable))
+                    return envVariable;
+            }
+            throw new Exception($"Cannot find application vault {vaultFileName}");
         }
     }
 }
