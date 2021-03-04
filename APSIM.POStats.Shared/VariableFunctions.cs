@@ -13,9 +13,9 @@ namespace APSIM.POStats.Shared
         /// Ensure all stats are calculated if they aren't already.
         /// </summary>
         /// <param name="variable">The variable to calculate stats for.</param>
-        public static void EnsureStatsAreCalculated(Variable variable)
+        public static void EnsureStatsAreCalculated(Variable variable, bool forceRecalculate = false)
         {
-            if (variable.N == 0 && variable.Data.Count > 0)
+            if (forceRecalculate || (variable.N == 0 && variable.Data.Count > 0))
             {
                 GetData(variable, out double[] predicted, out double[] observed, out _);
                 var stats = MathUtilities.CalcRegressionStats(variable.Name, predicted, observed);

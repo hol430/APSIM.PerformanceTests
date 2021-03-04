@@ -75,5 +75,15 @@ namespace APSIM.POStats.Shared
 
             files.RemoveAll(f => f.Tables.Count == 0);
         }
+
+        /// <summary>Update the stats in the specified pull request.</summary>
+        /// <param name="pullRequest"></param>
+        public static void UpdateStats(PullRequest pullRequest)
+        {
+            foreach (var file in pullRequest.Files)
+                foreach (var table in file.Tables)
+                    foreach (var variable in table.Variables)
+                        VariableFunctions.EnsureStatsAreCalculated(variable, forceRecalculate: true);
+        }
     }
 }

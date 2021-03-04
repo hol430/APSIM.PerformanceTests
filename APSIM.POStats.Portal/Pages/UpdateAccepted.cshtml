@@ -1,0 +1,23 @@
+﻿@page
+@model UpdateAcceptedModel
+@{
+    ViewData["Title"] = "Update stats?";
+
+    <p>If you want to update the accepted stats for this pull request #@Model.PullRequestNumber please enter the admin password below.</p>
+    <form method="post">
+        <fieldset>
+            <div>
+                <label>Pull request Number:</label>
+                <input name="PullRequestNumber" value="@Model.PullRequestNumber" readonly/>
+            </div>
+            <div>
+                <label for="Password">Password:</label>
+                <input type="password" name="Password" value="" />
+            </div>
+            <div>
+                <label>&nbsp;</label>
+                <input type="submit" value="Submit" class="submit" />
+            </div>
+        </fieldset>
+    </form>
+}
