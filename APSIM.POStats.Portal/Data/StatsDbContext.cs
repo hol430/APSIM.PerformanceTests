@@ -25,7 +25,7 @@ namespace APSIM.POStats.Portal.Data
         {
             var acceptedPRs = PullRequests.Where(pr => pr.DateStatsAccepted != null)
                                           .OrderBy(pr => pr.DateStatsAccepted);
-            return acceptedPRs.Last();
+            return acceptedPRs.LastOrDefault();
         }
 
         /// <summary>
